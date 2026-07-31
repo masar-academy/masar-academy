@@ -1660,44 +1660,22 @@
 
     <!-- MODAL (Side Drawer Only): HAMBURGER DRAWER MENU -->
     <div id="hamburger-drawer-modal" class="modal-overlay">
-        <div class="modal-content" style="max-width: 420px; padding: 0; overflow: hidden; border-radius: 16px; border: 1px solid var(--border-color);">
-            <div style="background: linear-gradient(135deg, rgba(255, 125, 63, 0.2), rgba(16, 185, 129, 0.1)); padding: 20px; border-bottom: 1px solid var(--border-color); position: relative;">
-                <button type="button" class="close-modal-btn" onclick="closeModal('hamburger-drawer-modal')" style="position: absolute; left: 15px; top: 15px;">&times;</button>
-                <div style="display: flex; align-items: center; gap: 14px;">
-                    <div id="drawer-user-avatar" style="width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-orange), #FF5500); color: white; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 20px; box-shadow: 0 4px 12px rgba(255,125,63,0.3);">
+        <div class="modal-content">
+            <div style="background: linear-gradient(135deg, rgba(255, 125, 63, 0.2), rgba(16, 185, 129, 0.1)); padding: 22px 18px 18px 18px; border-bottom: 1px solid var(--border-color); position: relative;">
+                <button type="button" class="close-modal-btn" onclick="closeModal('hamburger-drawer-modal')" style="position: absolute; left: 15px; top: 15px; background: rgba(255,255,255,0.08); width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--text-main); font-size: 20px; border: 1px solid var(--border-color); cursor: pointer;">&times;</button>
+                <div style="display: flex; align-items: center; gap: 12px; margin-top: 10px;">
+                    <div id="drawer-user-avatar" style="width: 46px; height: 46px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-orange), #FF5500); color: white; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 19px; box-shadow: 0 4px 12px rgba(255,125,63,0.3); flex-shrink: 0;">
                         <i class="fa-solid fa-compass"></i>
                     </div>
-                    <div>
-                        <h4 id="drawer-user-name" style="font-size: 16.5px; font-weight: 800; color: var(--text-main); margin-bottom: 3px;">منصة مَسار التعليمية</h4>
-                        <span id="drawer-user-status" style="font-size: 12px; color: var(--text-orange); font-weight: 700;">دليل دورات واختبارات قياس والتأسيس</span>
+                    <div style="flex: 1; min-width: 0;">
+                        <h4 id="drawer-user-name" style="font-size: 16px; font-weight: 800; color: var(--text-main); margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">منصة مَسار التعليمية</h4>
+                        <span id="drawer-user-status" style="font-size: 11.5px; color: var(--text-orange); font-weight: 700; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">دليل دورات واختبارات قياس والتأسيس</span>
                     </div>
                 </div>
             </div>
 
-            <div style="padding: 18px 15px;" id="drawer-menu-options">
+            <div style="padding: 18px 15px; flex: 1; overflow-y: auto;" id="drawer-menu-options">
                 <!-- Populated dynamically based on user state -->
-            </div>
-        </div>
-            <div style="margin-bottom: 20px;">
-                <span style="font-size: 12px; color: var(--text-muted); display: block; margin-bottom: 6px; font-weight: 700;">الأوسمة والإنجازات المكتسبة:</span>
-                <div class="badges-container" id="s-modal-profile-badges">
-                    <!-- Populated dynamically -->
-                </div>
-            </div>
-
-            <!-- Enrolled Courses & Progress Section -->
-            <div style="margin-bottom: 20px;">
-                <h4 style="font-size: 15px; font-weight: 800; color: var(--text-main); margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
-                    <i class="fa-solid fa-graduation-cap" style="color: var(--warning);"></i>
-                    الدورات المشترك فيها ونسبة التقدم
-                </h4>
-                <div id="s-modal-enrolled-courses-list" style="max-height: 280px; overflow-y: auto; padding-left: 5px;">
-                    <!-- Populated dynamically -->
-                </div>
-            </div>
-
-            <div style="display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid var(--border-color); padding-top: 15px;">
-                <button type="button" class="btn btn-secondary" onclick="closeModal('student-dashboard-modal')">إغلاق</button>
             </div>
         </div>
     </div>
