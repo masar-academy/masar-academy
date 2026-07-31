@@ -2875,10 +2875,10 @@ function openAddQuizModal(courseId, courseTitle) {
 }
 
 function openEditQuizModal(quizId) {
-    const quiz = appState.quizzes.find(q => q.id === quizId);
+    const quiz = appState.quizzes.find(q => String(q.id) === String(quizId));
     if (!quiz) return;
-    const course = appState.courses.find(c => c.id === quiz.courseId);
-    const courseTitle = course ? course.title : "محاكي اختبارات مستقل";
+    const course = appState.courses.find(c => String(c.id) === String(quiz.courseId));
+    const courseTitle = course ? course.title : "محاكي اختبارات مستقل (قياس)";
     
     document.getElementById('quiz-edit-id').value = quiz.id;
     document.getElementById('quiz-course-id').value = quiz.courseId || 'simulator';
@@ -2888,6 +2888,16 @@ function openEditQuizModal(quizId) {
     const mTitle = document.getElementById('quiz-course-title');
     if (mTitle) mTitle.textContent = courseTitle;
     
+    const titleText = document.getElementById('quiz-modal-title-text');
+    if (titleText) {
+        titleText.innerHTML = quiz.isSimulator 
+            ? `<i class="fa-solid fa-bolt" style="color: var(--success); margin-left: 6px;"></i> تعديل محاكي الاختبارات`
+            : `<i class="fa-solid fa-clipboard-question" style="color: var(--accent-orange); margin-left: 6px;"></i> تعديل الاختبار التفاعلي`;
+    }
+
+    const submitBtnText = document.getElementById('quiz-submit-btn-text');
+    if (submitBtnText) submitBtnText.textContent = "حفظ التعديلات";
+    
     document.getElementById('quiz-title').value = quiz.title;
     document.getElementById('quiz-points').value = quiz.points;
     
@@ -2896,7 +2906,7 @@ function openEditQuizModal(quizId) {
     toggleQuizSimulatorEditor(isSim);
     
     const container = document.getElementById('quiz-questions-editor-container');
-    container.innerHTML = '';
+    if (container) container.innerHTML = '';
     
     const sectionsContainer = document.getElementById('quiz-sections-editor-container');
     if (sectionsContainer) sectionsContainer.innerHTML = '';
@@ -2907,16 +2917,18 @@ function openEditQuizModal(quizId) {
                 addQuizSectionEditorRow(section);
             });
         }
-        hideAllViews();
-        document.getElementById('create-simulator-page-view').style.display = 'block';
     } else {
         if (quiz.questions && Array.isArray(quiz.questions)) {
             quiz.questions.forEach(q => {
                 addQuizQuestionEditorRow(q);
             });
         }
-        hideAllViews();
-        document.getElementById('create-quiz-page-view').style.display = 'block';
+    }
+    hideAllViews();
+    const page = document.getElementById('create-quiz-page-view');
+    if (page) {
+        page.style.display = 'block';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 }
 
@@ -4910,27 +4922,7 @@ async function renderSimulatorResults() {
 }
 
 function openAddStandaloneSimulatorModal() {
-    document.getElementById('quiz-edit-id').value = '';
-    document.getElementById('quiz-course-id').value = 'simulator';
-    document.getElementById('quiz-course-title').textContent = "محاكي اختبارات مستقل";
-    document.getElementById('create-quiz-form').reset();
-    
-    document.getElementById('quiz-is-simulator').checked = true;
-    toggleQuizSimulatorEditor(true);
-    
-    const container = document.getElementById('quiz-questions-editor-container');
-    container.innerHTML = '';
-    
-    const sectionsContainer = document.getElementById('quiz-sections-editor-container');
-    if (sectionsContainer) {
-        sectionsContainer.innerHTML = '';
-        addQuizSectionEditorRow();
-    }
-    
-    document.getElementById('quiz-modal-title-text').innerHTML = `<i class="fa-solid fa-bolt" style="color: var(--accent-orange); margin-left: 6px;"></i> إضافة محاكي اختبارات جديد`;
-    document.getElementById('quiz-submit-btn-text').textContent = "حفظ ونشر المحاكي";
-    
-    openModal('create-quiz-modal');
+    showCreateSimulatorView();
 }
 
 function renderTeacherSimulators() {
