@@ -1030,7 +1030,15 @@ function showStudentSection(tabId) {
 }
 
 function hideAllViews() {
-    const viewIds = ['landing-view', 'login-view', 'teacher-view', 'student-view', 'create-assignment-page-view', 'edit-assignment-page-view', 'create-course-page-view', 'add-lesson-page-view', 'create-quiz-page-view', 'create-simulator-page-view'];
+    const viewIds = [
+        'landing-view', 'login-view', 'teacher-view', 'student-view',
+        'create-assignment-page-view', 'edit-assignment-page-view',
+        'create-course-page-view', 'add-lesson-page-view', 'create-quiz-page-view', 'create-simulator-page-view',
+        'solve-assignment-page-view', 'grade-assignment-page-view', 'adjust-xp-page-view', 'cloud-config-page-view',
+        'teacher-course-manage-page-view', 'student-course-page-view', 'student-quiz-page-view', 'student-simulator-page-view',
+        'student-register-page-view', 'student-enrollment-page-view', 'unpaid-course-page-view', 'student-dashboard-page-view',
+        'edit-teacher-name-page-view', 'badge-manager-page-view'
+    ];
     viewIds.forEach(id => {
         const el = document.getElementById(id);
         if (el) el.style.display = 'none';
@@ -1075,12 +1083,14 @@ async function showDashboard() {
     updateHeaderUserBadge();
     hideAllViews();
     
-    if (appState.currentUser.role === 'teacher' || appState.currentUser.role === 'supervisor') {
+    if (appState.currentUser && (appState.currentUser.role === 'teacher' || appState.currentUser.role === 'supervisor')) {
         document.getElementById('teacher-view').style.display = 'block';
         await renderTeacherDashboard();
-    } else {
+    } else if (appState.currentUser && appState.currentUser.role === 'student') {
         document.getElementById('student-view').style.display = 'block';
         await renderStudentDashboard();
+    } else {
+        showLandingPage();
     }
 }
 
@@ -1148,6 +1158,13 @@ function showCreateSimulatorView() {
     if (page) page.style.display = 'block';
 }
 
+function showBadgeManagerView() {
+    hideAllViews();
+    renderCustomBadgesManageList();
+    const page = document.getElementById('badge-manager-page-view');
+    if (page) page.style.display = 'block';
+}
+
 // Switch interior tabs
 function switchTab(dashboardRole, tabId, btnEl) {
     const viewContainerId = dashboardRole === 'teacher' ? 'teacher-view' : 'student-view';
@@ -1174,49 +1191,62 @@ function calculateLevel(xp) {
     return { level, currentXpInLevel, progressPercent, title };
 }
 
-// Modal actions
+// Modal & Page View routing actions
+const MODAL_TO_VIEW_MAP = {
+    'submit-modal': 'solve-assignment-page-view',
+    'grade-modal': 'grade-assignment-page-view',
+    'adjust-xp-modal': 'adjust-xp-page-view',
+    'cloud-config-modal': 'cloud-config-page-view',
+    'teacher-course-manage-modal': 'teacher-course-manage-page-view',
+    'student-course-modal': 'student-course-page-view',
+    'student-quiz-modal': 'student-quiz-page-view',
+    'student-simulator-modal': 'student-simulator-page-view',
+    'student-register-modal': 'student-register-page-view',
+    'student-enrollment-modal': 'student-enrollment-page-view',
+    'unpaid-course-modal': 'unpaid-course-page-view',
+    'student-dashboard-modal': 'student-dashboard-page-view',
+    'edit-teacher-name-modal': 'edit-teacher-name-page-view',
+    'badge-manager-modal': 'badge-manager-page-view'
+};
+
 function openModal(id) {
-    const modal = document.getElementById(id);
-    if (modal) {
-        if (id === 'create-course-modal' && !document.getElementById('course-edit-id').value) {
-            document.getElementById('course-edit-id').value = '';
-            document.getElementById('create-course-form').reset();
-            document.getElementById('course-modal-title-text').innerHTML = `<i class="fa-solid fa-folder-plus" style="color: var(--accent-orange); margin-left: 6px;"></i> إنشاء دورة تعليمية جديدة`;
-            document.getElementById('course-submit-btn-text').textContent = "حفظ وإنشاء الدورة";
-        }
-        if (id === 'create-lesson-modal' && !document.getElementById('lesson-edit-id').value) {
-            document.getElementById('lesson-edit-id').value = '';
-            document.getElementById('create-lesson-form').reset();
-            document.getElementById('lesson-modal-title-text').innerHTML = `<i class="fa-solid fa-video" style="color: var(--accent-orange); margin-left: 6px;"></i> إضافة درس فيديو للدورة`;
-            document.getElementById('lesson-submit-btn-text').textContent = "حفظ وإضافة الدرس";
-        }
-        if (id === 'create-quiz-modal' && !document.getElementById('quiz-edit-id').value) {
-            document.getElementById('quiz-edit-id').value = '';
-            document.getElementById('create-quiz-form').reset();
-            document.getElementById('quiz-modal-title-text').innerHTML = `<i class="fa-solid fa-clipboard-question" style="color: var(--accent-orange); margin-left: 6px;"></i> إضافة اختبار دورة`;
-            document.getElementById('quiz-submit-btn-text').textContent = "حفظ ونشر الاختبار";
-        }
-        modal.classList.add('active');
+    const targetPageId = MODAL_TO_VIEW_MAP[id] || id;
+    const isOverlayModal = (id === 'hamburger-drawer-modal');
+    
+    if (isOverlayModal) {
+        const modal = document.getElementById(id);
+        if (modal) modal.classList.add('active');
+        return;
+    }
+    
+    hideAllViews();
+    const pageView = document.getElementById(targetPageId);
+    if (pageView) {
+        pageView.style.display = 'block';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 }
 
 function closeModal(id) {
-    const modal = document.getElementById(id);
-    if (modal) {
-        modal.classList.remove('active');
-        
-        if (id === 'student-course-modal') {
-            const video = document.getElementById('s-course-video-player');
-            const iframe = document.getElementById('s-course-iframe-player');
-            if (video) {
-                video.pause();
-                video.src = '';
-            }
-            if (iframe) {
-                iframe.src = '';
-            }
+    const isOverlayModal = (id === 'hamburger-drawer-modal');
+    if (isOverlayModal) {
+        const modal = document.getElementById(id);
+        if (modal) modal.classList.remove('active');
+        return;
+    }
+    
+    if (id === 'student-course-modal' || id === 'student-course-page-view') {
+        const video = document.getElementById('s-course-video-player');
+        const iframe = document.getElementById('s-course-iframe-player');
+        if (video) {
+            video.pause();
+            video.src = '';
+        }
+        if (iframe) {
+            iframe.src = '';
         }
     }
+    showDashboard();
 }
 
 function openUnpaidModal(type) {
