@@ -3791,8 +3791,14 @@ function renderStudentActiveHomeworks(sId) {
     const sActiveList = document.getElementById('s-active-list');
     sActiveList.innerHTML = '';
     
-    const myAssignments = appState.assignments.filter(a => !a.targetStudent || a.targetStudent === 'all' || (Array.isArray(a.targetStudent) ? a.targetStudent.includes(sId) : a.targetStudent === sId));
-    const activeHomeworks = myAssignments.filter(a => !appState.submissions.some(sub => sub.assignmentId === a.id && sub.studentId === sId));
+    const myAssignments = appState.assignments.filter(a => {
+        if (!a.targetStudent || a.targetStudent === 'all') return true;
+        if (Array.isArray(a.targetStudent)) {
+            return a.targetStudent.some(id => String(id) === String(sId));
+        }
+        return String(a.targetStudent) === String(sId);
+    });
+    const activeHomeworks = myAssignments.filter(a => !appState.submissions.some(sub => String(sub.assignmentId) === String(a.id) && String(sub.studentId) === String(sId)));
     
     document.getElementById('s-active-count').textContent = `${activeHomeworks.length} واجبات متبقية`;
     
@@ -3806,8 +3812,6 @@ function renderStudentActiveHomeworks(sId) {
         activeHomeworks.forEach(assign => {
             const card = document.createElement('div');
             card.className = 'assignment-card';
-            card.style.cursor = 'pointer';
-            card.onclick = () => openSubmitModal(assign.id);
             card.innerHTML = `
                 <div class="assignment-header">
                     <div>
@@ -3821,7 +3825,7 @@ function renderStudentActiveHomeworks(sId) {
                 
                 <div class="assignment-meta" style="justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.04); padding-top: 12px;">
                     <span><i class="fa-regular fa-calendar"></i> آخر موعد للتسليم: ${assign.dueDate}</span>
-                    <button class="btn btn-primary" onclick="event.stopPropagation(); openSubmitModal('${assign.id}')">
+                    <button class="btn btn-primary" onclick="openSubmitModal('${assign.id}')">
                         <i class="fa-solid fa-paper-plane"></i> بدء حل الواجب
                     </button>
                 </div>
@@ -3835,7 +3839,7 @@ function renderStudentHomeworkHistory(sId) {
     const sHistoryList = document.getElementById('s-history-list');
     sHistoryList.innerHTML = '';
     
-    const mySubmissions = appState.submissions.filter(s => s.studentId === sId);
+    const mySubmissions = appState.submissions.filter(s => String(s.studentId) === String(sId));
     
     if (mySubmissions.length === 0) {
         sHistoryList.innerHTML = `
@@ -3846,7 +3850,7 @@ function renderStudentHomeworkHistory(sId) {
     } else {
         const sortedSubmissions = [...mySubmissions].reverse();
         sortedSubmissions.forEach(sub => {
-            const assign = appState.assignments.find(a => a.id === sub.assignmentId);
+            const assign = appState.assignments.find(a => String(a.id) === String(sub.assignmentId));
             if (!assign) return;
             
             const isGraded = sub.status === 'graded';
@@ -3900,8 +3904,12 @@ function renderStudentHomeworkHistory(sId) {
 
 // Open assignment submit dialog
 function openSubmitModal(assignId) {
-    const assign = appState.assignments.find(a => a.id === assignId);
-    if (!assign) return;
+    const assign = appState.assignments.find(a => String(a.id) === String(assignId));
+    if (!assign) {
+        console.error("Assignment not found for ID:", assignId);
+        showToast("عذراً، لم يتم العثور على بيانات هذا الواجب!", "danger");
+        return;
+    }
     
     document.getElementById('submit-assignment-id').value = assignId;
     const titleEl = document.getElementById('submit-modal-title');
@@ -3975,7 +3983,7 @@ async function handleSubmitAssignment(e) {
     const link = document.getElementById('submit-link').value.trim();
     const sId = appState.currentUser.id;
     
-    const assign = appState.assignments.find(a => a.id === assignId);
+    const assign = appState.assignments.find(a => String(a.id) === String(assignId));
     if (!assign) return;
     
     const isMcq = assign.options && assign.options.length > 0;
