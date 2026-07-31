@@ -3398,15 +3398,19 @@ async function deleteQuiz(quizId) {
 }
 
 function openTeacherCourseManageModal(courseId) {
-    const course = appState.courses.find(c => c.id === courseId);
+    const course = appState.courses.find(c => String(c.id) === String(courseId));
     if (!course) return;
     
-    document.getElementById('t-course-manage-modal-title').textContent = `إدارة محتويات المقرر: ${course.title}`;
+    const titleEl = document.getElementById('t-course-manage-modal-title');
+    if (titleEl) titleEl.textContent = `إدارة محتويات المقرر: ${course.title}`;
+    
+    const editBtn = document.getElementById('t-course-manage-edit-btn');
+    if (editBtn) editBtn.onclick = () => openEditCourseModal(course.id);
     
     // Render Lessons List
     const lessonsList = document.getElementById('t-course-lessons-list');
     lessonsList.innerHTML = '';
-    const courseLessons = appState.lessons.filter(l => l.courseId === courseId);
+    const courseLessons = appState.lessons.filter(l => String(l.courseId) === String(courseId));
     
     if (courseLessons.length === 0) {
         lessonsList.innerHTML = '<span style="font-size: 12px; color: var(--text-muted); font-style: italic;">لا توجد دروس فيديو مضافة بعد</span>';
@@ -3442,7 +3446,7 @@ function openTeacherCourseManageModal(courseId) {
     // Render Quizzes List
     const quizzesList = document.getElementById('t-course-quizzes-list');
     quizzesList.innerHTML = '';
-    const courseQuizzes = appState.quizzes.filter(q => q.courseId === courseId);
+    const courseQuizzes = appState.quizzes.filter(q => String(q.courseId) === String(courseId));
     
     if (courseQuizzes.length === 0) {
         quizzesList.innerHTML = '<span style="font-size: 12px; color: var(--text-muted); font-style: italic;">لا توجد اختبارات مضافة بعد</span>';
