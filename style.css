@@ -1238,6 +1238,41 @@ footer span {
 }
 
 /* Drawer Menu & Hamburger Navigation Styling */
+#hamburger-drawer-modal.modal-overlay {
+    justify-content: flex-start !important;
+    align-items: stretch !important;
+    padding: 0 !important;
+    background: rgba(7, 11, 25, 0.75) !important;
+    backdrop-filter: blur(10px) !important;
+}
+
+#hamburger-drawer-modal .modal-content {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    bottom: 0 !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    width: 320px !important;
+    max-width: 85vw !important;
+    border-radius: 0 20px 20px 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-shadow: 10px 0 40px rgba(0, 0, 0, 0.7) !important;
+    transform: translateX(-100%) !important;
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    overflow-y: auto !important;
+    background: #0E162F !important;
+    border: none !important;
+    border-right: 1px solid var(--border-color) !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+#hamburger-drawer-modal.active .modal-content {
+    transform: translateX(0) !important;
+}
+
 .hamburger-btn {
     background: rgba(255, 125, 63, 0.15);
     border: 1px solid rgba(255, 125, 63, 0.3);
