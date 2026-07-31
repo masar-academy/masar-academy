@@ -581,15 +581,15 @@
             </div>
         </section>
 
-        <!-- PAGE B: CREATE COURSE PAGE -->
+        <!-- PAGE B: CREATE / EDIT COURSE PAGE -->
         <section id="create-course-page-view" class="fade-in" style="display: none;">
             <div class="container" style="max-width: 800px; padding: 25px 15px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; flex-wrap: wrap; gap: 15px;">
                     <div style="display: flex; align-items: center; gap: 12px;">
                         <div class="logo-icon" style="width: 44px; height: 44px; font-size: 22px; background: linear-gradient(135deg, var(--warning), #FF5500);"><i class="fa-solid fa-folder-plus"></i></div>
                         <div>
-                            <h2 style="font-size: 20px; font-weight: 800; color: var(--text-main);">إنشاء دورة تعليمية جديدة</h2>
-                            <p style="font-size: 13px; color: var(--text-muted); margin-top: 2px;">قم بإضافة عنوان الدورة والمادة والوصف للبدء برفع الدروس والاختبارات</p>
+                            <h2 style="font-size: 20px; font-weight: 800; color: var(--text-main);" id="course-modal-title-text">إنشاء دورة تعليمية جديدة</h2>
+                            <p style="font-size: 13px; color: var(--text-muted); margin-top: 2px;">قم بإضافة وتعديل عنوان الدورة والمادة والوصف للبدء برفع الدروس والاختبارات</p>
                         </div>
                     </div>
                     <button class="btn btn-secondary" style="padding: 8px 16px; font-size: 13px;" onclick="showTeacherSection('t-courses-tab')">
@@ -599,6 +599,8 @@
 
                 <div class="glass-card" style="padding: 25px;">
                     <form id="create-course-page-form" onsubmit="handleCreateCourse(event)">
+                        <input type="hidden" id="course-edit-id">
+
                         <div class="form-group">
                             <label for="page-course-title" style="font-weight: 700;">عنوان الدورة التعليمية:</label>
                             <input type="text" id="page-course-title" required placeholder="مثال: دورة التأسيس الشاملة في القدرات الكمي" style="padding: 12px; font-size: 14px;">
@@ -622,7 +624,7 @@
                             <button type="button" class="btn btn-secondary" onclick="showTeacherSection('t-courses-tab')" style="padding: 10px 20px; font-size: 14px;">إلغاء</button>
                             <button type="submit" class="btn btn-primary" style="padding: 10px 24px; font-size: 14px;">
                                 <i class="fa-solid fa-circle-check"></i>
-                                <span>إنشاء الدورة الآن</span>
+                                <span id="course-submit-btn-text">إنشاء الدورة الآن</span>
                             </button>
                         </div>
                     </form>
