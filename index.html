@@ -45,10 +45,10 @@
                     <i class="fa-solid fa-cloud"></i>
                 </button>
 
-                <!-- Hamburger Menu Button (3 lines / ☰) -->
+                <!-- Hamburger Menu Button (3 lines) -->
                 <button id="hamburger-menu-btn" class="btn hamburger-btn" onclick="openDrawerMenu()" style="display: flex; align-items: center; gap: 8px; padding: 8px 16px; font-weight: 700; border-radius: 10px; cursor: pointer;">
                     <i class="fa-solid fa-bars" style="font-size: 18px;"></i>
-                    <span style="font-size: 13.5px;">القائمة ☰</span>
+                    <span style="font-size: 13.5px;">القائمة</span>
                 </button>
             </div>
         </div>
@@ -962,10 +962,7 @@
                         <!-- Tab 4: Student Chat with Teacher -->
                         <div id="s-chat-tab" class="tab-content">
                             <div class="section-title">
-                                <h3>اسأل معلمك الخصوصي 💬</h3>
-                            </div>
-                            
-                            <div class="form-group" style="margin-bottom: 15px;">
+                        <div class="form-group" style="margin-bottom: 15px;">
                                 <label for="s-chat-teacher-select">اختر المعلم الذي تود التواصل معه:</label>
                                 <select id="s-chat-teacher-select" onchange="renderStudentChatHistory()" style="padding: 10px; border-radius: 8px;">
                                     <!-- Populated dynamically with teachers list -->
@@ -1030,6 +1027,630 @@
             </div>
         </section>
         
+        <!-- PAGE VIEW 1: SOLVE ASSIGNMENT (Full Page) -->
+        <section id="solve-assignment-page-view" class="fade-in" style="display: none;">
+            <div class="glass-card" style="max-width: 850px; margin: 0 auto; padding: 30px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; flex-wrap: wrap; gap: 12px;">
+                    <h2 style="font-size: 22px; font-weight: 800; color: var(--text-main);" id="submit-modal-title">
+                        <i class="fa-solid fa-pen-to-square" style="color: var(--accent-orange); margin-left: 8px;"></i>
+                        صفحة حل وتسليم الواجب
+                    </h2>
+                    <button class="btn btn-secondary" onclick="showDashboard()">
+                        <i class="fa-solid fa-arrow-right"></i> العودة للوحة التحكم
+                    </button>
+                </div>
+                
+                <div style="margin-bottom: 20px; background: rgba(255,255,255,0.02); padding: 18px; border-radius: 12px; border: 1px solid var(--border-color);">
+                    <h4 style="font-size: 15px; margin-bottom: 8px; color: var(--text-orange); font-weight: 800;"><i class="fa-solid fa-circle-question"></i> السؤال المطلوب:</h4>
+                    <p id="submit-modal-question" style="font-size: 15px; white-space: pre-line; line-height: 1.7; color: var(--text-main);"></p>
+                </div>
+                
+                <div id="submit-modal-image-container" style="display: none; margin-bottom: 20px; text-align: center; background: rgba(255,255,255,0.02); padding: 18px; border-radius: 12px; border: 1px solid var(--border-color);">
+                    <h4 style="font-size: 15px; margin-bottom: 12px; color: var(--text-orange); text-align: right; font-weight: 800;"><i class="fa-regular fa-image"></i> الصورة المرفقة مع السؤال:</h4>
+                    <img id="submit-modal-image" src="" alt="صورة الواجب" style="max-width: 100%; max-height: 380px; border-radius: 10px; border: 1px solid var(--border-color); object-fit: contain;">
+                </div>
+                
+                <form id="submit-assignment-form" onsubmit="handleSubmitAssignment(event)">
+                    <input type="hidden" id="submit-assignment-id">
+                    
+                    <div id="submit-mcq-container" style="display: none; margin-bottom: 25px; border-bottom: 1px dashed var(--border-color); padding-bottom: 20px;">
+                        <label style="font-weight: 800; font-size: 15px; color: var(--text-orange); display: block; margin-bottom: 12px;"><i class="fa-solid fa-list-check"></i> اختر الإجابة الصحيحة:</label>
+                        <div class="quiz-options-list" id="submit-mcq-options-list" style="grid-template-columns: 1fr 1fr; gap: 12px;">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label id="submit-answer-label" for="submit-answer" style="font-weight: 700; margin-bottom: 8px;">إجابتك (تدعم الرموز والمعادلات بين علامة $):</label>
+                        <textarea id="submit-answer" rows="7" required placeholder="مثال: قيمة $س = ٥$" style="font-size: 15px; line-height: 1.6;"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="submit-link" style="font-weight: 700; margin-bottom: 8px;"><i class="fa-solid fa-link"></i> رابط إضافي (اختياري - مثلاً مستند Google Drive أو صورة لحلّك):</label>
+                        <input type="url" id="submit-link" placeholder="https://example.com/your-work">
+                    </div>
+                    
+                    <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 30px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+                        <button type="button" class="btn btn-secondary" onclick="showDashboard()">إلغاء</button>
+                        <button type="submit" class="btn btn-primary" style="padding: 12px 30px; font-size: 15px; font-weight: 800;">
+                            <i class="fa-solid fa-paper-plane"></i>
+                            <span>إرسال الحل للمعلم</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- PAGE VIEW 2: GRADE ASSIGNMENT (Full Page) -->
+        <section id="grade-assignment-page-view" class="fade-in" style="display: none;">
+            <div class="glass-card" style="max-width: 850px; margin: 0 auto; padding: 30px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; flex-wrap: wrap; gap: 12px;">
+                    <h2 style="font-size: 22px; font-weight: 800; color: var(--text-main);">
+                        <i class="fa-solid fa-clipboard-check" style="color: var(--success); margin-left: 8px;"></i>
+                        تصحيح واجب الطالب
+                    </h2>
+                    <button class="btn btn-secondary" onclick="showDashboard()">
+                        <i class="fa-solid fa-arrow-right"></i> العودة للوحة التحكم
+                    </button>
+                </div>
+                
+                <div style="margin-bottom: 20px; background: rgba(255,255,255,0.02); padding: 18px; border-radius: 12px; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 10px;">
+                    <div>
+                        <strong style="color: var(--text-muted); font-size: 13px;">الطالب:</strong> 
+                        <span id="grade-modal-student" style="font-weight: 800; font-size: 16px;">--</span>
+                    </div>
+                    <div>
+                        <strong style="color: var(--text-muted); font-size: 13px;">الواجب:</strong> 
+                        <span id="grade-modal-assignment-title" style="font-weight: 800; font-size: 16px;">--</span>
+                    </div>
+                    
+                    <div id="grade-modal-mcq-info" style="display: none; background: rgba(0,0,0,0.15); padding: 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05); margin-top: 6px; display: flex; flex-direction: column; gap: 8px;">
+                        <div>
+                            <strong style="color: var(--text-muted); font-size: 13px;">اختيار الطالب:</strong> 
+                            <span id="grade-modal-student-option" style="font-weight: 800;">--</span> 
+                            <span id="grade-modal-mcq-badge" style="font-size: 12px; padding: 3px 8px; border-radius: 6px; margin-right: 8px; font-weight: bold;"></span>
+                        </div>
+                        <div>
+                            <strong style="color: var(--text-muted); font-size: 13px;">الخيار الصحيح المعين:</strong> 
+                            <span id="grade-modal-correct-option" style="font-weight: 800; color: var(--success);">--</span>
+                        </div>
+                    </div>
+
+                    <div style="border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 12px; margin-top: 6px;">
+                        <strong id="grade-modal-answer-label" style="color: var(--text-orange); font-size: 14px; display: block; margin-bottom: 6px; font-weight: 800;"><i class="fa-solid fa-comment-dots"></i> إجابة الطالب:</strong>
+                        <p id="grade-modal-answer" style="white-space: pre-line; background: rgba(0,0,0,0.25); padding: 14px; border-radius: 8px; font-size: 15px; border-right: 4px solid var(--accent-orange); line-height: 1.6;"></p>
+                    </div>
+                    <div id="grade-modal-link-container" style="display: none;">
+                        <strong style="color: var(--text-muted); font-size: 13px;">الرابط المرفق:</strong> 
+                        <a id="grade-modal-link" href="#" target="_blank" style="color: #60A5FA; text-decoration: underline; font-size: 14px; font-weight: 700;">تصفح الرابط المرفق</a>
+                    </div>
+                    
+                    <div id="grade-modal-image-container" style="display: none; border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 12px; margin-top: 6px; text-align: center;">
+                        <strong style="color: var(--text-muted); font-size: 13px; display: block; text-align: right; margin-bottom: 6px;"><i class="fa-regular fa-image"></i> الصورة المرفقة بالواجب:</strong>
+                        <img id="grade-modal-image" src="" alt="صورة الواجب" style="max-width: 100%; max-height: 300px; border-radius: 10px; border: 1px solid var(--border-color); object-fit: contain;">
+                    </div>
+                </div>
+                
+                <form id="grade-assignment-form" onsubmit="handleGradeAssignment(event)">
+                    <input type="hidden" id="grade-submission-id">
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div class="form-group">
+                            <label for="grade-value" style="font-weight: 700;">الدرجة الممنوحة:</label>
+                            <select id="grade-value">
+                                <option value="10">10 / 10 (ممتاز جداً)</option>
+                                <option value="9">9 / 10 (رائع)</option>
+                                <option value="8">8 / 10 (جيد جداً)</option>
+                                <option value="7">7 / 10 (جيد)</option>
+                                <option value="6">6 / 10 (مقبول)</option>
+                                <option value="5">5 / 10 (يحتاج مراجعة)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="grade-bonus-xp" style="font-weight: 700;">نقاط XP إضافية تشجيعية:</label>
+                            <select id="grade-bonus-xp">
+                                <option value="0">بدون نقاط إضافية</option>
+                                <option value="10">+10 XP</option>
+                                <option value="20">+20 XP</option>
+                                <option value="50">+50 XP (مميز! 🌟)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="grade-feedback" style="font-weight: 700;">ملاحظات المعلم وتقييمه للحل:</label>
+                        <textarea id="grade-feedback" rows="5" placeholder="مثال: أحسنت يا بطل! حلك رائع ومنظم، استمر على هذا الأداء المميز."></textarea>
+                    </div>
+                    
+                    <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 25px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+                        <button type="button" class="btn btn-secondary" onclick="showDashboard()">إلغاء</button>
+                        <button type="submit" class="btn btn-primary" style="background: var(--success); padding: 12px 28px; font-weight: 800;">
+                            <i class="fa-solid fa-clipboard-check"></i>
+                            <span>اعتماد الدرجة والتصحيح</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- PAGE VIEW 3: ADJUST XP (Full Page) -->
+        <section id="adjust-xp-page-view" class="fade-in" style="display: none;">
+            <div class="glass-card" style="max-width: 700px; margin: 0 auto; padding: 30px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px;">
+                    <h2 style="font-size: 22px; font-weight: 800; color: var(--text-main);">
+                        <i class="fa-solid fa-sliders" style="color: var(--accent-orange); margin-left: 8px;"></i>
+                        تعديل النقاط (XP) والأوسمة
+                    </h2>
+                    <button class="btn btn-secondary" onclick="showDashboard()">
+                        <i class="fa-solid fa-arrow-right"></i> العودة
+                    </button>
+                </div>
+                
+                <form id="adjust-xp-form" onsubmit="handleAdjustXP(event)">
+                    <input type="hidden" id="adjust-xp-student-id">
+                    
+                    <div style="margin-bottom: 20px; background: rgba(255,255,255,0.02); padding: 15px; border-radius: 10px; border: 1px solid var(--border-color);">
+                        <strong style="color: var(--text-muted); font-size: 14px;">اسم الطالب:</strong> 
+                        <span id="adjust-xp-student-name" style="font-weight: 800; font-size: 17px; color: var(--text-main); margin-right: 8px;">--</span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="adjust-xp-amount" style="font-weight: 700;">تعديل النقاط (اكتب رقماً موجباً للزيادة، أو سالباً للخصم):</label>
+                        <input type="number" id="adjust-xp-amount" placeholder="مثال: 50 أو -30 (اتركه فارغاً لعدم تعديل النقاط)">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="adjust-xp-reason" style="font-weight: 700;">السبب أو النشاط المكافئ (اختياري):</label>
+                        <input type="text" id="adjust-xp-reason" placeholder="مثال: تميز ومشاركة في الحصة / بطل اختبارات قياس">
+                    </div>
+
+                    <div style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 15px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                            <label style="font-size: 14px; font-weight: 800; color: var(--text-main);">تحديد ومنح الأوسمة للطالب:</label>
+                            <button type="button" class="btn btn-secondary" style="padding: 6px 14px; font-size: 12px; border-color: var(--accent-orange); color: var(--text-orange);" onclick="showBadgeManagerView()">
+                                <i class="fa-solid fa-award"></i> إدارة ومكتبة الأوسمة 🎖️
+                            </button>
+                        </div>
+                        <div id="adjust-xp-student-badges-list" style="max-height: 200px; overflow-y: auto; display: flex; flex-wrap: wrap; gap: 10px; padding: 12px; background: rgba(0,0,0,0.15); border: 1px solid var(--border-color); border-radius: 10px;">
+                            <!-- Badge checkboxes -->
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 30px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+                        <button type="button" class="btn btn-secondary" onclick="showDashboard()">إلغاء</button>
+                        <button type="submit" class="btn btn-primary" style="padding: 12px 28px; font-weight: 800;">
+                            <i class="fa-solid fa-save"></i>
+                            <span>حفظ التعديلات والأوسمة</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- PAGE VIEW 4: CLOUD CONFIG (Full Page) -->
+        <section id="cloud-config-page-view" class="fade-in" style="display: none;">
+            <div class="glass-card" style="max-width: 750px; margin: 0 auto; padding: 30px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px;">
+                    <h2 style="font-size: 22px; font-weight: 800; color: var(--text-main);">
+                        <i class="fa-solid fa-cloud-bolt" style="color: var(--accent-orange); margin-left: 8px;"></i>
+                        إعدادات الربط السحابي (Supabase)
+                    </h2>
+                    <button class="btn btn-secondary" onclick="showDashboard()">
+                        <i class="fa-solid fa-arrow-right"></i> العودة
+                    </button>
+                </div>
+                
+                <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 20px; line-height: 1.6;">
+                    اربط منصة "مسار" بقاعدة بيانات سحابية مجانية لتمكين المزامنة اللحظية للواجبات والتسليمات والترتيب بين جميع الأجهزة.
+                </p>
+                
+                <form id="cloud-config-form" onsubmit="handleSaveCloudConfig(event)">
+                    <div class="form-group">
+                        <label for="cloud-url" style="font-weight: 700;">رابط مشروع سوبابيس (Supabase URL):</label>
+                        <input type="url" id="cloud-url" placeholder="https://your-project.supabase.co" dir="ltr" style="direction: ltr; text-align: left; font-family: monospace;">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="cloud-key" style="font-weight: 700;">مفتاح الاتصال العام (Supabase Anon Key):</label>
+                        <textarea id="cloud-key" rows="4" placeholder="أدخل مفتاح الاتصال (Anon API Key) هنا..." dir="ltr" style="direction: ltr; text-align: left; font-family: monospace; font-size: 12px; line-height: 1.4;"></textarea>
+                    </div>
+                    
+                    <div id="cloud-config-feedback" style="display: none; padding: 12px; border-radius: 8px; font-size: 14px; margin-bottom: 20px; font-weight: 700;"></div>
+                    
+                    <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 25px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+                        <button type="button" class="btn btn-secondary" onclick="clearCloudConfig()" style="background: rgba(239, 68, 68, 0.1); color: #FFA3A3; border-color: rgba(239, 68, 68, 0.2);">
+                            <i class="fa-solid fa-unlink"></i> قطع الاتصال (الوضع المحلي)
+                        </button>
+                        <button type="submit" class="btn btn-primary" style="padding: 12px 28px; font-weight: 800;">
+                            <i class="fa-solid fa-plug"></i> حفظ واختبار الاتصال
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- PAGE VIEW 5: TEACHER COURSE MANAGE (Full Page) -->
+        <section id="teacher-course-manage-page-view" class="fade-in" style="display: none;">
+            <div class="glass-card" style="max-width: 1000px; margin: 0 auto; padding: 30px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; flex-wrap: wrap; gap: 12px;">
+                    <h2 style="font-size: 22px; font-weight: 800; color: var(--text-main);" id="t-course-manage-modal-title">
+                        <i class="fa-solid fa-layer-group" style="color: var(--accent-orange); margin-left: 8px;"></i>
+                        إدارة محتويات المقرر والدروس
+                    </h2>
+                    <button class="btn btn-secondary" onclick="showDashboard()">
+                        <i class="fa-solid fa-arrow-right"></i> العودة لمقررات المعلم
+                    </button>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 25px; margin-bottom: 20px;">
+                    <!-- Lessons Column -->
+                    <div style="display: flex; flex-direction: column; gap: 15px; background: rgba(0,0,0,0.15); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color);">
+                        <h4 style="font-size: 16px; color: var(--text-orange); margin-bottom: 10px; border-bottom: 1px dashed var(--border-color); padding-bottom: 8px; font-weight: 800;">
+                            <i class="fa-solid fa-play"></i> دروس الشرح والفيديو الحالية
+                        </h4>
+                        <div class="list-container" id="t-course-lessons-list" style="gap: 12px;">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Quizzes Column -->
+                    <div style="display: flex; flex-direction: column; gap: 15px; background: rgba(0,0,0,0.15); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color);">
+                        <h4 style="font-size: 16px; color: var(--success); margin-bottom: 10px; border-bottom: 1px dashed var(--border-color); padding-bottom: 8px; font-weight: 800;">
+                            <i class="fa-solid fa-clipboard-question"></i> الاختبارات القصيرة الحالية
+                        </h4>
+                        <div class="list-container" id="t-course-quizzes-list" style="gap: 12px;">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 25px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+                    <button type="button" class="btn btn-secondary" onclick="showDashboard()">العودة للوحة التحكم</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE VIEW 6: STUDENT COURSE VIEWER (Full Page) -->
+        <section id="student-course-page-view" class="fade-in" style="display: none;">
+            <div class="glass-card" style="max-width: 1100px; margin: 0 auto; padding: 25px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; flex-wrap: wrap; gap: 12px;">
+                    <h2 style="font-size: 20px; font-weight: 800; color: var(--text-main);" id="s-course-modal-title">
+                        <i class="fa-solid fa-graduation-cap" style="color: var(--accent-orange); margin-left: 8px;"></i>
+                        تفاصيل وتصفح الدورة
+                    </h2>
+                    <button class="btn btn-secondary" onclick="showDashboard()">
+                        <i class="fa-solid fa-arrow-right"></i> العودة للدورات
+                    </button>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 25px; margin-bottom: 15px;">
+                    <!-- Video Player Container -->
+                    <div style="display: flex; flex-direction: column; justify-content: center; min-height: 380px; background: rgba(0,0,0,0.5); border-radius: 14px; border: 1px solid var(--border-color); position: relative; overflow: hidden; padding: 10px;">
+                        
+                        <div id="s-course-media-placeholder" class="empty-state" style="padding: 30px;">
+                            <i class="fa-solid fa-circle-play" style="font-size: 60px; color: var(--accent-orange); margin-bottom: 15px;"></i>
+                            <p style="font-size: 16px; font-weight: 800;">اختر درساً من القائمة لبدء الشرح</p>
+                            <p style="font-size: 13.5px; color: var(--text-muted); margin-top: 6px;">أو ابدأ بحل الاختبارات لقياس مستوى فهمك!</p>
+                        </div>
+
+                        <!-- Native Video Player -->
+                        <video id="s-course-video-player" controls style="display: none; width: 100%; height: 100%; max-height: 480px; border-radius: 8px; object-fit: contain;"></video>
+                        
+                        <!-- Iframe Video Player -->
+                        <iframe id="s-course-iframe-player" style="display: none; width: 100%; height: 420px; border: none; border-radius: 8px;" allowfullscreen></iframe>
+                    </div>
+
+                    <!-- Syllabus List -->
+                    <div style="display: flex; flex-direction: column; gap: 20px; max-height: 520px; overflow-y: auto; background: rgba(0,0,0,0.15); padding: 18px; border-radius: 14px; border: 1px solid var(--border-color);">
+                        <div>
+                            <h4 style="font-size: 15px; color: var(--text-orange); margin-bottom: 10px; border-bottom: 1px dashed var(--border-color); padding-bottom: 6px; font-weight: 800;">
+                                <i class="fa-solid fa-play"></i> دروس الشرح والفيديو:
+                            </h4>
+                            <div class="list-container" id="s-course-lessons-list" style="gap: 10px;">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 10px;">
+                            <h4 style="font-size: 15px; color: var(--success); margin-bottom: 10px; border-bottom: 1px dashed var(--border-color); padding-bottom: 6px; font-weight: 800;">
+                                <i class="fa-solid fa-clipboard-question"></i> الاختبارات التفاعلية:
+                            </h4>
+                            <div class="list-container" id="s-course-quizzes-list" style="gap: 10px;">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE VIEW 7: STUDENT INTERACTIVE QUIZ PLAYER (Full Page) -->
+        <section id="student-quiz-page-view" class="fade-in" style="display: none;">
+            <div class="glass-card" style="max-width: 750px; margin: 0 auto; padding: 30px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; flex-wrap: wrap; gap: 12px;">
+                    <h2 style="font-size: 22px; font-weight: 800; color: var(--text-main);" id="student-quiz-title">
+                        <i class="fa-solid fa-clipboard-question" style="color: var(--success); margin-left: 8px;"></i>
+                        حل الاختبار
+                    </h2>
+                    <button class="btn btn-secondary" onclick="showDashboard()">
+                        <i class="fa-solid fa-arrow-right"></i> العودة
+                    </button>
+                </div>
+                <div id="quiz-player-body">
+                    <!-- Dynamic Quiz Content -->
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE VIEW 8: EXAM SIMULATOR PLAYER (Full Page) -->
+        <section id="student-simulator-page-view" class="fade-in" style="display: none;">
+            <div class="glass-card" style="max-width: 900px; margin: 0 auto; padding: 30px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; flex-wrap: wrap; gap: 12px;">
+                    <div>
+                        <h2 style="font-size: 22px; font-weight: 800; color: var(--text-main);" id="simulator-player-title">محاكي اختبارات قياس</h2>
+                        <div id="simulator-player-section-title" style="font-size: 14px; color: var(--text-orange); margin-top: 6px; font-weight: 800;">القسم الحالي: --</div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px; background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.25); padding: 8px 16px; border-radius: 10px; color: var(--danger); font-weight: 800; font-size: 16px;">
+                        <i class="fa-regular fa-clock" id="simulator-timer-icon"></i>
+                        <span id="simulator-timer-display" style="font-family: monospace; letter-spacing: 0.5px;">00:00</span>
+                    </div>
+                </div>
+                
+                <div id="simulator-player-body" style="padding: 15px 0; min-height: 300px;">
+                    <!-- Section Questions will render here -->
+                </div>
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 20px; margin-top: 20px; flex-wrap: wrap; gap: 12px;">
+                    <div style="font-size: 13.5px; color: var(--text-muted); font-weight: 700;" id="simulator-progress-text">القسم 1 من 1</div>
+                    <button type="button" class="btn btn-primary" id="simulator-submit-section-btn" onclick="submitSimulatorSection(false)" style="padding: 12px 28px; font-size: 14px; font-weight: 800;">
+                        <span id="simulator-btn-text">تسليم القسم والانتقال للقسم التالي</span>
+                        <i class="fa-solid fa-arrow-left"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE VIEW 9: STUDENT REGISTER (Full Page) -->
+        <section id="student-register-page-view" class="fade-in" style="display: none;">
+            <div class="glass-card" style="max-width: 520px; margin: 0 auto; padding: 30px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px;">
+                    <h2 style="font-size: 20px; font-weight: 800; color: var(--text-main);">
+                        <i class="fa-solid fa-user-plus" style="color: var(--accent-orange); margin-left: 8px;"></i>
+                        إنشاء حساب طالب جديد
+                    </h2>
+                    <button class="btn btn-secondary" onclick="showLandingPage()">
+                        <i class="fa-solid fa-arrow-right"></i> الرئيسية
+                    </button>
+                </div>
+                
+                <form id="student-register-form" onsubmit="handleStudentRegister(event)">
+                    <div class="form-group">
+                        <label for="reg-name" style="font-weight: 700;">الاسم الكامل للطالب:</label>
+                        <input type="text" id="reg-name" required placeholder="مثال: يوسف الحربي">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="reg-username" style="font-weight: 700;">اسم المستخدم (بالإنجليزي للدخول):</label>
+                        <input type="text" id="reg-username" required placeholder="مثال: yousef" dir="ltr" style="direction: ltr; text-align: left;">
+                        <span style="font-size: 12px; color: var(--text-muted); display: block; margin-top: 4px;">ستستخدم هذا الاسم لتسجيل الدخول لاحقاً.</span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="reg-pwd" style="font-weight: 700;">كلمة المرور:</label>
+                        <input type="password" id="reg-pwd" required placeholder="اكتب كلمة مرور قوية">
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 20px; padding: 12px; font-weight: 800;">
+                        <i class="fa-solid fa-user-check"></i>
+                        <span>إنشاء الحساب ودخول المنصة</span>
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <!-- PAGE VIEW 10: STUDENT ENROLLMENT (Full Page) -->
+        <section id="student-enrollment-page-view" class="fade-in" style="display: none;">
+            <div class="glass-card" style="max-width: 600px; margin: 0 auto; padding: 30px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px;">
+                    <h2 style="font-size: 20px; font-weight: 800; color: var(--text-main);">
+                        <i class="fa-solid fa-graduation-cap" style="color: var(--accent-orange); margin-left: 8px;"></i>
+                        إدارة اشتراكات الطالب في الدورات
+                    </h2>
+                    <button class="btn btn-secondary" onclick="showDashboard()">
+                        <i class="fa-solid fa-arrow-right"></i> العودة
+                    </button>
+                </div>
+                
+                <form id="student-enrollment-form" onsubmit="handleSaveEnrollment(event)">
+                    <input type="hidden" id="enrollment-student-id">
+                    
+                    <div style="margin-bottom: 20px; background: rgba(255,255,255,0.02); padding: 15px; border-radius: 10px; border: 1px solid var(--border-color);">
+                        <strong>الطالب:</strong> <span id="enrollment-student-name" style="font-weight: 800; color: var(--text-main); font-size: 16px;">--</span>
+                    </div>
+                    
+                    <h4 style="font-size: 14.5px; color: var(--text-muted); margin-bottom: 12px; font-weight: 700;">اختر المقررات المدفوعة التي اشترك فيها الطالب:</h4>
+                    
+                    <div class="list-container" id="enrollment-courses-list" style="gap: 12px; max-height: 320px; overflow-y: auto; padding: 8px;">
+                        <!-- Populated dynamically by JS -->
+                    </div>
+                    
+                    <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 30px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+                        <button type="button" class="btn btn-secondary" onclick="showDashboard()">إلغاء</button>
+                        <button type="submit" class="btn btn-primary" style="padding: 12px 28px; font-weight: 800;">
+                            <i class="fa-solid fa-save"></i>
+                            <span>حفظ الاشتراكات</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- PAGE VIEW 11: UNPAID COURSE ALERT (Full Page) -->
+        <section id="unpaid-course-page-view" class="fade-in" style="display: none;">
+            <div class="glass-card" style="max-width: 550px; margin: 0 auto; text-align: center; padding: 40px 25px;">
+                <div style="font-size: 65px; color: var(--accent-orange); margin-bottom: 18px;">🔒</div>
+                <h3 id="unpaid-modal-title" style="font-size: 22px; font-weight: 900; color: var(--text-main); margin-bottom: 12px;">عذراً! هذا المقرر مقفل</h3>
+                <p id="unpaid-modal-desc" style="font-size: 15px; color: var(--text-muted); line-height: 1.7; margin-bottom: 30px;">
+                    هذه الدورة مدفوعة ومخصصة للطلاب المشتركين فقط. لتفعيل اشتراكك والوصول لشروحات الفيديو والاختبارات التفاعلية، يرجى التواصل مع المعلم الخصوصي عبر الواتساب على الرقم **0501976467** أو بالضغط مباشرة على الزر الأخضر أدناه.
+                </p>
+                
+                <a id="unpaid-modal-whatsapp-link" href="https://wa.me/966501976467?text=مرحباً%20أستاذ%20أرغب%20في%20الاشتراك%20وتفعيل%20دورة%20مسار%20التعليمية" 
+                   target="_blank" 
+                   class="btn" 
+                   style="background-color: #25D366; color: white; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 18px; font-weight: 800; font-size: 16px; text-decoration: none; border: none; padding: 14px 24px; border-radius: 10px; transition: 0.2s;">
+                    <i class="fa-brands fa-whatsapp" style="font-size: 22px;"></i>
+                    <span>تواصل عبر الواتساب للتفعيل المباشر</span>
+                </a>
+                
+                <button class="btn btn-secondary" onclick="showDashboard()" style="width: 100%; border-color: rgba(255,255,255,0.1); color: var(--text-muted);">العودة للوحة التحكم</button>
+            </div>
+        </section>
+
+        <!-- PAGE VIEW 12: STUDENT DASHBOARD (Full Page) -->
+        <section id="student-dashboard-page-view" class="fade-in" style="display: none;">
+            <div class="glass-card" style="max-width: 850px; margin: 0 auto; padding: 30px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; flex-wrap: wrap; gap: 12px;">
+                    <h2 style="font-size: 22px; font-weight: 800; color: var(--text-main);">
+                        <i class="fa-solid fa-chart-line" style="color: var(--accent-orange); margin-left: 8px;"></i>
+                        لوحة تحكم الطالب والتقدم الدراسي
+                    </h2>
+                    <button class="btn btn-secondary" onclick="showDashboard()">
+                        <i class="fa-solid fa-arrow-right"></i> العودة
+                    </button>
+                </div>
+                
+                <!-- Student Header Profile Summary -->
+                <div style="background: rgba(0, 0, 0, 0.25); border: 1px solid var(--border-color); border-radius: 14px; padding: 20px; margin-bottom: 25px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 18px;">
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <div id="s-modal-profile-avatar" class="student-avatar" style="width: 55px; height: 55px; font-size: 22px;">ط</div>
+                        <div>
+                            <h4 id="s-modal-profile-name" style="font-size: 18px; font-weight: 800; color: var(--text-main);">طالب مسار</h4>
+                            <span id="s-modal-profile-level" style="font-size: 13px; color: var(--text-orange); font-weight: 800;">مستوى 1</span>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; gap: 15px;">
+                        <div style="text-align: center; background: rgba(255,255,255,0.03); padding: 10px 18px; border-radius: 10px; border: 1px solid var(--border-color);">
+                            <span style="font-size: 12px; color: var(--text-muted); display: block;">الترتيب</span>
+                            <strong id="s-modal-stat-rank" style="font-size: 16px; color: gold;">--</strong>
+                        </div>
+                        <div style="text-align: center; background: rgba(255,255,255,0.03); padding: 10px 18px; border-radius: 10px; border: 1px solid var(--border-color);">
+                            <span style="font-size: 12px; color: var(--text-muted); display: block;">نقاط الخبرة</span>
+                            <strong id="s-modal-stat-xp" style="font-size: 16px; color: var(--purple-xp);">0 XP</strong>
+                        </div>
+                        <div style="text-align: center; background: rgba(255,255,255,0.03); padding: 10px 18px; border-radius: 10px; border: 1px solid var(--border-color);">
+                            <span style="font-size: 12px; color: var(--text-muted); display: block;">واجبات منجزة</span>
+                            <strong id="s-modal-stat-completed" style="font-size: 16px; color: var(--success);">0</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Badges Bar -->
+                <div style="margin-bottom: 25px;">
+                    <span style="font-size: 13.5px; color: var(--text-muted); display: block; margin-bottom: 8px; font-weight: 800;">الأوسمة والإنجازات المكتسبة:</span>
+                    <div class="badges-container" id="s-modal-profile-badges">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+
+                <!-- Enrolled Courses & Progress Section -->
+                <div style="margin-bottom: 25px;">
+                    <h4 style="font-size: 16px; font-weight: 800; color: var(--text-main); margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
+                        <i class="fa-solid fa-graduation-cap" style="color: var(--warning);"></i>
+                        الدورات المشترك فيها ونسبة التقدم
+                    </h4>
+                    <div id="s-modal-enrolled-courses-list" style="max-height: 380px; overflow-y: auto; padding-left: 5px;">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 12px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+                    <button type="button" class="btn btn-secondary" onclick="showDashboard()">إغلاق</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE VIEW 13: EDIT TEACHER NAME (Full Page) -->
+        <section id="edit-teacher-name-page-view" class="fade-in" style="display: none;">
+            <div class="glass-card" style="max-width: 520px; margin: 0 auto; padding: 30px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px;">
+                    <h2 style="font-size: 20px; font-weight: 800; color: var(--text-main);">
+                        <i class="fa-solid fa-user-pen" style="color: var(--accent-orange); margin-left: 8px;"></i>
+                        تعديل اسم المعلم / المشرف
+                    </h2>
+                    <button class="btn btn-secondary" onclick="showDashboard()">
+                        <i class="fa-solid fa-arrow-right"></i> العودة
+                    </button>
+                </div>
+                <form id="edit-teacher-name-form" onsubmit="handleSaveTeacherName(event)">
+                    <input type="hidden" id="edit-teacher-id">
+                    <div class="form-group" style="margin-top: 15px;">
+                        <label for="edit-teacher-name-input" style="font-weight: 700;">الاسم الكامل المعدل:</label>
+                        <input type="text" id="edit-teacher-name-input" required placeholder="أدخل الاسم المعدل هنا">
+                    </div>
+                    <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 30px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+                        <button type="button" class="btn btn-secondary" onclick="showDashboard()">إلغاء</button>
+                        <button type="submit" class="btn btn-primary" style="padding: 12px 28px; font-weight: 800;">
+                            <i class="fa-solid fa-save"></i>
+                            <span>حفظ التعديل</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- PAGE VIEW 14: BADGE MANAGER (Full Page) -->
+        <section id="badge-manager-page-view" class="fade-in" style="display: none;">
+            <div class="glass-card" style="max-width: 750px; margin: 0 auto; padding: 30px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px;">
+                    <h2 style="font-size: 22px; font-weight: 800; color: var(--text-main);">
+                        <i class="fa-solid fa-award" style="color: var(--accent-orange); margin-left: 8px;"></i>
+                        إدارة ومكتبة الأوسمة التقديرية
+                    </h2>
+                    <button class="btn btn-secondary" onclick="showDashboard()">
+                        <i class="fa-solid fa-arrow-right"></i> العودة
+                    </button>
+                </div>
+
+                <!-- Create / Edit Badge Form -->
+                <form id="create-badge-form" onsubmit="handleSaveCustomBadge(event)" style="background: rgba(0,0,0,0.15); border: 1px solid var(--border-color); padding: 20px; border-radius: 14px; margin-bottom: 25px;">
+                    <input type="hidden" id="custom-badge-edit-key">
+                    <h4 style="font-size: 16px; font-weight: 800; color: var(--text-main); margin-bottom: 15px;" id="badge-form-title">إضافة وسام تقديري جديد</h4>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div class="form-group">
+                            <label for="badge-new-name" style="font-weight: 700;">اسم الوسام:</label>
+                            <input type="text" id="badge-new-name" required placeholder="مثال: بطل التجميعات">
+                        </div>
+                        <div class="form-group">
+                            <label for="badge-new-desc" style="font-weight: 700;">الوصف التشجيعي:</label>
+                            <input type="text" id="badge-new-desc" required placeholder="مثال: اجتاز اختبارات المحاكاة بتميز">
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-top: 12px;">
+                        <label style="display: block; margin-bottom: 8px; font-size: 13px; color: var(--text-muted); font-weight: 700;">اختر أيقونة الوسام من المكتبة الشاملة (انقر على الأيقونة):</label>
+                        <input type="hidden" id="badge-new-icon" value="fa-trophy">
+                        <div id="badge-icon-picker-grid" style="display: grid; grid-template-columns: repeat(8, 1fr); gap: 10px; max-height: 180px; overflow-y: auto; padding: 12px; background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 10px;">
+                            <!-- Icon options rendered by JS -->
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 20px;">
+                        <button type="button" class="btn btn-secondary" onclick="resetBadgeForm()" style="padding: 8px 18px; font-size: 13px;">إلغاء / وسام جديد</button>
+                        <button type="submit" class="btn btn-primary" style="padding: 8px 22px; font-size: 13px; font-weight: 800;" id="badge-save-btn">حفظ الوسام</button>
+                    </div>
+                </form>
+
+                <!-- Current Badges List -->
+                <h4 style="font-size: 15px; color: var(--text-muted); margin-bottom: 12px; font-weight: 800;">الأوسمة المتاحة حالياً:</h4>
+                <div class="list-container" id="custom-badges-manage-list" style="gap: 12px;">
+                    <!-- Rendered by JS -->
+                </div>
+            </div>
+        </section>
+
     </main>
 
     <!-- FOOTER -->
@@ -1037,445 +1658,7 @@
         منصة <span>مَسار (Masar)</span> للتعليم الذكي واختبارات قياس © 2026 - تم تصميمها بكل شغف لمساعدة المعلم الخصوصي وطلابه في التأسيس والتجميعات.
     </footer>
 
-    <!-- MODAL 1: SUBMIT ASSIGNMENT (Student) -->
-    <div id="submit-modal" class="modal-overlay">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title" id="submit-modal-title">تسليم الواجب</h3>
-                <button class="modal-close" onclick="closeModal('submit-modal')">&times;</button>
-            </div>
-            
-            <div style="margin-bottom: 15px; background: rgba(255,255,255,0.02); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
-                <h4 style="font-size: 14px; margin-bottom: 5px; color: var(--text-orange);"><i class="fa-solid fa-circle-question"></i> السؤال المطلوب:</h4>
-                <p id="submit-modal-question" style="font-size: 14px; white-space: pre-line; line-height: 1.6;"></p>
-            </div>
-            
-            <div id="submit-modal-image-container" style="display: none; margin-bottom: 15px; text-align: center; background: rgba(255,255,255,0.02); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
-                <h4 style="font-size: 14px; margin-bottom: 8px; color: var(--text-orange); text-align: right;"><i class="fa-regular fa-image"></i> الصورة المرفقة مع السؤال:</h4>
-                <img id="submit-modal-image" src="" alt="صورة الواجب" style="max-width: 100%; max-height: 250px; border-radius: 8px; border: 1px solid var(--border-color); object-fit: contain;">
-            </div>
-            
-            <form id="submit-assignment-form" onsubmit="handleSubmitAssignment(event)">
-                <input type="hidden" id="submit-assignment-id">
-                
-                <!-- MCQ option buttons container -->
-                <div id="submit-mcq-container" style="display: none; margin-bottom: 20px; border-bottom: 1px dashed var(--border-color); padding-bottom: 15px;">
-                    <label style="font-weight: 700; color: var(--text-orange); display: block; margin-bottom: 8px;"><i class="fa-solid fa-list-check"></i> اختر الإجابة الصحيحة:</label>
-                    <div class="quiz-options-list" id="submit-mcq-options-list" style="grid-template-columns: 1fr 1fr; gap: 8px;">
-                        <!-- Populated dynamically -->
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label id="submit-answer-label" for="submit-answer">إجابتك (تدعم الرموز بين علامة $):</label>
-                    <textarea id="submit-answer" rows="6" required placeholder="مثال: قيمة $س = ٥$"></textarea>
-                </div>
-                
-                <div class="form-group">
-                    <label for="submit-link"><i class="fa-solid fa-link"></i> رابط إضافي (اختياري - مثلاً مستند Google Drive أو صورة لحلّك):</label>
-                    <input type="url" id="submit-link" placeholder="https://example.com/your-work">
-                </div>
-                
-                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
-                    <button type="button" class="btn btn-secondary" onclick="closeModal('submit-modal')">إلغاء</button>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fa-solid fa-check"></i>
-                        <span>إرسال الواجب للمعلم</span>
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- MODAL 2: GRADE SUBMISSION (Teacher) -->
-    <div id="grade-modal" class="modal-overlay">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">تصحيح واجب الطالب</h3>
-                <button class="modal-close" onclick="closeModal('grade-modal')">&times;</button>
-            </div>
-            
-            <div style="margin-bottom: 15px; background: rgba(255,255,255,0.02); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 8px;">
-                <div>
-                    <strong style="color: var(--text-muted); font-size: 12px;">الطالب:</strong> 
-                    <span id="grade-modal-student" style="font-weight: 700;">--</span>
-                </div>
-                <div>
-                    <strong style="color: var(--text-muted); font-size: 12px;">الواجب:</strong> 
-                    <span id="grade-modal-assignment-title" style="font-weight: 700;">--</span>
-                </div>
-                
-                <!-- MCQ Student and Correct Option info -->
-                <div id="grade-modal-mcq-info" style="display: none; background: rgba(0,0,0,0.15); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); margin-top: 4px; display: flex; flex-direction: column; gap: 6px;">
-                    <div>
-                        <strong style="color: var(--text-muted); font-size: 12px;">اختيار الطالب:</strong> 
-                        <span id="grade-modal-student-option" style="font-weight: 700;">--</span> 
-                        <span id="grade-modal-mcq-badge" style="font-size: 11px; padding: 2px 6px; border-radius: 4px; margin-right: 6px; font-weight: bold;"></span>
-                    </div>
-                    <div>
-                        <strong style="color: var(--text-muted); font-size: 12px;">الخيار الصحيح المعين:</strong> 
-                        <span id="grade-modal-correct-option" style="font-weight: 700; color: var(--success);">--</span>
-                    </div>
-                </div>
-
-                <div style="border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 8px; margin-top: 4px;">
-                    <strong id="grade-modal-answer-label" style="color: var(--text-orange); font-size: 13px; display: block; margin-bottom: 4px;"><i class="fa-solid fa-comment-dots"></i> إجابة الطالب:</strong>
-                    <p id="grade-modal-answer" style="white-space: pre-line; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 6px; font-size: 14px; border-right: 3px solid var(--accent-orange);"></p>
-                </div>
-                <div id="grade-modal-link-container" style="display: none;">
-                    <strong style="color: var(--text-muted); font-size: 12px;">الرابط المرفق:</strong> 
-                    <a id="grade-modal-link" href="#" target="_blank" style="color: #60A5FA; text-decoration: underline; font-size: 13px;">تصفح الرابط المرفق</a>
-                </div>
-                
-                <div id="grade-modal-image-container" style="display: none; border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 8px; margin-top: 4px; text-align: center;">
-                    <strong style="color: var(--text-muted); font-size: 12px; display: block; text-align: right; margin-bottom: 4px;"><i class="fa-regular fa-image"></i> الصورة المرفقة بالواجب:</strong>
-                    <img id="grade-modal-image" src="" alt="صورة الواجب" style="max-width: 100%; max-height: 200px; border-radius: 8px; border: 1px solid var(--border-color); object-fit: contain;">
-                </div>
-            </div>
-            
-            <form id="grade-assignment-form" onsubmit="handleGradeAssignment(event)">
-                <input type="hidden" id="grade-submission-id">
-                
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                    <div class="form-group">
-                        <label for="grade-value">الدرجة الممنوحة:</label>
-                        <select id="grade-value">
-                            <option value="10">10 / 10 (ممتاز جداً)</option>
-                            <option value="9">9 / 10 (رائع)</option>
-                            <option value="8">8 / 10 (جيد جداً)</option>
-                            <option value="7">7 / 10 (جيد)</option>
-                            <option value="6">6 / 10 (مقبول)</option>
-                            <option value="5">5 / 10 (يحتاج مراجعة)</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="grade-bonus-xp">نقاط XP إضافية تشجيعية:</label>
-                        <select id="grade-bonus-xp">
-                            <option value="0">بدون نقاط إضافية</option>
-                            <option value="10">+10 XP</option>
-                            <option value="20">+20 XP</option>
-                            <option value="50">+50 XP (مميز! 🌟)</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="grade-feedback">ملاحظات المعلم وتقييمه للحل:</label>
-                    <textarea id="grade-feedback" rows="4" placeholder="مثال: أحسنت يا بطل! حلك رائع ومنظم، استمر على هذا الأداء المميز."></textarea>
-                </div>
-                
-                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
-                    <button type="button" class="btn btn-secondary" onclick="closeModal('grade-modal')">إلغاء</button>
-                    <button type="submit" class="btn btn-primary" style="background: var(--success);">
-                        <i class="fa-solid fa-clipboard-check"></i>
-                        <span>اعتماد الدرجة والتصحيح</span>
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- MODAL 3: ADJUST XP (Teacher) -->
-    <div id="adjust-xp-modal" class="modal-overlay">
-        <div class="modal-content" style="max-width: 520px;">
-            <div class="modal-header">
-                <h3 class="modal-title"><i class="fa-solid fa-sliders" style="color: var(--accent-orange); margin-left: 6px;"></i> تعديل النقاط (XP) وتحديد الأوسمة للطالب</h3>
-                <button class="modal-close" onclick="closeModal('adjust-xp-modal')">&times;</button>
-            </div>
-            
-            <form id="adjust-xp-form" onsubmit="handleAdjustXP(event)">
-                <input type="hidden" id="adjust-xp-student-id">
-                
-                <div style="margin-bottom: 15px; background: rgba(255,255,255,0.02); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
-                    <strong style="color: var(--text-muted); font-size: 13px;">اسم الطالب:</strong> 
-                    <span id="adjust-xp-student-name" style="font-weight: 800; font-size: 15px; color: var(--text-main); margin-right: 6px;">--</span>
-                </div>
-                
-                <div class="form-group">
-                    <label for="adjust-xp-amount">تعديل النقاط (اكتب رقماً موجباً للزيادة، أو سالباً للخصم):</label>
-                    <input type="number" id="adjust-xp-amount" placeholder="مثال: 50 أو -30 (اتركه فارغاً لعدم تعديل النقاط)">
-                </div>
-                
-                <div class="form-group">
-                    <label for="adjust-xp-reason">السبب أو النشاط المكافئ (اختياري):</label>
-                    <input type="text" id="adjust-xp-reason" placeholder="مثال: تميز ومشاركة في الحصة / بطل اختبارات قياس">
-                </div>
-
-                <div style="margin-top: 15px; border-top: 1px solid var(--border-color); padding-top: 12px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                        <label style="font-size: 12.5px; font-weight: 700; color: var(--text-main);">تحديد ومنح الأوسمة للطالب:</label>
-                        <button type="button" class="btn btn-secondary" style="padding: 4px 10px; font-size: 11px; border-color: var(--accent-orange); color: var(--text-orange);" onclick="openBadgeManagerModal()">
-                            <i class="fa-solid fa-award"></i> إدارة ومكتبة الأوسمة 🎖️
-                        </button>
-                    </div>
-                    <div id="adjust-xp-student-badges-list" style="max-height: 140px; overflow-y: auto; display: flex; flex-wrap: wrap; gap: 8px; padding: 8px; background: rgba(0,0,0,0.15); border: 1px solid var(--border-color); border-radius: 8px;">
-                        <!-- Badge checkboxes -->
-                    </div>
-                </div>
-                
-                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 25px; border-top: 1px solid var(--border-color); padding-top: 15px;">
-                    <button type="button" class="btn btn-secondary" onclick="closeModal('adjust-xp-modal')">إلغاء</button>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fa-solid fa-save"></i>
-                        <span>حفظ التعديلات والأوسمة</span>
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- MODAL 4: CLOUD CONFIG (Supabase Connection Settings) -->
-    <div id="cloud-config-modal" class="modal-overlay">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title"><i class="fa-solid fa-cloud-bolt" style="color: var(--accent-orange); margin-left: 6px;"></i> إعدادات الربط السحابي (Supabase)</h3>
-                <button class="modal-close" onclick="closeModal('cloud-config-modal')">&times;</button>
-            </div>
-            
-            <p style="font-size: 13.5px; color: var(--text-muted); margin-bottom: 15px; line-height: 1.5;">
-                اربط منصة "مسار" بقاعدة بيانات سحابية مجانية لتمكين المزامنة اللحظية للواجبات والتسليمات والترتيب بين جميع الأجهزة.
-            </p>
-            
-            <form id="cloud-config-form" onsubmit="handleSaveCloudConfig(event)">
-                <div class="form-group">
-                    <label for="cloud-url">رابط مشروع سوبابيس (Supabase URL):</label>
-                    <input type="url" id="cloud-url" placeholder="https://your-project.supabase.co" dir="ltr" style="direction: ltr; text-align: left; font-family: monospace;">
-                </div>
-                
-                <div class="form-group">
-                    <label for="cloud-key">مفتاح الاتصال العام (Supabase Anon Key):</label>
-                    <textarea id="cloud-key" rows="4" placeholder="أدخل مفتاح الاتصال (Anon API Key) هنا..." dir="ltr" style="direction: ltr; text-align: left; font-family: monospace; font-size: 11.5px; line-height: 1.4;"></textarea>
-                </div>
-                
-                <div id="cloud-config-feedback" style="display: none; padding: 10px; border-radius: 8px; font-size: 13px; margin-bottom: 15px; font-weight: 600;"></div>
-                
-                <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
-                    <button type="button" class="btn btn-secondary" onclick="clearCloudConfig()" style="background: rgba(239, 68, 68, 0.1); color: #FFA3A3; border-color: rgba(239, 68, 68, 0.2);">
-                        <i class="fa-solid fa-unlink"></i> قطع الاتصال (الوضع المحلي)
-                    </button>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fa-solid fa-plug"></i> حفظ واختبار الاتصال
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-
-
-    <!-- MODAL 7.5: TEACHER COURSE CONTENT MANAGER (Teacher) [NEW] -->
-    <div id="teacher-course-manage-modal" class="modal-overlay">
-        <div class="modal-content" style="max-width: 900px; padding: 25px; height: 80vh; display: flex; flex-direction: column;">
-            <div class="modal-header" style="margin-bottom: 12px; flex-shrink: 0;">
-                <h3 class="modal-title" id="t-course-manage-modal-title">إدارة محتويات المقرر</h3>
-                <button class="modal-close" onclick="closeModal('teacher-course-manage-modal')">&times;</button>
-            </div>
-            
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; flex-grow: 1; overflow: hidden; min-height: 0;">
-                <!-- Right Column: Lessons List -->
-                <div style="display: flex; flex-direction: column; gap: 15px; overflow-y: auto; height: 100%; padding-left: 10px;">
-                    <h4 style="font-size: 15px; color: var(--text-orange); margin-bottom: 8px; border-bottom: 1px dashed var(--border-color); padding-bottom: 6px; display: flex; justify-content: space-between; align-items: center;">
-                        <span><i class="fa-solid fa-play"></i> دروس الشرح والفيديو الحالية</span>
-                    </h4>
-                    <div class="list-container" id="t-course-lessons-list" style="gap: 10px;">
-                        <!-- Populated dynamically -->
-                    </div>
-                </div>
-
-                <!-- Left Column: Quizzes List -->
-                <div style="display: flex; flex-direction: column; gap: 15px; overflow-y: auto; height: 100%; padding-left: 10px; border-right: 1px solid var(--border-color); padding-right: 20px;">
-                    <h4 style="font-size: 15px; color: var(--success); margin-bottom: 8px; border-bottom: 1px dashed var(--border-color); padding-bottom: 6px; display: flex; justify-content: space-between; align-items: center;">
-                        <span><i class="fa-solid fa-clipboard-question"></i> الاختبارات القصيرة الحالية</span>
-                    </h4>
-                    <div class="list-container" id="t-course-quizzes-list" style="gap: 10px;">
-                        <!-- Populated dynamically -->
-                    </div>
-                </div>
-            </div>
-            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 15px; flex-shrink: 0;">
-                <button type="button" class="btn btn-secondary" onclick="closeModal('teacher-course-manage-modal')">إغلاق النافذة</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL 8: STUDENT COURSE VIEWER (Student) -->
-    <div id="student-course-modal" class="modal-overlay">
-        <div class="modal-content" style="max-width: 960px; padding: 20px; height: 85vh; display: flex; flex-direction: column;">
-            <div class="modal-header" style="margin-bottom: 12px; flex-shrink: 0;">
-                <h3 class="modal-title" id="s-course-modal-title">تفاصيل الدورة</h3>
-                <button class="modal-close" onclick="closeModal('student-course-modal')">&times;</button>
-            </div>
-            
-            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px; flex-grow: 1; overflow: hidden; min-height: 0;">
-                <!-- Right Side: Video Player -->
-                <div style="display: flex; flex-direction: column; justify-content: center; background: rgba(0,0,0,0.4); border-radius: 12px; border: 1px solid var(--border-color); position: relative; overflow: hidden; height: 100%;">
-                    
-                    <div id="s-course-media-placeholder" class="empty-state" style="padding: 20px;">
-                        <i class="fa-solid fa-circle-play" style="font-size: 55px; color: var(--accent-orange); margin-bottom: 15px;"></i>
-                        <p style="font-size: 15px; font-weight: 700;">اختر درساً من القائمة اليسرى لبدء الشرح</p>
-                        <p style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">أو ابدأ بحل الاختبارات لقياس مستوى فهمك!</p>
-                    </div>
-
-                    <!-- Native Video Player -->
-                    <video id="s-course-video-player" controls style="display: none; width: 100%; height: 100%; object-fit: contain;"></video>
-                    
-                    <!-- Iframe Video Player -->
-                    <iframe id="s-course-iframe-player" style="display: none; width: 100%; height: 100%; border: none;" allowfullscreen></iframe>
-                </div>
-
-                <!-- Left Side: Syllabus -->
-                <div style="display: flex; flex-direction: column; gap: 15px; overflow-y: auto; height: 100%; border-right: 1px solid var(--border-color); padding-right: 15px;">
-                    <div>
-                        <h4 style="font-size: 14px; color: var(--text-orange); margin-bottom: 8px; border-bottom: 1px dashed var(--border-color); padding-bottom: 4px;">
-                            <i class="fa-solid fa-play"></i> دروس الشرح والفيديو:
-                        </h4>
-                        <div class="list-container" id="s-course-lessons-list" style="gap: 8px;">
-                            <!-- Populated dynamically -->
-                        </div>
-                    </div>
-
-                    <div style="margin-top: 10px;">
-                        <h4 style="font-size: 14px; color: var(--success); margin-bottom: 8px; border-bottom: 1px dashed var(--border-color); padding-bottom: 4px;">
-                            <i class="fa-solid fa-clipboard-question"></i> الاختبارات التفاعلية:
-                        </h4>
-                        <div class="list-container" id="s-course-quizzes-list" style="gap: 8px;">
-                            <!-- Populated dynamically -->
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL 9: INTERACTIVE QUIZ PLAYER (Student) -->
-    <div id="student-quiz-modal" class="modal-overlay">
-        <div class="modal-content" style="max-width: 580px;">
-            <div class="modal-header">
-                <h3 class="modal-title" id="student-quiz-title">حل الاختبار</h3>
-                <button class="modal-close" onclick="closeModal('student-quiz-modal')">&times;</button>
-            </div>
-            <div id="quiz-player-body">
-                <!-- Dynamic Quiz Content -->
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL 9.5: INTERACTIVE EXAM SIMULATOR PLAYER (Student) -->
-    <div id="student-simulator-modal" class="modal-overlay">
-        <div class="modal-content" style="max-width: 750px; width: 95%;">
-            <div class="modal-header" style="position: sticky; top: 0; background: var(--bg-card); z-index: 10; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; padding-bottom: 12px; margin-bottom: 10px;">
-                <div>
-                    <h3 class="modal-title" id="simulator-player-title" style="font-size: 16px; font-weight: 800; color: var(--text-main);">محاكي الاختبارات</h3>
-                    <div id="simulator-player-section-title" style="font-size: 13px; color: var(--text-orange); margin-top: 4px; font-weight: 700;">القسم الحالي: --</div>
-                </div>
-                <div style="display: flex; align-items: center; gap: 8px; background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.25); padding: 6px 12px; border-radius: 8px; color: var(--danger); font-weight: 800; font-size: 14px;">
-                    <i class="fa-regular fa-clock" id="simulator-timer-icon"></i>
-                    <span id="simulator-timer-display" style="font-family: monospace; letter-spacing: 0.5px;">00:00</span>
-                </div>
-            </div>
-            
-            <div id="simulator-player-body" style="padding: 10px 0; max-height: 60vh; overflow-y: auto; padding-left: 5px;">
-                <!-- Section Questions will render here -->
-            </div>
-            
-            <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 15px; margin-top: 15px;">
-                <div style="font-size: 12.5px; color: var(--text-muted);" id="simulator-progress-text">القسم 1 من 1</div>
-                <button type="button" class="btn btn-primary" id="simulator-submit-section-btn" onclick="submitSimulatorSection(false)" style="padding: 8px 20px; font-size: 13px;">
-                    <span id="simulator-btn-text">تسليم القسم والانتقال للقسم التالي</span>
-                    <i class="fa-solid fa-arrow-left"></i>
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL 10: STUDENT SELF-REGISTRATION (Student) [NEW] -->
-    <div id="student-register-modal" class="modal-overlay">
-        <div class="modal-content" style="max-width: 440px;">
-            <div class="modal-header">
-                <h3 class="modal-title"><i class="fa-solid fa-user-plus" style="color: var(--accent-orange); margin-left: 6px;"></i> إنشاء حساب طالب جديد</h3>
-                <button class="modal-close" onclick="closeModal('student-register-modal')">&times;</button>
-            </div>
-            
-            <form id="student-register-form" onsubmit="handleStudentRegister(event)">
-                <div class="form-group">
-                    <label for="reg-name">الاسم الكامل للطالب:</label>
-                    <input type="text" id="reg-name" required placeholder="مثال: يوسف الحربي">
-                </div>
-                
-                <div class="form-group">
-                    <label for="reg-username">اسم المستخدم (بالإنجليزي للدخول):</label>
-                    <input type="text" id="reg-username" required placeholder="مثال: yousef" dir="ltr" style="direction: ltr; text-align: left;">
-                    <span style="font-size: 11px; color: var(--text-muted); display: block; margin-top: 3px;">ستستخدم هذا الاسم لتسجيل الدخول لاحقاً.</span>
-                </div>
-                
-                <div class="form-group">
-                    <label for="reg-pwd">كلمة المرور:</label>
-                    <input type="password" id="reg-pwd" required placeholder="اكتب كلمة مرور قوية">
-                </div>
-                
-                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 15px;">
-                    <i class="fa-solid fa-user-check"></i>
-                    <span>إنشاء الحساب ودخول المنصة</span>
-                </button>
-            </form>
-        </div>
-    </div>
-
-    <!-- MODAL 11: STUDENT ENROLLMENT MANAGER (Teacher) [NEW] -->
-    <div id="student-enrollment-modal" class="modal-overlay">
-        <div class="modal-content" style="max-width: 480px;">
-            <div class="modal-header">
-                <h3 class="modal-title"><i class="fa-solid fa-graduation-cap" style="color: var(--accent-orange); margin-left: 6px;"></i> إدارة اشتراكات الطالب في الدورات</h3>
-                <button class="modal-close" onclick="closeModal('student-enrollment-modal')">&times;</button>
-            </div>
-            
-            <form id="student-enrollment-form" onsubmit="handleSaveEnrollment(event)">
-                <input type="hidden" id="enrollment-student-id">
-                
-                <div style="margin-bottom: 15px; background: rgba(255,255,255,0.02); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
-                    <strong>الطالب:</strong> <span id="enrollment-student-name" style="font-weight: 800; color: var(--text-main);">--</span>
-                </div>
-                
-                <h4 style="font-size: 13.5px; color: var(--text-muted); margin-bottom: 10px;">اختر المقررات المدفوعة التي اشترك فيها الطالب:</h4>
-                
-                <div class="list-container" id="enrollment-courses-list" style="gap: 10px; max-height: 250px; overflow-y: auto; padding: 5px;">
-                    <!-- Populated dynamically by JS (checkbox list of courses) -->
-                </div>
-                
-                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 25px; border-top: 1px solid var(--border-color); padding-top: 15px;">
-                    <button type="button" class="btn btn-secondary" onclick="closeModal('student-enrollment-modal')">إلغاء</button>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fa-solid fa-save"></i>
-                        <span>حفظ الاشتراكات</span>
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- MODAL 12: UNPAID COURSE ALERT DIALOG (Student) [NEW] -->
-    <div id="unpaid-course-modal" class="modal-overlay">
-        <div class="modal-content" style="max-width: 440px; text-align: center; padding: 30px 20px;">
-            <div style="font-size: 55px; color: var(--accent-orange); margin-bottom: 15px;">🔒</div>
-            <h3 id="unpaid-modal-title" style="font-size: 19px; font-weight: 800; color: var(--text-main); margin-bottom: 10px;">عذراً! هذا المقرر مقفل</h3>
-            <p id="unpaid-modal-desc" style="font-size: 14px; color: var(--text-muted); line-height: 1.6; margin-bottom: 25px;">
-                هذه الدورة مدفوعة ومخصصة للطلاب المشتركين فقط. لتفعيل اشتراكك والوصول لشروحات الفيديو والاختبارات التفاعلية، يرجى التواصل مع المعلم الخصوصي عبر الواتساب على الرقم **0501976467** أو بالضغط مباشرة على الزر الأخضر أدناه.
-            </p>
-            
-            <a id="unpaid-modal-whatsapp-link" href="https://wa.me/966501976467?text=مرحباً%20أستاذ%20أرغب%20في%20الاشتراك%20وتفعيل%20دورة%20مسار%20التعليمية" 
-               target="_blank" 
-               class="btn" 
-               style="background-color: #25D366; color: white; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 15px; font-weight: 700; text-decoration: none; border: none; padding: 12px 20px; border-radius: 8px; transition: 0.2s;">
-                <i class="fa-brands fa-whatsapp" style="font-size: 20px;"></i>
-                <span>تواصل عبر الواتساب للتفعيل</span>
-            </a>
-            
-            <button class="btn btn-secondary" onclick="closeModal('unpaid-course-modal')" style="width: 100%; border-color: rgba(255,255,255,0.1); color: var(--text-muted);">إغلاق</button>
-        </div>
-    </div>
-
-    <!-- MODAL 13: HAMBURGER DRAWER MENU (القائمة الرئيسية ☰) -->
+    <!-- MODAL (Side Drawer Only): HAMBURGER DRAWER MENU -->
     <div id="hamburger-drawer-modal" class="modal-overlay">
         <div class="modal-content" style="max-width: 420px; padding: 0; overflow: hidden; border-radius: 16px; border: 1px solid var(--border-color);">
             <div style="background: linear-gradient(135deg, rgba(255, 125, 63, 0.2), rgba(16, 185, 129, 0.1)); padding: 20px; border-bottom: 1px solid var(--border-color); position: relative;">
@@ -1495,46 +1678,6 @@
                 <!-- Populated dynamically based on user state -->
             </div>
         </div>
-    </div>
-
-    <!-- MODAL 14: STUDENT DASHBOARD & PROGRESS (لوحة تحكم الطالب والتقدم الدراسي) -->
-    <div id="student-dashboard-modal" class="modal-overlay">
-        <div class="modal-content" style="max-width: 650px; padding: 25px;">
-            <div class="modal-header" style="margin-bottom: 20px;">
-                <h3 class="modal-title">
-                    <i class="fa-solid fa-chart-line" style="color: var(--accent-orange); margin-left: 8px;"></i>
-                    لوحة تحكم الطالب والتقدم الدراسي
-                </h3>
-                <button class="close-modal-btn" onclick="closeModal('student-dashboard-modal')">&times;</button>
-            </div>
-            
-            <!-- Student Header Profile Summary -->
-            <div style="background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px;">
-                <div style="display: flex; align-items: center; gap: 12px;">
-                    <div id="s-modal-profile-avatar" class="student-avatar" style="width: 45px; height: 45px; font-size: 18px;">ط</div>
-                    <div>
-                        <h4 id="s-modal-profile-name" style="font-size: 16px; font-weight: 800; color: var(--text-main);">طالب مسار</h4>
-                        <span id="s-modal-profile-level" style="font-size: 12px; color: var(--text-orange); font-weight: 700;">مستوى 1</span>
-                    </div>
-                </div>
-                
-                <div style="display: flex; gap: 15px;">
-                    <div style="text-align: center; background: rgba(255,255,255,0.03); padding: 8px 14px; border-radius: 8px; border: 1px solid var(--border-color);">
-                        <span style="font-size: 11px; color: var(--text-muted); display: block;">الترتيب</span>
-                        <strong id="s-modal-stat-rank" style="font-size: 14px; color: gold;">--</strong>
-                    </div>
-                    <div style="text-align: center; background: rgba(255,255,255,0.03); padding: 8px 14px; border-radius: 8px; border: 1px solid var(--border-color);">
-                        <span style="font-size: 11px; color: var(--text-muted); display: block;">نقاط الخبرة</span>
-                        <strong id="s-modal-stat-xp" style="font-size: 14px; color: var(--purple-xp);">0 XP</strong>
-                    </div>
-                    <div style="text-align: center; background: rgba(255,255,255,0.03); padding: 8px 14px; border-radius: 8px; border: 1px solid var(--border-color);">
-                        <span style="font-size: 11px; color: var(--text-muted); display: block;">واجبات منجزة</span>
-                        <strong id="s-modal-stat-completed" style="font-size: 14px; color: var(--success);">0</strong>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Badges Bar -->
             <div style="margin-bottom: 20px;">
                 <span style="font-size: 12px; color: var(--text-muted); display: block; margin-bottom: 6px; font-weight: 700;">الأوسمة والإنجازات المكتسبة:</span>
                 <div class="badges-container" id="s-modal-profile-badges">
