@@ -1153,10 +1153,23 @@ function showCreateAssignmentView() {
 
 function showCreateCourseView() {
     hideAllViews();
-    const page = document.getElementById('create-course-page-view');
-    if (page) page.style.display = 'block';
+    const editIdInput = document.getElementById('course-edit-id');
+    if (editIdInput) editIdInput.value = '';
+    
     const pageForm = document.getElementById('create-course-page-form');
     if (pageForm) pageForm.reset();
+    
+    const titleText = document.getElementById('course-modal-title-text');
+    if (titleText) titleText.innerHTML = `<i class="fa-solid fa-folder-plus" style="color: var(--warning); margin-left: 6px;"></i> إنشاء دورة تعليمية جديدة`;
+    
+    const btnText = document.getElementById('course-submit-btn-text');
+    if (btnText) btnText.textContent = "إنشاء الدورة الآن";
+
+    const page = document.getElementById('create-course-page-view');
+    if (page) {
+        page.style.display = 'block';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
 }
 
 function showCreateSimulatorView() {
@@ -2554,18 +2567,34 @@ function renderTeacherCourses() {
 }
 
 function openEditCourseModal(courseId) {
-    const course = appState.courses.find(c => c.id === courseId);
+    const course = appState.courses.find(c => String(c.id) === String(courseId));
     if (!course) return;
     
-    document.getElementById('course-edit-id').value = course.id;
-    document.getElementById('course-title').value = course.title;
-    document.getElementById('course-subject').value = course.subject;
-    document.getElementById('course-desc').value = course.description;
+    hideAllViews();
     
-    document.getElementById('course-modal-title-text').innerHTML = `<i class="fa-solid fa-edit" style="color: var(--accent-orange); margin-left: 6px;"></i> تعديل المقرر الدراسي`;
-    document.getElementById('course-submit-btn-text').textContent = "حفظ التعديلات";
+    const editIdInput = document.getElementById('course-edit-id');
+    if (editIdInput) editIdInput.value = course.id;
     
-    openModal('create-course-modal');
+    const titleInput = document.getElementById('page-course-title') || document.getElementById('course-title');
+    if (titleInput) titleInput.value = course.title;
+    
+    const subjectSelect = document.getElementById('page-course-subject') || document.getElementById('course-subject');
+    if (subjectSelect) subjectSelect.value = course.subject;
+    
+    const descTextarea = document.getElementById('page-course-desc') || document.getElementById('course-desc');
+    if (descTextarea) descTextarea.value = course.description;
+    
+    const titleText = document.getElementById('course-modal-title-text');
+    if (titleText) titleText.innerHTML = `<i class="fa-solid fa-edit" style="color: var(--accent-orange); margin-left: 6px;"></i> تعديل بيانات المقرر الدراسي`;
+    
+    const btnText = document.getElementById('course-submit-btn-text');
+    if (btnText) btnText.textContent = "حفظ التعديلات";
+    
+    const page = document.getElementById('create-course-page-view');
+    if (page) {
+        page.style.display = 'block';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
 }
 
 async function handleCreateCourse(e) {
@@ -2573,21 +2602,23 @@ async function handleCreateCourse(e) {
     const editIdInput = document.getElementById('course-edit-id');
     const editId = editIdInput ? editIdInput.value : '';
 
-    const pTitle = document.getElementById('page-course-title');
-    const mTitle = document.getElementById('course-title');
-    const title = (pTitle && pTitle.value ? pTitle.value : (mTitle ? mTitle.value : '')).trim();
+    const titleInput = document.getElementById('page-course-title') || document.getElementById('course-title');
+    const title = titleInput ? titleInput.value.trim() : '';
 
-    const pSub = document.getElementById('page-course-subject');
-    const mSub = document.getElementById('course-subject');
-    const subject = (pSub && pSub.value ? pSub.value : (mSub ? mSub.value : 'math'));
+    const subjectSelect = document.getElementById('page-course-subject') || document.getElementById('course-subject');
+    const subject = subjectSelect ? subjectSelect.value : 'math';
 
-    const pDesc = document.getElementById('page-course-desc');
-    const mDesc = document.getElementById('course-desc');
-    const description = (pDesc && pDesc.value ? pDesc.value : (mDesc ? mDesc.value : '')).trim();
+    const descTextarea = document.getElementById('page-course-desc') || document.getElementById('course-desc');
+    const description = descTextarea ? descTextarea.value.trim() : '';
+
+    if (!title) {
+        showToast("يرجى كتابة عنوان المقرر!", "danger");
+        return;
+    }
 
     if (editId) {
         // Edit Mode
-        const course = appState.courses.find(c => c.id === editId);
+        const course = appState.courses.find(c => String(c.id) === String(editId));
         if (!course) return;
         const oldTitle = course.title;
         const oldSubject = course.subject;
@@ -2608,9 +2639,6 @@ async function handleCreateCourse(e) {
             } else {
                 localStorage.setItem('masar_courses', JSON.stringify(appState.courses));
             }
-            closeModal('create-course-modal');
-            const form = document.getElementById('create-course-form');
-            if (form) form.reset();
             const pageForm = document.getElementById('create-course-page-form');
             if (pageForm) pageForm.reset();
             showToast("تم تعديل المقرر الدراسي بنجاح! 🎓", "success");
@@ -2647,9 +2675,6 @@ async function handleCreateCourse(e) {
                 localStorage.setItem('masar_courses', JSON.stringify(appState.courses));
             }
 
-            closeModal('create-course-modal');
-            const form = document.getElementById('create-course-form');
-            if (form) form.reset();
             const pageForm = document.getElementById('create-course-page-form');
             if (pageForm) pageForm.reset();
             showToast("تم إنشاء المقرر الدراسي بنجاح! 🎓", "success");
