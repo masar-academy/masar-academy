@@ -1162,10 +1162,7 @@ function showCreateSimulatorView() {
 }
 
 function showBadgeManagerView() {
-    hideAllViews();
-    renderCustomBadgesManageList();
-    const page = document.getElementById('badge-manager-page-view');
-    if (page) page.style.display = 'block';
+    openBadgeManagerModal();
 }
 
 // Switch interior tabs
@@ -2772,7 +2769,8 @@ async function handleCreateLesson(e) {
             if (form) form.reset();
             showToast("تم تعديل درس الفيديو بنجاح! 🎥", "success");
             showTeacherSection('t-courses-tab');
-            if (document.getElementById('teacher-course-manage-modal').classList.contains('active')) {
+            const cmView1 = document.getElementById('teacher-course-manage-page-view');
+            if (cmView1 && cmView1.style.display !== 'none') {
                 openTeacherCourseManageModal(courseId);
             }
         } catch (err) {
@@ -2810,7 +2808,8 @@ async function handleCreateLesson(e) {
             closeModal('create-lesson-modal');
             showToast("تمت إضافة درس الفيديو بنجاح! 🎥", "success");
             showTeacherSection('t-courses-tab');
-            if (document.getElementById('teacher-course-manage-modal').classList.contains('active')) {
+            const cmView2 = document.getElementById('teacher-course-manage-page-view');
+            if (cmView2 && cmView2.style.display !== 'none') {
                 openTeacherCourseManageModal(courseId);
             }
         } catch (err) {
@@ -2836,7 +2835,8 @@ async function deleteLesson(lessonId) {
             }
             showToast("تم حذف الدرس بنجاح.", "success");
             await renderTeacherDashboard();
-            if (document.getElementById('teacher-course-manage-modal').classList.contains('active')) {
+            const cmView3 = document.getElementById('teacher-course-manage-page-view');
+            if (cmView3 && cmView3.style.display !== 'none') {
                 openTeacherCourseManageModal(courseId);
             }
         } catch (err) {
@@ -3256,7 +3256,8 @@ async function handleCreateQuiz(e) {
             document.getElementById('create-quiz-form').reset();
             showToast("تم تعديل الاختبار بنجاح! 🎓", "success");
             await renderTeacherDashboard();
-            if (document.getElementById('teacher-course-manage-modal').classList.contains('active')) {
+            const cmView4 = document.getElementById('teacher-course-manage-page-view');
+            if (cmView4 && cmView4.style.display !== 'none') {
                 openTeacherCourseManageModal(courseId);
             }
         } catch (err) {
@@ -3300,7 +3301,8 @@ async function handleCreateQuiz(e) {
                 showTeacherSection('t-simulators-tab');
             } else {
                 await renderTeacherDashboard();
-                if (document.getElementById('teacher-course-manage-modal').classList.contains('active')) {
+                const cmView5 = document.getElementById('teacher-course-manage-page-view');
+                if (cmView5 && cmView5.style.display !== 'none') {
                     openTeacherCourseManageModal(courseId);
                 }
             }
@@ -3327,7 +3329,8 @@ async function deleteQuiz(quizId) {
             }
             showToast("تم حذف الاختبار بنجاح.", "success");
             await renderTeacherDashboard();
-            if (document.getElementById('teacher-course-manage-modal').classList.contains('active')) {
+            const cmView6 = document.getElementById('teacher-course-manage-page-view');
+            if (cmView6 && cmView6.style.display !== 'none') {
                 openTeacherCourseManageModal(courseId);
             }
         } catch (err) {
