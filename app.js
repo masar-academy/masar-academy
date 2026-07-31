@@ -601,15 +601,39 @@ function resetDemoData() {
     // Hidden / Deleted
 }
 
-// Check session
+// Session Security & Automatic Timeout Logic (20 Minutes Inactivity Expiry)
+const SESSION_TIMEOUT_MS = 20 * 60 * 1000; // 20 minutes
+
+function updateLastActivity() {
+    localStorage.setItem('masar_last_activity', Date.now().toString());
+}
+
 function checkAuthSession() {
-    const cachedUser = localStorage.getItem('masar_current_user');
-    if (cachedUser) {
+    const cachedUser = sessionStorage.getItem('masar_current_user') || localStorage.getItem('masar_current_user');
+    const lastActive = parseInt(localStorage.getItem('masar_last_activity') || '0', 10);
+    const now = Date.now();
+
+    if (cachedUser && lastActive && (now - lastActive < SESSION_TIMEOUT_MS)) {
         appState.currentUser = JSON.parse(cachedUser);
+        updateLastActivity();
         showDashboard();
     } else {
-        showLandingPage();
+        if (cachedUser) {
+            logout(true);
+        } else {
+            showLandingPage();
+        }
     }
+}
+
+if (typeof window !== 'undefined') {
+    ['click', 'keydown', 'touchstart', 'scroll'].forEach(evt => {
+        window.addEventListener(evt, () => {
+            if (appState && appState.currentUser) {
+                updateLastActivity();
+            }
+        }, { passive: true });
+    });
 }
 
 // Render Math Formula with KaTeX
@@ -729,16 +753,24 @@ async function handleLogin(e) {
         }
     }
     
+    sessionStorage.setItem('masar_current_user', JSON.stringify(appState.currentUser));
     localStorage.setItem('masar_current_user', JSON.stringify(appState.currentUser));
+    updateLastActivity();
     showDashboard();
 }
 
 // Log out
-function logout() {
+function logout(isExpired = false) {
+    sessionStorage.removeItem('masar_current_user');
     localStorage.removeItem('masar_current_user');
+    localStorage.removeItem('masar_last_activity');
     appState.currentUser = null;
     showLandingPage();
-    showToast('تم تسجيل الخروج بنجاح', 'success');
+    if (isExpired) {
+        showToast('انتهت الجلسة تلقائياً بسبب عدم النشاط، يرجى إعادة تسجيل الدخول 🔒', 'warning');
+    } else {
+        showToast('تم تسجيل الخروج بنجاح', 'success');
+    }
 }
 
 // Routing views & Header State
