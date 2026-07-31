@@ -808,19 +808,19 @@
             </div>
         </section>
 
-        <!-- PAGE F: CREATE / EDIT COURSE QUIZ PAGE -->
+        <!-- PAGE F: CREATE / EDIT COURSE QUIZ OR SIMULATOR PAGE -->
         <section id="create-quiz-page-view" class="fade-in" style="display: none;">
             <div class="container" style="max-width: 900px; padding: 25px 15px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; flex-wrap: wrap; gap: 15px;">
                     <div style="display: flex; align-items: center; gap: 12px;">
                         <div class="logo-icon" style="width: 44px; height: 44px; font-size: 22px; background: linear-gradient(135deg, var(--purple-xp), #8B5CF6);"><i class="fa-solid fa-graduation-cap"></i></div>
                         <div>
-                            <h2 style="font-size: 20px; font-weight: 800; color: var(--text-main);">إضافة / تعديل اختبار تفاعلي بالدورة</h2>
+                            <h2 style="font-size: 20px; font-weight: 800; color: var(--text-main);" id="quiz-modal-title-text">إضافة / تعديل اختبار تفاعلي أو محاكي</h2>
                             <p style="font-size: 13px; color: var(--text-muted); margin-top: 2px;">المقرر الدراسي: <strong id="quiz-page-course-title" style="color: var(--text-orange);">...</strong></p>
                         </div>
                     </div>
-                    <button class="btn btn-secondary" style="padding: 8px 16px; font-size: 13px;" onclick="showTeacherSection('t-courses-tab')">
-                        <i class="fa-solid fa-arrow-right"></i> العودة للمقررات
+                    <button class="btn btn-secondary" style="padding: 8px 16px; font-size: 13px;" onclick="showDashboard()">
+                        <i class="fa-solid fa-arrow-right"></i> العودة للوحة التحكم
                     </button>
                 </div>
 
@@ -831,17 +831,17 @@
                         <input type="checkbox" id="quiz-is-simulator" style="display:none;">
 
                         <div class="form-group">
-                            <label for="quiz-title" style="font-weight: 700;">عنوان الاختبار التفاعلي:</label>
+                            <label for="quiz-title" style="font-weight: 700;">عنوان الاختبار التفاعلي / المحاكي:</label>
                             <input type="text" id="quiz-title" required placeholder="مثال: اختبار نهاية الوحدة الأولى" style="padding: 12px; font-size: 14px;">
                         </div>
 
                         <div class="form-group">
                             <label for="quiz-points" style="font-weight: 700;">النقاط المكافئة لإجتياز الاختبار (XP):</label>
-                            <input type="number" id="quiz-points" required value="50" min="1" style="padding: 12px; font-size: 14px;">
+                            <input type="number" id="quiz-points" required value="100" min="1" style="padding: 12px; font-size: 14px;">
                         </div>
 
-                        <!-- Questions Builder Container -->
-                        <div style="border: 1px solid var(--border-color); padding: 18px; border-radius: 12px; margin-bottom: 25px; background: rgba(0,0,0,0.15);">
+                        <!-- Normal Quiz Editor (Single Section) -->
+                        <div id="quiz-normal-editor" style="border: 1px solid var(--border-color); padding: 18px; border-radius: 12px; margin-bottom: 25px; background: rgba(0,0,0,0.15);">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
                                 <div>
                                     <h4 style="font-size: 15px; font-weight: 800; color: var(--purple-xp);"><i class="fa-solid fa-list-check"></i> أسئلة الاختبار والخيارات المتعددة:</h4>
@@ -857,11 +857,28 @@
                             </div>
                         </div>
 
+                        <!-- Simulator Quiz Editor (Multi Section) -->
+                        <div id="quiz-simulator-editor" style="display: none; border: 1px solid var(--border-color); padding: 18px; border-radius: 12px; margin-bottom: 25px; background: rgba(0,0,0,0.15);">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                                <div>
+                                    <h4 style="font-size: 15px; font-weight: 800; color: var(--success);"><i class="fa-solid fa-layer-group"></i> أقسام ورأسيات محاكي قياس:</h4>
+                                    <p style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">قسّم اختبار المحاكاة إلى أقسام (مثل: القسم الكمي الأول، القسم اللفظي...)، وأضف أسئلة لكل قسم.</p>
+                                </div>
+                                <button type="button" class="btn btn-secondary" style="padding: 6px 14px; font-size: 12.5px; border-color: var(--success); color: var(--success);" onclick="addQuizSectionEditorRow()">
+                                    <i class="fa-solid fa-plus"></i> إضافة قسم جديد للمحاكي
+                                </button>
+                            </div>
+
+                            <div id="quiz-sections-editor-container" style="display: flex; flex-direction: column; gap: 20px;">
+                                <!-- Section Blocks Generated by JS -->
+                            </div>
+                        </div>
+
                         <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 30px; border-top: 1px solid var(--border-color); padding-top: 20px;">
-                            <button type="button" class="btn btn-secondary" onclick="showTeacherSection('t-courses-tab')" style="padding: 10px 20px; font-size: 14px;">إلغاء</button>
+                            <button type="button" class="btn btn-secondary" onclick="showDashboard()" style="padding: 10px 20px; font-size: 14px;">إلغاء</button>
                             <button type="submit" class="btn btn-primary" style="padding: 10px 24px; font-size: 14px;">
                                 <i class="fa-solid fa-cloud-arrow-up"></i>
-                                <span>حفظ ونشر الاختبار</span>
+                                <span id="quiz-submit-btn-text">حفظ ونشر الاختبار / المحاكي</span>
                             </button>
                         </div>
                     </form>
