@@ -615,7 +615,10 @@ function checkAuthSession() {
 // Render Math Formula with KaTeX
 function renderMath(elementId) {
     if (!window.renderMathInElement) return;
-    const target = typeof elementId === 'string' ? document.getElementById(elementId) : elementId;
+    let target = typeof elementId === 'string' ? document.getElementById(elementId) : elementId;
+    if (!target && typeof elementId === 'string' && typeof MODAL_TO_VIEW_MAP !== 'undefined' && MODAL_TO_VIEW_MAP[elementId]) {
+        target = document.getElementById(MODAL_TO_VIEW_MAP[elementId]);
+    }
     if (target) {
         renderMathInElement(target, {
             delimiters: [
@@ -3788,7 +3791,7 @@ function renderStudentActiveHomeworks(sId) {
     const sActiveList = document.getElementById('s-active-list');
     sActiveList.innerHTML = '';
     
-    const myAssignments = appState.assignments.filter(a => a.targetStudent === 'all' || (Array.isArray(a.targetStudent) ? a.targetStudent.includes(sId) : a.targetStudent === sId));
+    const myAssignments = appState.assignments.filter(a => !a.targetStudent || a.targetStudent === 'all' || (Array.isArray(a.targetStudent) ? a.targetStudent.includes(sId) : a.targetStudent === sId));
     const activeHomeworks = myAssignments.filter(a => !appState.submissions.some(sub => sub.assignmentId === a.id && sub.studentId === sId));
     
     document.getElementById('s-active-count').textContent = `${activeHomeworks.length} واجبات متبقية`;
@@ -3803,20 +3806,22 @@ function renderStudentActiveHomeworks(sId) {
         activeHomeworks.forEach(assign => {
             const card = document.createElement('div');
             card.className = 'assignment-card';
+            card.style.cursor = 'pointer';
+            card.onclick = () => openSubmitModal(assign.id);
             card.innerHTML = `
                 <div class="assignment-header">
                     <div>
-                        <span class="assignment-subject subject-${assign.subject}">${SUBJECT_NAMES[assign.subject]}</span>
-                        <h4 class="assignment-title" style="margin-top: 8px;">${assign.title}</h4>
+                        <span class="assignment-subject subject-${assign.subject}">${SUBJECT_NAMES[assign.subject] || assign.subject}</span>
+                        <h4 class="assignment-title" style="margin-top: 8px;">${escapeHtml(assign.title)}</h4>
                     </div>
                     <span style="font-weight: 700; color: var(--text-orange); font-size: 15px;">${assign.points} XP</span>
                 </div>
                 
-                <p style="font-size: 14px; color: var(--text-muted); white-space: pre-line; line-height: 1.5;">${assign.desc}</p>
+                <p style="font-size: 14px; color: var(--text-muted); white-space: pre-line; line-height: 1.5;">${escapeHtml(assign.desc)}</p>
                 
                 <div class="assignment-meta" style="justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.04); padding-top: 12px;">
                     <span><i class="fa-regular fa-calendar"></i> آخر موعد للتسليم: ${assign.dueDate}</span>
-                    <button class="btn btn-primary" onclick="openSubmitModal('${assign.id}')">
+                    <button class="btn btn-primary" onclick="event.stopPropagation(); openSubmitModal('${assign.id}')">
                         <i class="fa-solid fa-paper-plane"></i> بدء حل الواجب
                     </button>
                 </div>
@@ -3853,8 +3858,8 @@ function renderStudentHomeworkHistory(sId) {
             div.innerHTML = `
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
                     <div>
-                        <span class="assignment-subject subject-${assign.subject}">${SUBJECT_NAMES[assign.subject]}</span>
-                        <h4 style="font-size: 15px; font-weight: 700; margin-top: 8px;">${assign.title}</h4>
+                        <span class="assignment-subject subject-${assign.subject}">${SUBJECT_NAMES[assign.subject] || assign.subject}</span>
+                        <h4 style="font-size: 15px; font-weight: 700; margin-top: 8px;">${escapeHtml(assign.title)}</h4>
                     </div>
                     <div>
                         ${isGraded ? `
@@ -3871,16 +3876,16 @@ function renderStudentHomeworkHistory(sId) {
                 
                 <div style="margin-bottom: 15px;">
                     <span style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 4px;">إجابتك المرسلة:</span>
-                    <div style="background: rgba(0,0,0,0.15); padding: 10px; border-radius: 6px; font-size: 13.5px; white-space: pre-line; border-right: 3px solid var(--accent-orange);">${sub.answer}</div>
+                    <div style="background: rgba(0,0,0,0.15); padding: 10px; border-radius: 6px; font-size: 13.5px; white-space: pre-line; border-right: 3px solid var(--accent-orange);">${escapeHtml(sub.answer || '')}</div>
                 </div>
                 
                 ${isGraded ? `
                     <div style="background: rgba(16, 185, 129, 0.03); border: 1px solid rgba(16, 185, 129, 0.1); border-radius: 8px; padding: 12px;">
                         <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 6px;">
                             <strong style="color: var(--success);"><i class="fa-solid fa-comment-dots"></i> تقييم المعلم:</strong>
-                            <span style="color: var(--text-muted);">تاريخ التصحيح: ${sub.gradedAt}</span>
+                            <span style="color: var(--text-muted);">تاريخ التصحيح: ${sub.gradedAt || ''}</span>
                         </div>
-                        <p style="font-size: 13px; color: var(--text-main); line-height: 1.5; font-style: italic;">"${sub.feedback}"</p>
+                        <p style="font-size: 13px; color: var(--text-main); line-height: 1.5; font-style: italic;">"${escapeHtml(sub.feedback || '')}"</p>
                         <div style="margin-top: 8px; font-size: 12px; color: var(--text-orange); font-weight: 700; display: flex; gap: 15px;">
                             <span><i class="fa-solid fa-bolt"></i> نقاط مكتسبة: +${assign.points} XP</span>
                             ${sub.bonusXp > 0 ? `<span>🥇 نقاط تشجيعية: +${sub.bonusXp} XP</span>` : ''}
@@ -3899,8 +3904,16 @@ function openSubmitModal(assignId) {
     if (!assign) return;
     
     document.getElementById('submit-assignment-id').value = assignId;
-    document.getElementById('submit-modal-title').textContent = `تسليم واجب: ${assign.title}`;
-    document.getElementById('submit-modal-question').textContent = assign.desc;
+    const titleEl = document.getElementById('submit-modal-title');
+    if (titleEl) {
+        titleEl.innerHTML = `<i class="fa-solid fa-pen-to-square" style="color: var(--accent-orange); margin-left: 8px;"></i> تسليم واجب: ${escapeHtml(assign.title)}`;
+    }
+    
+    const questionEl = document.getElementById('submit-modal-question');
+    if (questionEl) {
+        questionEl.textContent = assign.desc || '';
+    }
+    
     document.getElementById('submit-answer').value = '';
     document.getElementById('submit-link').value = '';
     
@@ -3931,7 +3944,7 @@ function openSubmitModal(assignId) {
             const btn = document.createElement('button');
             btn.type = 'button';
             btn.className = 'quiz-option-btn';
-            btn.innerHTML = `<span class="option-indicator">${String.fromCharCode(1601 + i)}</span> <span>${opt}</span>`;
+            btn.innerHTML = `<span class="option-indicator">${String.fromCharCode(1601 + i)}</span> <span>${escapeHtml(opt)}</span>`;
             btn.onclick = () => {
                 selectedSubmissionOptionTemp = i;
                 document.querySelectorAll('#submit-mcq-options-list .quiz-option-btn').forEach((b, idx) => {
@@ -3950,7 +3963,7 @@ function openSubmitModal(assignId) {
     }
     
     openModal('submit-modal');
-    renderMath('submit-modal');
+    renderMath('solve-assignment-page-view');
 }
 
 // Student submit assignment
