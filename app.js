@@ -601,8 +601,8 @@ function resetDemoData() {
     // Hidden / Deleted
 }
 
-// Session Security & Automatic Timeout Logic (20 Minutes Inactivity Expiry)
-const SESSION_TIMEOUT_MS = 20 * 60 * 1000; // 20 minutes
+// Session Security & Automatic Timeout Logic (2 Hours Inactivity Expiry)
+const SESSION_TIMEOUT_MS = 2 * 60 * 60 * 1000; // 2 hours (120 minutes)
 
 function updateLastActivity() {
     localStorage.setItem('masar_last_activity', Date.now().toString());
