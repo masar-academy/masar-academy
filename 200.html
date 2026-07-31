@@ -10,7 +10,7 @@
     <script>
         // Automatic Cache-Buster: Forces fresh online build fetch from GitHub
         (function() {
-            const CURRENT_BUILD = "v1785541678039";
+            const CURRENT_BUILD = "v1785541924830";
             const storedBuild = localStorage.getItem('masar_app_build');
             if (storedBuild !== CURRENT_BUILD) {
                 localStorage.setItem('masar_app_build', CURRENT_BUILD);
@@ -1320,9 +1320,14 @@
                         <i class="fa-solid fa-layer-group" style="color: var(--accent-orange); margin-left: 8px;"></i>
                         إدارة محتويات المقرر والدروس
                     </h2>
-                    <button class="btn btn-secondary" onclick="showDashboard()">
-                        <i class="fa-solid fa-arrow-right"></i> العودة لمقررات المعلم
-                    </button>
+                    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                        <button type="button" class="btn btn-secondary" style="border-color: var(--accent-orange); color: var(--text-orange);" id="t-course-manage-edit-btn">
+                            <i class="fa-regular fa-edit"></i> تعديل بيانات هذا المقرر
+                        </button>
+                        <button class="btn btn-secondary" onclick="showTeacherSection('t-courses-tab')">
+                            <i class="fa-solid fa-arrow-right"></i> العودة للمقررات
+                        </button>
+                    </div>
                 </div>
                 
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 25px; margin-bottom: 20px;">
