@@ -1137,17 +1137,17 @@ function showCreateAssignmentView() {
     const form = document.getElementById('create-assignment-form');
     if (form) form.reset();
     
-    // Populate assign-student select
-    const assignStudentSelect = document.getElementById('assign-student');
-    if (assignStudentSelect) {
-        assignStudentSelect.innerHTML = '<option value="all">جميع الطلاب المشتركين</option>';
-        appState.students.forEach(stud => {
-            const option = document.createElement('option');
-            option.value = stud.id;
-            option.textContent = `${stud.name} (@${stud.username})`;
-            assignStudentSelect.appendChild(option);
-        });
-    }
+    const mcqContainer = document.getElementById('assign-mcq-options-container');
+    if (mcqContainer) mcqContainer.style.display = 'none';
+
+    const targetTypeSelect = document.getElementById('assign-target-type');
+    if (targetTypeSelect) targetTypeSelect.value = 'all';
+
+    const searchInput = document.getElementById('create-assign-search-input');
+    if (searchInput) searchInput.value = '';
+
+    populateCreateAssignStudentsList();
+    toggleCreateAssignStudentsList('all');
     setupDefaultDates();
 }
 
@@ -1843,31 +1843,158 @@ function toggleAssignmentOptions(type) {
     }
 }
 
+// ==========================================
+// STUDENT TARGETING HELPER FUNCTIONS
+// ==========================================
+
+function populateCreateAssignStudentsList() {
+    const grid = document.getElementById('create-assign-students-grid');
+    if (!grid) return;
+    grid.innerHTML = '';
+
+    if (!appState.students || appState.students.length === 0) {
+        grid.innerHTML = '<span style="font-size: 12px; color: var(--text-muted); font-style: italic;">لا يوجد طلاب مسجلين بعد</span>';
+        return;
+    }
+
+    appState.students.forEach(student => {
+        const label = document.createElement('label');
+        label.className = 'create-assign-student-item';
+        label.dataset.name = (student.name || '').toLowerCase();
+        label.dataset.username = (student.username || '').toLowerCase();
+        label.style.display = 'inline-flex';
+        label.style.alignItems = 'center';
+        label.style.gap = '8px';
+        label.style.fontSize = '13px';
+        label.style.cursor = 'pointer';
+        label.style.padding = '6px 10px';
+        label.style.borderRadius = '6px';
+        label.style.background = 'rgba(255,255,255,0.03)';
+        label.style.border = '1px solid var(--border-color)';
+        
+        label.innerHTML = `
+            <input type="checkbox" class="create-assign-student-cb" value="${student.id}" style="accent-color: var(--accent-orange);" onchange="updateStudentItemStyle(this)">
+            <strong style="color: var(--text-main);">${escapeHtml(student.name)}</strong>
+            <span style="font-size: 11px; color: var(--text-muted);">(@${escapeHtml(student.username)})</span>
+        `;
+        grid.appendChild(label);
+    });
+}
+
+function toggleCreateAssignStudentsList(type) {
+    const container = document.getElementById('create-assign-students-container');
+    if (container) {
+        container.style.display = type === 'custom' ? 'block' : 'none';
+    }
+}
+
+function filterCreateAssignStudents(query) {
+    const q = (query || '').toLowerCase().trim();
+    const items = document.querySelectorAll('.create-assign-student-item');
+    items.forEach(item => {
+        const name = item.dataset.name || '';
+        const username = item.dataset.username || '';
+        if (!q || name.includes(q) || username.includes(q)) {
+            item.style.display = 'inline-flex';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+}
+
+function selectAllCreateAssignStudents(checkAll) {
+    const cbs = document.querySelectorAll('.create-assign-student-cb');
+    cbs.forEach(cb => {
+        const parentLabel = cb.closest('.create-assign-student-item');
+        if (parentLabel && parentLabel.style.display !== 'none') {
+            cb.checked = checkAll;
+            updateStudentItemStyle(cb);
+        }
+    });
+}
+
+function toggleEditAssignStudentsList(val) {
+    const container = document.getElementById('edit-assign-students-container');
+    const grid = document.getElementById('edit-assign-students-grid');
+    if (container) {
+        container.style.display = val === 'custom' ? 'block' : 'none';
+    } else if (grid) {
+        grid.style.display = val === 'custom' ? 'flex' : 'none';
+    }
+}
+
+function filterEditAssignStudents(query) {
+    const q = (query || '').toLowerCase().trim();
+    const items = document.querySelectorAll('.edit-assign-student-item');
+    items.forEach(item => {
+        const name = item.dataset.name || '';
+        const username = item.dataset.username || '';
+        if (!q || name.includes(q) || username.includes(q)) {
+            item.style.display = 'inline-flex';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+}
+
+function selectAllEditAssignStudents(checkAll) {
+    const cbs = document.querySelectorAll('.edit-assign-student-cb');
+    cbs.forEach(cb => {
+        const parentLabel = cb.closest('.edit-assign-student-item');
+        if (parentLabel && parentLabel.style.display !== 'none') {
+            cb.checked = checkAll;
+            updateStudentItemStyle(cb);
+        }
+    });
+}
+
+function updateStudentItemStyle(cb) {
+    const label = cb.closest('label');
+    if (label) {
+        label.style.background = cb.checked ? 'rgba(255,107,0,0.15)' : 'rgba(255,255,255,0.03)';
+        label.style.border = cb.checked ? '1px solid var(--accent-orange)' : '1px solid var(--border-color)';
+    }
+}
+
 // Add New Assignment (Teacher)
 async function handleCreateAssignment(e) {
     e.preventDefault();
     
-    const title = document.getElementById('assign-title').value;
-    const desc = document.getElementById('assign-desc').value;
+    const title = document.getElementById('assign-title').value.trim();
+    const desc = document.getElementById('assign-desc').value.trim();
     const subject = document.getElementById('assign-subject').value;
-    const targetStudent = document.getElementById('assign-student').value;
     const points = parseInt(document.getElementById('assign-points').value) || 100;
     const dueDate = document.getElementById('assign-duedate').value;
     const type = document.getElementById('assign-type').value;
+
+    const targetTypeSelect = document.getElementById('assign-target-type');
+    const targetType = targetTypeSelect ? targetTypeSelect.value : 'all';
+    let targetStudent = 'all';
+
+    if (targetType === 'custom') {
+        const checkedCbs = document.querySelectorAll('.create-assign-student-cb:checked');
+        const selectedIds = Array.from(checkedCbs).map(cb => cb.value);
+        if (selectedIds.length === 0) {
+            showToast("يرجى اختيار طالب واحد على الأقل!", "danger");
+            return;
+        }
+        targetStudent = selectedIds.length === 1 ? selectedIds[0] : selectedIds;
+    }
     
     let options = [];
     let correctOption = -1;
     
     if (type === 'mcq') {
-        const opt0 = document.getElementById('assign-opt-0').value.trim();
-        const opt1 = document.getElementById('assign-opt-1').value.trim();
-        const opt2 = document.getElementById('assign-opt-2').value.trim();
-        const opt3 = document.getElementById('assign-opt-3').value.trim();
+        let opt0 = document.getElementById('assign-opt-0').value.trim();
+        let opt1 = document.getElementById('assign-opt-1').value.trim();
+        let opt2 = document.getElementById('assign-opt-2').value.trim();
+        let opt3 = document.getElementById('assign-opt-3').value.trim();
         
-        if (!opt0 || !opt1 || !opt2 || !opt3) {
-            showToast("يرجى تعبئة جميع خيارات السؤال الاختياري!", "danger");
-            return;
-        }
+        // Auto default to أ, ب, ج, د if left empty by teacher
+        opt0 = opt0 || "أ";
+        opt1 = opt1 || "ب";
+        opt2 = opt2 || "ج";
+        opt3 = opt3 || "د";
         
         options = [opt0, opt1, opt2, opt3];
         correctOption = parseInt(document.getElementById('assign-correct').value);
@@ -1901,7 +2028,7 @@ async function handleCreateAssignment(e) {
                 subject: newAssignment.subject,
                 points: newAssignment.points,
                 due_date: newAssignment.dueDate,
-                target_student: newAssignment.targetStudent,
+                target_student: Array.isArray(newAssignment.targetStudent) ? JSON.stringify(newAssignment.targetStudent) : newAssignment.targetStudent,
                 options: newAssignment.options,
                 correct_option: newAssignment.correctOption,
                 image: newAssignment.image
@@ -1911,10 +2038,14 @@ async function handleCreateAssignment(e) {
             appState.assignments.push(newAssignment);
             localStorage.setItem('masar_assignments', JSON.stringify(appState.assignments));
         }
+
+        if (isCloudMode && supabaseClient) {
+            appState.assignments.push(newAssignment);
+        }
         
         showToast('تم نشر الواجب الجديد للطلاب بنجاح! 🚀', 'success');
         document.getElementById('create-assignment-form').reset();
-        toggleAssignmentOptions('text'); // reset toggle
+        toggleAssignmentOptions('text');
         setupDefaultDates();
         showTeacherSection('t-assignments-tab');
     } catch (err) {
@@ -1948,12 +2079,6 @@ async function deleteAssignment(assignId) {
     }
 }
 
-function toggleEditAssignStudentsList(val) {
-    const grid = document.getElementById('edit-assign-students-grid');
-    if (!grid) return;
-    grid.style.display = val === 'custom' ? 'flex' : 'none';
-}
-
 function removeEditAssignImage() {
     const previewContainer = document.getElementById('edit-assign-image-preview-container');
     if (previewContainer) previewContainer.style.display = 'none';
@@ -1979,6 +2104,9 @@ function openEditAssignmentModal(assignId) {
     document.getElementById('edit-assign-duedate').value = assign.dueDate || '';
     document.getElementById('edit-assign-link').value = assign.link || '';
 
+    const searchInput = document.getElementById('edit-assign-search-input');
+    if (searchInput) searchInput.value = '';
+
     const imageInput = document.getElementById('edit-assign-image');
     if (imageInput) imageInput.value = '';
 
@@ -1997,10 +2125,10 @@ function openEditAssignmentModal(assignId) {
     const mcqContainer = document.getElementById('edit-assign-mcq-container');
     if (assign.options && Array.isArray(assign.options) && assign.options.length > 0) {
         mcqContainer.style.display = 'block';
-        document.getElementById('edit-assign-opt-0').value = assign.options[0] || '';
-        document.getElementById('edit-assign-opt-1').value = assign.options[1] || '';
-        document.getElementById('edit-assign-opt-2').value = assign.options[2] || '';
-        document.getElementById('edit-assign-opt-3').value = assign.options[3] || '';
+        document.getElementById('edit-assign-opt-0').value = assign.options[0] || 'أ';
+        document.getElementById('edit-assign-opt-1').value = assign.options[1] || 'ب';
+        document.getElementById('edit-assign-opt-2').value = assign.options[2] || 'ج';
+        document.getElementById('edit-assign-opt-3').value = assign.options[3] || 'د';
         document.getElementById('edit-assign-correct').value = assign.correctOption !== undefined ? assign.correctOption : 0;
     } else {
         mcqContainer.style.display = 'none';
@@ -2027,6 +2155,9 @@ function openEditAssignmentModal(assignId) {
     appState.students.forEach(student => {
         const isChecked = targetedIds.includes(student.id);
         const label = document.createElement('label');
+        label.className = 'edit-assign-student-item';
+        label.dataset.name = (student.name || '').toLowerCase();
+        label.dataset.username = (student.username || '').toLowerCase();
         label.style.display = 'inline-flex';
         label.style.alignItems = 'center';
         label.style.gap = '8px';
@@ -2038,7 +2169,7 @@ function openEditAssignmentModal(assignId) {
         label.style.border = isChecked ? '1px solid var(--accent-orange)' : '1px solid var(--border-color)';
         
         label.innerHTML = `
-            <input type="checkbox" class="edit-assign-student-cb" value="${student.id}" ${isChecked ? 'checked' : ''} style="accent-color: var(--accent-orange);">
+            <input type="checkbox" class="edit-assign-student-cb" value="${student.id}" ${isChecked ? 'checked' : ''} style="accent-color: var(--accent-orange);" onchange="updateStudentItemStyle(this)">
             <strong style="color: var(--text-main);">${escapeHtml(student.name)}</strong>
             <span style="font-size: 11px; color: var(--text-muted);">(@${escapeHtml(student.username)})</span>
         `;
@@ -2077,14 +2208,18 @@ async function handleSaveEditAssignment(e) {
     let options = assign.options;
     let correctOption = assign.correctOption;
     if (options && Array.isArray(options) && options.length > 0) {
-        const opt0 = document.getElementById('edit-assign-opt-0').value.trim();
-        const opt1 = document.getElementById('edit-assign-opt-1').value.trim();
-        const opt2 = document.getElementById('edit-assign-opt-2').value.trim();
-        const opt3 = document.getElementById('edit-assign-opt-3').value.trim();
-        if (opt0 && opt1 && opt2 && opt3) {
-            options = [opt0, opt1, opt2, opt3];
-            correctOption = parseInt(document.getElementById('edit-assign-correct').value);
-        }
+        let opt0 = document.getElementById('edit-assign-opt-0').value.trim();
+        let opt1 = document.getElementById('edit-assign-opt-1').value.trim();
+        let opt2 = document.getElementById('edit-assign-opt-2').value.trim();
+        let opt3 = document.getElementById('edit-assign-opt-3').value.trim();
+        
+        opt0 = opt0 || "أ";
+        opt1 = opt1 || "ب";
+        opt2 = opt2 || "ج";
+        opt3 = opt3 || "د";
+
+        options = [opt0, opt1, opt2, opt3];
+        correctOption = parseInt(document.getElementById('edit-assign-correct').value);
     }
 
     // Target Students
@@ -2115,23 +2250,27 @@ async function handleSaveEditAssignment(e) {
 
     try {
         if (isCloudMode && supabaseClient) {
-            const { error } = await supabaseClient.from('assignments').update({
+            const updatePayload = {
                 title: assign.title,
                 description: assign.desc,
                 subject: assign.subject,
                 points: assign.points,
                 due_date: assign.dueDate,
                 image: assign.image,
-                link: assign.link,
                 options: assign.options,
                 correct_option: assign.correctOption,
                 target_student: Array.isArray(assign.targetStudent) ? JSON.stringify(assign.targetStudent) : assign.targetStudent
-            }).eq('id', assign.id);
-            if (error) throw error;
-        } else {
-            localStorage.setItem('masar_assignments', JSON.stringify(appState.assignments));
-        }
+            };
 
+            const { error } = await supabaseClient.from('assignments').update(updatePayload).eq('id', assign.id);
+            if (error) {
+                console.warn("Supabase update error, retrying standard payload:", error);
+                const { error: retryError } = await supabaseClient.from('assignments').update(updatePayload).eq('id', assign.id);
+                if (retryError) throw retryError;
+            }
+        }
+        
+        localStorage.setItem('masar_assignments', JSON.stringify(appState.assignments));
         showToast("تم تحديث وتعيين الواجب بنجاح! 📝", "success");
         showTeacherSection('t-assignments-tab');
     } catch (err) {
