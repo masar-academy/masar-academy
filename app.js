@@ -330,6 +330,17 @@ async function connectSupabase(url, key, showToasts = true) {
     }
 }
 
+function safeJsonParse(val, fallback = null) {
+    if (!val) return fallback;
+    if (typeof val !== 'string') return val;
+    try {
+        return JSON.parse(val);
+    } catch (e) {
+        console.warn("safeJsonParse error caught for:", val, e);
+        return fallback !== null ? fallback : val;
+    }
+}
+
 // Sync all data from Supabase
 async function syncFromCloud() {
     if (!isCloudMode || !supabaseClient) return;
@@ -381,22 +392,32 @@ async function syncFromCloud() {
             name: s.name,
             password: s.password,
             xp: s.xp || 0,
-            badges: s.badges || [],
-            enrolled_courses: s.enrolled_courses || []
+            badges: safeJsonParse(s.badges, []),
+            enrolled_courses: safeJsonParse(s.enrolled_courses, [])
         }));
         
-        appState.assignments = assignments.map(a => ({
-            id: a.id,
-            title: a.title,
-            desc: a.description,
-            subject: a.subject,
-            points: a.points,
-            dueDate: a.due_date,
-            targetStudent: (typeof a.target_student === 'string' && a.target_student.startsWith('[')) ? JSON.parse(a.target_student) : a.target_student,
-            options: a.options || [],
-            correctOption: a.correct_option !== undefined ? a.correct_option : -1,
-            image: a.image || ''
-        }));
+        appState.assignments = assignments.map(a => {
+            let target = a.target_student;
+            if (typeof target === 'string' && (target.startsWith('[') || target.startsWith('{'))) {
+                target = safeJsonParse(target, target);
+            }
+            let opts = a.options;
+            if (typeof opts === 'string') {
+                opts = safeJsonParse(opts, []);
+            }
+            return {
+                id: a.id,
+                title: a.title || '',
+                desc: a.description || '',
+                subject: a.subject || 'math',
+                points: a.points || 50,
+                dueDate: a.due_date || '',
+                targetStudent: target || 'all',
+                options: Array.isArray(opts) ? opts : [],
+                correctOption: a.correct_option !== undefined ? a.correct_option : -1,
+                image: a.image || ''
+            };
+        });
         
         appState.submissions = submissions.map(s => ({
             id: s.id,
@@ -433,7 +454,7 @@ async function syncFromCloud() {
             id: q.id,
             courseId: q.course_id,
             title: q.title,
-            questions: typeof q.questions === 'string' ? JSON.parse(q.questions) : q.questions,
+            questions: safeJsonParse(q.questions, []),
             points: q.points,
             isSimulator: q.is_simulator || false
         }));
