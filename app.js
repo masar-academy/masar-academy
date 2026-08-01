@@ -124,6 +124,33 @@ const BADGE_ICONS_LIBRARY = [
     { icon: 'fa-heart', label: 'شغف واجتهاد' }
 ];
 
+const INITIAL_TESTIMONIALS = [
+    {
+        id: 'rev-1',
+        studentName: 'عبدالرحمن العتيبي',
+        studentRole: 'طالب قدرات عامة',
+        rating: 5,
+        comment: 'الحمد لله ارتفعت درجتي في اختبار القدرات إلى 96%! طريقة شرح قوانين الجبر والسرعة في الحل غيرت مستواي تماماً. شكراً أستاذ محمد!',
+        createdAt: '2026-07-28'
+    },
+    {
+        id: 'rev-2',
+        studentName: 'سارة خالد السبيعي',
+        studentRole: 'طالبة تحصيلي رياضيات',
+        rating: 5,
+        comment: 'الدورة تأسيسية متكاملة بامتياز. التمارين التفاعلية والمحاكي الموقوت خلتني أروح لمركز قياس وأنا واثقة ومستعدة 100%.',
+        createdAt: '2026-07-29'
+    },
+    {
+        id: 'rev-3',
+        studentName: 'فيصل الشمري',
+        studentRole: 'طالب قدرات كمي ولفظي',
+        rating: 5,
+        comment: 'أفضل منصة اشتركت فيها، التصحيح المباشر للواجبات والتفاعل مع المعلم أولاً بأول اختصر علي وقت وجهد كبير.',
+        createdAt: '2026-07-30'
+    }
+];
+
 const SUBJECT_NAMES = {
     'math': 'رياضيات',
     'qudrat': 'قدرات',
@@ -140,7 +167,8 @@ let appState = {
     courses: [],
     lessons: [],
     quizzes: [],
-    messages: []
+    messages: [],
+    testimonials: []
 };
 
 // Cloud Client variables
@@ -1025,9 +1053,9 @@ function renderDrawerMenu() {
                 <i class="fa-solid fa-list-check" style="color: #60A5FA;"></i>
                 <span>الواجبات والتمارين المطلوبة</span>
             </div>
-            <div class="drawer-option-item" onclick="closeModal('hamburger-drawer-modal'); showStudentSection('s-chat-tab');">
+            <div class="drawer-option-item" onclick="closeModal('hamburger-drawer-modal'); showTestimonialsView();">
                 <i class="fa-solid fa-comments" style="color: #F472B6;"></i>
-                <span>دردش مع المعلم الخصوصي</span>
+                <span>آراء وتجارب الطلاب</span>
             </div>
             <div style="border-top: 1px solid var(--border-color); margin: 10px 0; padding-top: 10px;">
                 <div class="drawer-option-item" style="color: var(--danger); border-color: rgba(239,68,68,0.2);" onclick="closeModal('hamburger-drawer-modal'); logout();">
@@ -1055,6 +1083,10 @@ function renderDrawerMenu() {
                 <div class="drawer-option-item" onclick="closeModal('hamburger-drawer-modal'); showTeacherSection('t-chat-tab');">
                     <i class="fa-solid fa-comments" style="color: #F472B6;"></i>
                     <span>دردشة الطلاب والتواصل</span>
+                </div>
+                <div class="drawer-option-item" onclick="closeModal('hamburger-drawer-modal'); showTestimonialsView();">
+                    <i class="fa-solid fa-star" style="color: #FBBF24;"></i>
+                    <span>إدارة آراء وتجارب الطلاب</span>
                 </div>
                 <div class="drawer-option-item" onclick="closeModal('hamburger-drawer-modal'); showTeacherSection('t-account-tab');">
                     <i class="fa-solid fa-key" style="color: var(--warning);"></i>
@@ -1089,6 +1121,10 @@ function renderDrawerMenu() {
                     <i class="fa-solid fa-comments" style="color: #F472B6;"></i>
                     <span>دردشة الطلاب</span>
                 </div>
+                <div class="drawer-option-item" onclick="closeModal('hamburger-drawer-modal'); showTestimonialsView();">
+                    <i class="fa-solid fa-star" style="color: #FBBF24;"></i>
+                    <span>إدارة آراء وتجارب الطلاب</span>
+                </div>
                 <div style="border-top: 1px solid var(--border-color); margin: 10px 0; padding-top: 10px;">
                     <div class="drawer-option-item" style="color: var(--danger); border-color: rgba(239,68,68,0.2);" onclick="closeModal('hamburger-drawer-modal'); logout();">
                         <i class="fa-solid fa-right-from-bracket"></i>
@@ -1114,6 +1150,10 @@ function renderDrawerMenu() {
             <div class="drawer-option-item" onclick="closeModal('hamburger-drawer-modal'); showLandingPage();">
                 <i class="fa-solid fa-graduation-cap" style="color: var(--warning);"></i>
                 <span>استعرض الدورات ومحاكي قياس</span>
+            </div>
+            <div class="drawer-option-item" onclick="closeModal('hamburger-drawer-modal'); showTestimonialsView();">
+                <i class="fa-solid fa-star" style="color: #FBBF24;"></i>
+                <span>آراء وتجارب الطلاب</span>
             </div>
         `;
     }
@@ -1246,7 +1286,7 @@ function showStudentSection(tabId) {
 
 function hideAllViews() {
     const viewIds = [
-        'landing-view', 'login-view', 'teacher-view', 'student-view',
+        'landing-view', 'login-view', 'teacher-view', 'student-view', 'testimonials-page-view',
         'create-assignment-page-view', 'edit-assignment-page-view',
         'create-course-page-view', 'add-lesson-page-view', 'create-quiz-page-view', 'create-simulator-page-view',
         'solve-assignment-page-view', 'grade-assignment-page-view', 'adjust-xp-page-view', 'cloud-config-page-view',
@@ -1566,6 +1606,8 @@ function renderLandingPage() {
         `;
         grid.appendChild(card);
     });
+
+    renderLandingTestimonials();
 }
 
 // Student self registration handler
@@ -5567,4 +5609,217 @@ function deleteCustomBadge(key) {
         renderBadgeManagerList();
         renderTeacherStudents();
     }
+}
+
+// ==========================================
+// TESTIMONIALS & REVIEWS SYSTEM
+// ==========================================
+
+function renderLandingTestimonials() {
+    const grid = document.getElementById('landing-testimonials-grid');
+    if (!grid) return;
+    grid.innerHTML = '';
+
+    const list = (appState.testimonials && appState.testimonials.length > 0) ? appState.testimonials : INITIAL_TESTIMONIALS;
+    if (list.length === 0) {
+        grid.innerHTML = `
+            <div class="empty-state" style="grid-column: 1 / -1; padding: 25px;">
+                <i class="fa-solid fa-comments"></i>
+                <p>لا توجد آراء منشورة حالياً. كن أول من يكتب رأيه وتجربته!</p>
+            </div>`;
+        return;
+    }
+
+    const displayList = list.slice(0, 6);
+    displayList.forEach(rev => {
+        const card = createTestimonialCardHTML(rev, false);
+        grid.appendChild(card);
+    });
+}
+
+function showTestimonialsView() {
+    updateHeaderUserBadge();
+    hideAllViews();
+    const page = document.getElementById('testimonials-page-view');
+    if (page) page.style.display = 'block';
+    renderTestimonialsView();
+}
+
+function renderTestimonialsView(filterText = '') {
+    const grid = document.getElementById('full-testimonials-grid');
+    const countEl = document.getElementById('testimonials-total-count');
+    if (!grid) return;
+    grid.innerHTML = '';
+
+    let list = (appState.testimonials && appState.testimonials.length > 0) ? appState.testimonials : INITIAL_TESTIMONIALS;
+    if (filterText && filterText.trim()) {
+        const q = filterText.trim().toLowerCase();
+        list = list.filter(t => 
+            (t.studentName && t.studentName.toLowerCase().includes(q)) || 
+            (t.comment && t.comment.toLowerCase().includes(q)) || 
+            (t.studentRole && t.studentRole.toLowerCase().includes(q))
+        );
+    }
+
+    if (countEl) countEl.textContent = ((appState.testimonials && appState.testimonials.length > 0) ? appState.testimonials : INITIAL_TESTIMONIALS).length;
+
+    if (list.length === 0) {
+        grid.innerHTML = `
+            <div class="empty-state" style="grid-column: 1 / -1; padding: 35px;">
+                <i class="fa-solid fa-comment-slash"></i>
+                <p>لا توجد نتائج مطابقة للبحث حالياً.</p>
+            </div>`;
+        return;
+    }
+
+    const isTeacher = appState.currentUser && (appState.currentUser.role === 'teacher' || appState.currentUser.role === 'supervisor');
+
+    list.forEach(rev => {
+        const card = createTestimonialCardHTML(rev, isTeacher);
+        grid.appendChild(card);
+    });
+}
+
+function createTestimonialCardHTML(rev, isTeacher) {
+    const card = document.createElement('div');
+    card.className = 'glass-card';
+    card.style.cssText = 'padding: 22px; border-radius: 14px; display: flex; flex-direction: column; justify-content: space-between; position: relative; border-color: rgba(255,125,63,0.2); transition: transform 0.2s ease, border-color 0.2s ease;';
+
+    let starsHtml = '';
+    const ratingCount = rev.rating || 5;
+    for (let i = 0; i < 5; i++) {
+        if (i < ratingCount) {
+            starsHtml += `<i class="fa-solid fa-star" style="color: #FBBF24; margin-left: 3px;"></i>`;
+        } else {
+            starsHtml += `<i class="fa-regular fa-star" style="color: var(--text-muted); margin-left: 3px;"></i>`;
+        }
+    }
+
+    const deleteBtn = isTeacher ? `
+        <button class="btn btn-secondary" onclick="deleteTestimonial('${rev.id}')" title="حذف هذا الرأي" style="padding: 4px 10px; font-size: 11.5px; color: var(--danger); border-color: rgba(239,68,68,0.3); border-radius: 8px;">
+            <i class="fa-solid fa-trash"></i> حذف
+        </button>
+    ` : '';
+
+    card.innerHTML = `
+        <div>
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                <div style="font-size: 14px;">${starsHtml}</div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 11px; color: var(--text-muted);">${rev.createdAt || ''}</span>
+                    ${deleteBtn}
+                </div>
+            </div>
+            
+            <p style="font-size: 14px; color: var(--text-main); line-height: 1.6; margin-bottom: 18px; font-style: italic;">
+                "${rev.comment || ''}"
+            </p>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 12px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 12px;">
+            <div style="width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-orange), #FF5500); color: white; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 15px; flex-shrink: 0;">
+                ${rev.studentName ? rev.studentName.charAt(0) : 'ط'}
+            </div>
+            <div style="flex: 1; min-width: 0;">
+                <h5 style="font-size: 14px; font-weight: 800; color: var(--text-main); margin: 0;">${rev.studentName || 'طالب منصة مسار'}</h5>
+                <span style="font-size: 11.5px; color: var(--accent-orange); font-weight: 700;">${rev.studentRole || 'طالب قدرات وتأسيس'}</span>
+            </div>
+        </div>
+    `;
+    return card;
+}
+
+function openAddTestimonialModal() {
+    const form = document.getElementById('add-testimonial-form');
+    if (form) form.reset();
+
+    const testimName = document.getElementById('testim-name');
+    if (testimName && appState.currentUser) {
+        testimName.value = appState.currentUser.name;
+    }
+
+    openModal('add-testimonial-modal');
+}
+
+async function handleCreateTestimonial(e) {
+    e.preventDefault();
+    const name = document.getElementById('testim-name').value.trim();
+    const role = document.getElementById('testim-role').value;
+    const rating = parseInt(document.getElementById('testim-rating').value, 10) || 5;
+    const comment = document.getElementById('testim-comment').value.trim();
+
+    if (!name || !comment) {
+        showToast("يرجى كتابة اسمك ونصف الرأي والتجربة!", "danger");
+        return;
+    }
+
+    const newRev = {
+        id: 'rev-' + Date.now(),
+        studentName: name,
+        studentRole: role,
+        rating: rating,
+        comment: comment,
+        createdAt: new Date().toISOString().split('T')[0]
+    };
+
+    try {
+        if (isCloudMode && supabaseClient) {
+            await supabaseClient.from('testimonials').insert({
+                id: newRev.id,
+                student_name: newRev.studentName,
+                student_role: newRev.studentRole,
+                rating: newRev.rating,
+                comment: newRev.comment,
+                created_at: newRev.createdAt
+            });
+        }
+    } catch(err) {
+        console.warn("Supabase insert testimonial warning:", err);
+    }
+
+    if (!appState.testimonials || appState.testimonials.length === 0) {
+        appState.testimonials = [...INITIAL_TESTIMONIALS];
+    }
+    appState.testimonials.unshift(newRev);
+    try {
+        localStorage.setItem('masar_testimonials', JSON.stringify(appState.testimonials));
+    } catch(e) {}
+
+    closeModal('add-testimonial-modal');
+    showToast("شكراً لك! تم نشر رأيك وتجربتك بنجاح 🌟", "success");
+
+    renderLandingTestimonials();
+    const testimonialsView = document.getElementById('testimonials-page-view');
+    if (testimonialsView && testimonialsView.style.display !== 'none') {
+        renderTestimonialsView();
+    }
+}
+
+async function deleteTestimonial(revId) {
+    if (!confirm("هل أنت متأكد من رغبتك في حذف هذا الرأي؟")) return;
+
+    try {
+        if (isCloudMode && supabaseClient) {
+            await supabaseClient.from('testimonials').delete().eq('id', revId);
+        }
+    } catch(err) {
+        console.warn("Supabase delete testimonial error:", err);
+    }
+
+    if (!appState.testimonials || appState.testimonials.length === 0) {
+        appState.testimonials = [...INITIAL_TESTIMONIALS];
+    }
+    appState.testimonials = appState.testimonials.filter(t => t.id !== revId);
+    try {
+        localStorage.setItem('masar_testimonials', JSON.stringify(appState.testimonials));
+    } catch(e) {}
+
+    showToast("تم حذف الرأي بنجاح.", "success");
+
+    renderLandingTestimonials();
+    renderTestimonialsView();
+}
+
+function filterTestimonials(val) {
+    renderTestimonialsView(val);
 }
