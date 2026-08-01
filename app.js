@@ -459,7 +459,28 @@ async function syncFromCloud() {
             isSimulator: q.is_simulator || false
         }));
         
+        // Save synced cloud data to localStorage as offline/instant cache
+        try {
+            localStorage.setItem('masar_teachers', JSON.stringify(appState.teachers));
+            localStorage.setItem('masar_students', JSON.stringify(appState.students));
+            localStorage.setItem('masar_assignments', JSON.stringify(appState.assignments));
+            localStorage.setItem('masar_submissions', JSON.stringify(appState.submissions));
+            localStorage.setItem('masar_courses', JSON.stringify(appState.courses));
+            localStorage.setItem('masar_lessons', JSON.stringify(appState.lessons));
+            localStorage.setItem('masar_quizzes', JSON.stringify(appState.quizzes));
+            localStorage.setItem('masar_messages', JSON.stringify(appState.messages));
+        } catch(e) {}
+
         console.log("Synced successfully from Supabase cloud database.");
+
+        // Re-render UI after syncing from cloud
+        if (appState.currentUser) {
+            if (appState.currentUser.role === 'teacher' || appState.currentUser.role === 'supervisor') {
+                renderTeacherDashboard();
+            } else if (appState.currentUser.role === 'student') {
+                renderStudentDashboard();
+            }
+        }
     } catch (err) {
         console.error("Sync error:", err);
     }
