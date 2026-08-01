@@ -7,6 +7,12 @@ const INITIAL_TEACHERS = [
     { id: 'mohammed', username: 'mohammed', name: 'أ.محمد علي', password: '123456' }
 ];
 
+const INITIAL_STUDENTS = [
+    { id: 'stud-1', username: 'student1', name: 'أحمد الغامدي', password: '123', xp: 120, badges: ['first_step'], enrolled_courses: ['course-1'] },
+    { id: 'stud-2', username: 'student2', name: 'سارة خالد', password: '123', xp: 250, badges: ['first_step', 'math_master'], enrolled_courses: ['course-1'] },
+    { id: 'stud-3', username: 'student3', name: 'فيصل الشمري', password: '123', xp: 80, badges: [], enrolled_courses: [] }
+];
+
 const INITIAL_COURSES = [
     {
         id: 'course-1',
@@ -45,6 +51,33 @@ const INITIAL_QUIZZES = [
                 correct: 1
             }
         ]
+    }
+];
+
+const INITIAL_ASSIGNMENTS = [
+    {
+        id: 'assign-1',
+        title: 'واجب المتتابعات الحسابية والقدرات الكمي',
+        desc: 'أوجد حد المتتابعة الحسابية التحريرية: $٢، ٥، ٨، ١١، ...$ أوجد الحد السابع، ثم حدد الإجابة الصحيحة.',
+        subject: 'qudrat',
+        points: 50,
+        dueDate: '2026-08-15',
+        targetStudent: 'all',
+        options: ['$٢٠$', '$١٧$', '$٢٣$', '$٢٦$'],
+        correctOption: 0,
+        image: ''
+    },
+    {
+        id: 'assign-2',
+        title: 'واجب التطبيقات والهندسة الرياضية',
+        desc: 'إذا كان $س + ٣ = ٧$، أحسب قيمة $س^٢ + ٥$ مع توضيح خطوات الحل.',
+        subject: 'math',
+        points: 100,
+        dueDate: '2026-08-20',
+        targetStudent: 'all',
+        options: ['$٢١$', '$١٩$', '$١٦$', '$٢٥$'],
+        correctOption: 0,
+        image: ''
     }
 ];
 
@@ -243,11 +276,11 @@ function initDatabase() {
     if (!localStorage.getItem('masar_teachers')) {
         localStorage.setItem('masar_teachers', JSON.stringify(INITIAL_TEACHERS));
     }
-    if (!localStorage.getItem('masar_students')) {
-        localStorage.setItem('masar_students', JSON.stringify([]));
+    if (!localStorage.getItem('masar_students') || JSON.parse(localStorage.getItem('masar_students')).length === 0) {
+        localStorage.setItem('masar_students', JSON.stringify(INITIAL_STUDENTS));
     }
-    if (!localStorage.getItem('masar_assignments')) {
-        localStorage.setItem('masar_assignments', JSON.stringify([]));
+    if (!localStorage.getItem('masar_assignments') || JSON.parse(localStorage.getItem('masar_assignments')).length === 0) {
+        localStorage.setItem('masar_assignments', JSON.stringify(INITIAL_ASSIGNMENTS));
     }
     if (!localStorage.getItem('masar_submissions')) {
         localStorage.setItem('masar_submissions', JSON.stringify([]));
