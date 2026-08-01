@@ -1574,38 +1574,37 @@ function renderLandingPage() {
                 <i class="fa-solid fa-graduation-cap"></i>
                 <p>لا توجد دورات تعليمية منشورة حالياً في المنصة.</p>
             </div>`;
-        return;
-    }
-    
-    const isLoggedIn = !!appState.currentUser;
-    const btnText = isLoggedIn ? '<i class="fa-solid fa-book-open"></i> تصفح الدورة' : '<i class="fa-solid fa-lock"></i> سجل دخول لتصفح الدورة';
-    
-    appState.courses.forEach(course => {
-        const lessonsCount = appState.lessons.filter(l => l.courseId === course.id).length;
-        const quizzesCount = appState.quizzes.filter(q => q.courseId === course.id).length;
+    } else {
+        const isLoggedIn = !!appState.currentUser;
+        const btnText = isLoggedIn ? '<i class="fa-solid fa-book-open"></i> تصفح الدورة' : '<i class="fa-solid fa-lock"></i> سجل دخول لتصفح الدورة';
+        
+        appState.courses.forEach(course => {
+            const lessonsCount = appState.lessons.filter(l => l.courseId === course.id).length;
+            const quizzesCount = appState.quizzes.filter(q => q.courseId === course.id).length;
 
-        const card = document.createElement('div');
-        card.className = 'glass-card course-card';
-        card.innerHTML = `
-            <div>
-                <div class="course-header">
-                    <span class="course-subject subject-${course.subject}">${SUBJECT_NAMES[course.subject] || course.subject}</span>
+            const card = document.createElement('div');
+            card.className = 'glass-card course-card';
+            card.innerHTML = `
+                <div>
+                    <div class="course-header">
+                        <span class="course-subject subject-${course.subject}">${SUBJECT_NAMES[course.subject] || course.subject}</span>
+                    </div>
+                    <h4 style="font-size: 16px; font-weight: 700; margin-bottom: 8px; color: var(--text-main);">${course.title}</h4>
+                    <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5; margin-bottom: 15px;">${course.description}</p>
+                    
+                    <div style="display: flex; gap: 15px; font-size: 12px; color: var(--text-muted); margin-bottom: 15px;">
+                        <span><i class="fa-solid fa-video" style="color: var(--accent-orange);"></i> الدروس: ${lessonsCount}</span>
+                        <span><i class="fa-solid fa-clipboard-question" style="color: var(--success);"></i> الاختبارات: ${quizzesCount}</span>
+                    </div>
                 </div>
-                <h4 style="font-size: 16px; font-weight: 700; margin-bottom: 8px; color: var(--text-main);">${course.title}</h4>
-                <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5; margin-bottom: 15px;">${course.description}</p>
                 
-                <div style="display: flex; gap: 15px; font-size: 12px; color: var(--text-muted); margin-bottom: 15px;">
-                    <span><i class="fa-solid fa-video" style="color: var(--accent-orange);"></i> الدروس: ${lessonsCount}</span>
-                    <span><i class="fa-solid fa-clipboard-question" style="color: var(--success);"></i> الاختبارات: ${quizzesCount}</span>
-                </div>
-            </div>
-            
-            <button class="btn btn-secondary" onclick="handleLandingCourseClick('${course.id}')" style="width: 100%; border-color: var(--accent-orange); color: var(--accent-orange);">
-                ${btnText}
-            </button>
-        `;
-        grid.appendChild(card);
-    });
+                <button class="btn btn-secondary" onclick="handleLandingCourseClick('${course.id}')" style="width: 100%; border-color: var(--accent-orange); color: var(--accent-orange);">
+                    ${btnText}
+                </button>
+            `;
+            grid.appendChild(card);
+        });
+    }
 
     renderLandingTestimonials();
 }
