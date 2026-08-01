@@ -10,7 +10,7 @@
     <script>
         // Automatic Cache-Buster: Forces fresh online build fetch from GitHub
         (function() {
-            const CURRENT_BUILD = "v1785541924830";
+            const CURRENT_BUILD = "v1785617546600";
             const storedBuild = localStorage.getItem('masar_app_build');
             if (storedBuild !== CURRENT_BUILD) {
                 localStorage.setItem('masar_app_build', CURRENT_BUILD);
@@ -559,12 +559,12 @@
 
                         <!-- MCQ options (hidden by default) -->
                         <div id="assign-mcq-options-container" style="display: none; border: 1px dashed var(--border-color); padding: 15px; border-radius: 12px; margin-bottom: 20px; background: rgba(255,255,255,0.02);">
-                            <h4 style="font-size: 14px; color: var(--text-orange); margin-bottom: 12px;"><i class="fa-solid fa-list-ul"></i> خيارات السؤال (تدعم الرموز بين $):</h4>
+                            <h4 style="font-size: 14px; color: var(--text-orange); margin-bottom: 12px;"><i class="fa-solid fa-list-ul"></i> خيارات السؤال (تدعم الرموز بين $، وتكون تلقائياً أ، ب، ج، د عند تركها فارغة):</h4>
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                                <div class="form-group"><input type="text" id="assign-opt-0" placeholder="الخيار الأول (أ)" style="padding: 10px;"></div>
-                                <div class="form-group"><input type="text" id="assign-opt-1" placeholder="الخيار الثاني (ب)" style="padding: 10px;"></div>
-                                <div class="form-group"><input type="text" id="assign-opt-2" placeholder="الخيار الثالث (ج)" style="padding: 10px;"></div>
-                                <div class="form-group"><input type="text" id="assign-opt-3" placeholder="الخيار الرابع (د)" style="padding: 10px;"></div>
+                                <div class="form-group"><input type="text" id="assign-opt-0" placeholder="الخيار الأول (تلقائياً: أ)" style="padding: 10px;"></div>
+                                <div class="form-group"><input type="text" id="assign-opt-1" placeholder="الخيار الثاني (تلقائياً: ب)" style="padding: 10px;"></div>
+                                <div class="form-group"><input type="text" id="assign-opt-2" placeholder="الخيار الثالث (تلقائياً: ج)" style="padding: 10px;"></div>
+                                <div class="form-group"><input type="text" id="assign-opt-3" placeholder="الخيار الرابع (تلقائياً: د)" style="padding: 10px;"></div>
                             </div>
                             <div class="form-group" style="margin-top: 8px;">
                                 <label for="assign-correct" style="font-weight: 700;">حدد الإجابة الصحيحة للتصحيح الآلي:</label>
@@ -577,11 +577,31 @@
                             </div>
                         </div>
 
-                        <div class="form-group">
-                            <label for="assign-student" style="font-weight: 700;">الطلاب المستهدفين بالواجب:</label>
-                            <select id="assign-student" style="padding: 12px; font-size: 14px;">
-                                <!-- Dynamic Options from JS -->
-                            </select>
+                        <div style="border-top: 1px solid var(--border-color); padding-top: 20px; margin-top: 20px;">
+                            <label style="font-weight: 700; font-size: 14px; color: var(--text-main); display: block; margin-bottom: 10px;">
+                                <i class="fa-solid fa-users-line" style="color: var(--accent-orange);"></i> تحديد الطلاب المستهدفين بالواجب:
+                            </label>
+                            <div class="form-group">
+                                <select id="assign-target-type" onchange="toggleCreateAssignStudentsList(this.value)" style="padding: 12px; font-size: 14px;">
+                                    <option value="all">جميع الطلاب المشتركين</option>
+                                    <option value="custom">اختيار وتحديد طلاب معينين (أو مجموعة طلاب)</option>
+                                </select>
+                            </div>
+                            
+                            <div id="create-assign-students-container" style="display: none; background: rgba(0,0,0,0.15); border: 1px solid var(--border-color); border-radius: 10px; padding: 15px;">
+                                <div style="display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap;">
+                                    <input type="text" id="create-assign-search-input" oninput="filterCreateAssignStudents(this.value)" placeholder="🔍 ابحث عن اسم الطالب أو اسم المستخدم..." style="flex: 1; min-width: 200px; padding: 8px 12px; font-size: 13px; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-main);">
+                                    <button type="button" class="btn btn-secondary" onclick="selectAllCreateAssignStudents(true)" style="padding: 6px 12px; font-size: 12px;">
+                                        <i class="fa-solid fa-check-double"></i> اختيار الكل
+                                    </button>
+                                    <button type="button" class="btn btn-secondary" onclick="selectAllCreateAssignStudents(false)" style="padding: 6px 12px; font-size: 12px;">
+                                        <i class="fa-solid fa-square-xmark"></i> إلغاء التحديد
+                                    </button>
+                                </div>
+                                <div id="create-assign-students-grid" style="display: flex; flex-direction: column; gap: 8px; max-height: 220px; overflow-y: auto; padding-left: 4px;">
+                                    <!-- Student Checkboxes -->
+                                </div>
+                            </div>
                         </div>
                         
                         <div class="form-group">
@@ -725,12 +745,12 @@
 
                         <!-- MCQ fields for edit -->
                         <div id="edit-assign-mcq-container" style="display: none; border: 1px dashed var(--border-color); padding: 15px; border-radius: 12px; margin-bottom: 20px; background: rgba(255,255,255,0.02);">
-                            <h4 style="font-size: 14px; color: var(--text-orange); margin-bottom: 12px;"><i class="fa-solid fa-list-ul"></i> خيارات السؤال المتعدد:</h4>
+                            <h4 style="font-size: 14px; color: var(--text-orange); margin-bottom: 12px;"><i class="fa-solid fa-list-ul"></i> خيارات السؤال المتعدد (تكون تلقائياً أ، ب، ج، د عند تركها فارغة):</h4>
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                                <div class="form-group"><input type="text" id="edit-assign-opt-0" placeholder="الخيار الأول (أ)" style="padding: 10px;"></div>
-                                <div class="form-group"><input type="text" id="edit-assign-opt-1" placeholder="الخيار الثاني (ب)" style="padding: 10px;"></div>
-                                <div class="form-group"><input type="text" id="edit-assign-opt-2" placeholder="الخيار الثالث (ج)" style="padding: 10px;"></div>
-                                <div class="form-group"><input type="text" id="edit-assign-opt-3" placeholder="الخيار الرابع (د)" style="padding: 10px;"></div>
+                                <div class="form-group"><input type="text" id="edit-assign-opt-0" placeholder="الخيار الأول (تلقائياً: أ)" style="padding: 10px;"></div>
+                                <div class="form-group"><input type="text" id="edit-assign-opt-1" placeholder="الخيار الثاني (تلقائياً: ب)" style="padding: 10px;"></div>
+                                <div class="form-group"><input type="text" id="edit-assign-opt-2" placeholder="الخيار الثالث (تلقائياً: ج)" style="padding: 10px;"></div>
+                                <div class="form-group"><input type="text" id="edit-assign-opt-3" placeholder="الخيار الرابع (تلقائياً: د)" style="padding: 10px;"></div>
                             </div>
                             <div class="form-group" style="margin-top: 8px;">
                                 <label for="edit-assign-correct" style="font-weight: 700;">الخيار الصحيح:</label>
@@ -755,8 +775,19 @@
                                 </select>
                             </div>
                             
-                            <div id="edit-assign-students-grid" style="display: none; max-height: 200px; overflow-y: auto; background: rgba(0,0,0,0.15); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px; flex-direction: column; gap: 8px;">
-                                <!-- Student Checkboxes -->
+                            <div id="edit-assign-students-container" style="display: none; background: rgba(0,0,0,0.15); border: 1px solid var(--border-color); border-radius: 10px; padding: 15px;">
+                                <div style="display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap;">
+                                    <input type="text" id="edit-assign-search-input" oninput="filterEditAssignStudents(this.value)" placeholder="🔍 ابحث عن اسم الطالب أو اسم المستخدم..." style="flex: 1; min-width: 200px; padding: 8px 12px; font-size: 13px; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-main);">
+                                    <button type="button" class="btn btn-secondary" onclick="selectAllEditAssignStudents(true)" style="padding: 6px 12px; font-size: 12px;">
+                                        <i class="fa-solid fa-check-double"></i> اختيار الكل
+                                    </button>
+                                    <button type="button" class="btn btn-secondary" onclick="selectAllEditAssignStudents(false)" style="padding: 6px 12px; font-size: 12px;">
+                                        <i class="fa-solid fa-square-xmark"></i> إلغاء التحديد
+                                    </button>
+                                </div>
+                                <div id="edit-assign-students-grid" style="display: flex; flex-direction: column; gap: 8px; max-height: 220px; overflow-y: auto; padding-left: 4px;">
+                                    <!-- Student Checkboxes -->
+                                </div>
                             </div>
                         </div>
 
