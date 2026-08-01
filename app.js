@@ -1645,15 +1645,18 @@ async function handleStudentRegister(e) {
 async function renderTeacherDashboard() {
     if (isCloudMode) await syncFromCloud();
 
-    // Populate Target Student options dynamically
+    // Populate Target Student options dynamically if element exists
     const assignStudentSelect = document.getElementById('assign-student');
-    assignStudentSelect.innerHTML = '<option value="all">كل الطلاب</option>';
-    appState.students.forEach(stud => {
-        const option = document.createElement('option');
-        option.value = stud.id;
-        option.textContent = stud.name;
-        assignStudentSelect.appendChild(option);
-    });
+    if (assignStudentSelect) {
+        assignStudentSelect.innerHTML = '<option value="all">كل الطلاب</option>';
+        appState.students.forEach(stud => {
+            const option = document.createElement('option');
+            option.value = stud.id;
+            option.textContent = stud.name;
+            assignStudentSelect.appendChild(option);
+        });
+    }
+    populateCreateAssignStudentsList();
 
     // Stats
     document.getElementById('t-stat-students').textContent = appState.students.length;
