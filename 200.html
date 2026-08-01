@@ -4,13 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>منصة مسار التعليمية - لوحة تحكم المعلم والطلاب</title>
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-age=0">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <script>
+        // Automatic HTTPS Redirect
+        if (window.location.protocol === 'http:' && !window.location.hostname.includes('localhost') && !window.location.hostname.includes('127.0.0.1')) {
+            window.location.href = window.location.href.replace('http:', 'https:');
+        }
+    </script>
+    <script>
         // Automatic Cache-Buster: Forces fresh online build fetch from GitHub
         (function() {
-            const CURRENT_BUILD = "v1785619491425";
+            const CURRENT_BUILD = "v1785620641144";
             const storedBuild = localStorage.getItem('masar_app_build');
             if (storedBuild !== CURRENT_BUILD) {
                 localStorage.setItem('masar_app_build', CURRENT_BUILD);
