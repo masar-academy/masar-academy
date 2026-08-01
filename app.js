@@ -386,78 +386,183 @@ async function syncFromCloud() {
         }));
         
         // Map students with enrolled_courses column
-        appState.students = students.map(s => ({
-            id: s.id,
-            username: s.username,
-            name: s.name,
-            password: s.password,
-            xp: s.xp || 0,
-            badges: safeJsonParse(s.badges, []),
-            enrolled_courses: safeJsonParse(s.enrolled_courses, [])
-        }));
-        
-        appState.assignments = assignments.map(a => {
-            let target = a.target_student;
-            if (typeof target === 'string' && (target.startsWith('[') || target.startsWith('{'))) {
-                target = safeJsonParse(target, target);
+        if (students.length > 0) {
+            appState.students = students.map(s => ({
+                id: s.id,
+                username: s.username,
+                name: s.name,
+                password: s.password,
+                xp: s.xp || 0,
+                badges: safeJsonParse(s.badges, []),
+                enrolled_courses: safeJsonParse(s.enrolled_courses, [])
+            }));
+        } else {
+            const localStudents = safeJsonParse(localStorage.getItem('masar_students'), []);
+            if (localStudents && localStudents.length > 0) {
+                appState.students = localStudents;
+                for (const s of localStudents) {
+                    try {
+                        await supabaseClient.from('students').insert({
+                            id: s.id,
+                            username: s.username,
+                            name: s.name,
+                            password: s.password,
+                            xp: s.xp || 0,
+                            badges: s.badges,
+                            enrolled_courses: s.enrolled_courses
+                        });
+                    } catch(e) {}
+                }
             }
-            let opts = a.options;
-            if (typeof opts === 'string') {
-                opts = safeJsonParse(opts, []);
-            }
-            return {
-                id: a.id,
-                title: a.title || '',
-                desc: a.description || '',
-                subject: a.subject || 'math',
-                points: a.points || 50,
-                dueDate: a.due_date || '',
-                targetStudent: target || 'all',
-                options: Array.isArray(opts) ? opts : [],
-                correctOption: a.correct_option !== undefined ? a.correct_option : -1,
-                image: a.image || ''
-            };
-        });
+        }
         
-        appState.submissions = submissions.map(s => ({
-            id: s.id,
-            assignmentId: s.assignment_id,
-            studentId: s.student_id,
-            answer: s.answer,
-            link: s.link,
-            status: s.status,
-            grade: s.grade,
-            feedback: s.feedback,
-            submittedAt: s.submitted_at,
-            gradedAt: s.graded_at,
-            bonusXp: s.bonus_xp,
-            selectedOption: s.selected_option !== undefined ? s.selected_option : -1
-        }));
+        if (assignments.length > 0) {
+            appState.assignments = assignments.map(a => {
+                let target = a.target_student;
+                if (typeof target === 'string' && (target.startsWith('[') || target.startsWith('{'))) {
+                    target = safeJsonParse(target, target);
+                }
+                let opts = a.options;
+                if (typeof opts === 'string') {
+                    opts = safeJsonParse(opts, []);
+                }
+                return {
+                    id: a.id,
+                    title: a.title || '',
+                    desc: a.description || '',
+                    subject: a.subject || 'math',
+                    points: a.points || 50,
+                    dueDate: a.due_date || '',
+                    targetStudent: target || 'all',
+                    options: Array.isArray(opts) ? opts : [],
+                    correctOption: a.correct_option !== undefined ? a.correct_option : -1,
+                    image: a.image || ''
+                };
+            });
+        } else {
+            const localAssignments = safeJsonParse(localStorage.getItem('masar_assignments'), []);
+            if (localAssignments && localAssignments.length > 0) {
+                appState.assignments = localAssignments;
+                for (const a of localAssignments) {
+                    try {
+                        await supabaseClient.from('assignments').insert({
+                            id: a.id,
+                            title: a.title,
+                            description: a.desc,
+                            subject: a.subject,
+                            points: a.points,
+                            due_date: a.dueDate,
+                            target_student: Array.isArray(a.targetStudent) ? JSON.stringify(a.targetStudent) : a.targetStudent,
+                            options: a.options,
+                            correct_option: a.correctOption,
+                            image: a.image
+                        });
+                    } catch(e) {}
+                }
+            }
+        }
+        
+        if (submissions.length > 0) {
+            appState.submissions = submissions.map(s => ({
+                id: s.id,
+                assignmentId: s.assignment_id,
+                studentId: s.student_id,
+                answer: s.answer,
+                link: s.link,
+                status: s.status,
+                grade: s.grade,
+                feedback: s.feedback,
+                submittedAt: s.submitted_at,
+                gradedAt: s.graded_at,
+                bonusXp: s.bonus_xp,
+                selectedOption: s.selected_option !== undefined ? s.selected_option : -1
+            }));
+        } else {
+            const localSubmissions = safeJsonParse(localStorage.getItem('masar_submissions'), []);
+            if (localSubmissions && localSubmissions.length > 0) {
+                appState.submissions = localSubmissions;
+            }
+        }
 
-        appState.courses = courses.map(c => ({
-            id: c.id,
-            title: c.title,
-            description: c.description,
-            subject: c.subject,
-            createdAt: c.created_at
-        }));
+        if (courses.length > 0) {
+            appState.courses = courses.map(c => ({
+                id: c.id,
+                title: c.title,
+                description: c.description,
+                subject: c.subject,
+                createdAt: c.created_at
+            }));
+        } else {
+            const localCourses = safeJsonParse(localStorage.getItem('masar_courses'), INITIAL_COURSES);
+            if (localCourses && localCourses.length > 0) {
+                appState.courses = localCourses;
+                for (const c of localCourses) {
+                    try {
+                        await supabaseClient.from('courses').insert({
+                            id: c.id,
+                            title: c.title,
+                            description: c.description,
+                            subject: c.subject,
+                            created_at: c.createdAt
+                        });
+                    } catch(e) {}
+                }
+            }
+        }
 
-        appState.lessons = lessons.map(l => ({
-            id: l.id,
-            courseId: l.course_id,
-            title: l.title,
-            videoUrl: l.video_url,
-            duration: l.duration
-        }));
+        if (lessons.length > 0) {
+            appState.lessons = lessons.map(l => ({
+                id: l.id,
+                courseId: l.course_id,
+                title: l.title,
+                videoUrl: l.video_url,
+                duration: l.duration
+            }));
+        } else {
+            const localLessons = safeJsonParse(localStorage.getItem('masar_lessons'), INITIAL_LESSONS);
+            if (localLessons && localLessons.length > 0) {
+                appState.lessons = localLessons;
+                for (const l of localLessons) {
+                    try {
+                        await supabaseClient.from('lessons').insert({
+                            id: l.id,
+                            course_id: l.courseId,
+                            title: l.title,
+                            video_url: l.videoUrl,
+                            duration: l.duration
+                        });
+                    } catch(e) {}
+                }
+            }
+        }
 
-        appState.quizzes = quizzes.map(q => ({
-            id: q.id,
-            courseId: q.course_id,
-            title: q.title,
-            questions: safeJsonParse(q.questions, []),
-            points: q.points,
-            isSimulator: q.is_simulator || false
-        }));
+        if (quizzes.length > 0) {
+            appState.quizzes = quizzes.map(q => ({
+                id: q.id,
+                courseId: q.course_id,
+                title: q.title,
+                questions: safeJsonParse(q.questions, []),
+                points: q.points,
+                isSimulator: q.is_simulator || false
+            }));
+        } else {
+            const localQuizzes = safeJsonParse(localStorage.getItem('masar_quizzes'), INITIAL_QUIZZES);
+            if (localQuizzes && localQuizzes.length > 0) {
+                appState.quizzes = localQuizzes;
+                for (const q of localQuizzes) {
+                    try {
+                        await supabaseClient.from('quizzes').insert({
+                            id: q.id,
+                            course_id: q.courseId,
+                            title: q.title,
+                            questions: typeof q.questions === 'object' ? JSON.stringify(q.questions) : q.questions,
+                            points: q.points,
+                            is_simulator: q.isSimulator
+                        });
+                    } catch(e) {}
+                }
+            }
+        }
         
         // Save synced cloud data to localStorage as offline/instant cache
         try {
