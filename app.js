@@ -325,6 +325,9 @@ function initDatabase() {
     if (!localStorage.getItem('masar_messages')) {
         localStorage.setItem('masar_messages', JSON.stringify([]));
     }
+    if (!localStorage.getItem('masar_testimonials') || JSON.parse(localStorage.getItem('masar_testimonials')).length === 0) {
+        localStorage.setItem('masar_testimonials', JSON.stringify(INITIAL_TESTIMONIALS));
+    }
     
     appState.teachers = JSON.parse(localStorage.getItem('masar_teachers'));
     appState.students = JSON.parse(localStorage.getItem('masar_students'));
@@ -334,6 +337,7 @@ function initDatabase() {
     appState.lessons = JSON.parse(localStorage.getItem('masar_lessons'));
     appState.quizzes = JSON.parse(localStorage.getItem('masar_quizzes'));
     appState.messages = JSON.parse(localStorage.getItem('masar_messages')) || [];
+    appState.testimonials = safeJsonParse(localStorage.getItem('masar_testimonials'), INITIAL_TESTIMONIALS);
     
     // Connect to Supabase if config is hardcoded or saved in localStorage
     const savedUrl = localStorage.getItem('masar_cloud_url');
@@ -635,6 +639,7 @@ async function syncFromCloud() {
             localStorage.setItem('masar_lessons', JSON.stringify(appState.lessons));
             localStorage.setItem('masar_quizzes', JSON.stringify(appState.quizzes));
             localStorage.setItem('masar_messages', JSON.stringify(appState.messages));
+            localStorage.setItem('masar_testimonials', JSON.stringify(appState.testimonials));
         } catch(e) {}
 
         console.log("Synced successfully from Supabase cloud database.");
@@ -646,6 +651,8 @@ async function syncFromCloud() {
             } else if (appState.currentUser.role === 'student') {
                 renderStudentDashboard();
             }
+        } else {
+            renderLandingPage();
         }
     } catch (err) {
         console.error("Sync error:", err);
