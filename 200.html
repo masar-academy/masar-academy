@@ -17,7 +17,7 @@
     <script>
         // Automatic Cache-Buster: Forces fresh online build fetch from GitHub
         (function() {
-            const CURRENT_BUILD = "v1785788669017";
+            const CURRENT_BUILD = "v1785789013841";
             const storedBuild = localStorage.getItem('masar_app_build');
             if (storedBuild !== CURRENT_BUILD) {
                 localStorage.setItem('masar_app_build', CURRENT_BUILD);
@@ -43,7 +43,7 @@
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
     <!-- Main Style Sheet -->
-    <link rel="stylesheet" href="style.css?v=v1785788669017">
+    <link rel="stylesheet" href="style.css?v=v1785789013841">
 </head>
 <body>
 
@@ -1539,28 +1539,63 @@
 
         <!-- PAGE VIEW 8: EXAM SIMULATOR PLAYER (Full Page) -->
         <section id="student-simulator-page-view" class="fade-in" style="display: none;">
-            <div class="glass-card" style="max-width: 900px; margin: 0 auto; padding: 30px;">
+            <div class="glass-card" style="max-width: 1150px; margin: 0 auto; padding: 25px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; flex-wrap: wrap; gap: 12px;">
                     <div>
                         <h2 style="font-size: 22px; font-weight: 800; color: var(--text-main);" id="simulator-player-title">محاكي اختبارات قياس</h2>
                         <div id="simulator-player-section-title" style="font-size: 14px; color: var(--text-orange); margin-top: 6px; font-weight: 800;">القسم الحالي: --</div>
                     </div>
-                    <div style="display: flex; align-items: center; gap: 10px; background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.25); padding: 8px 16px; border-radius: 10px; color: var(--danger); font-weight: 800; font-size: 16px;">
+                    <div style="display: flex; align-items: center; gap: 10px; background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.25); padding: 8px 18px; border-radius: 10px; color: var(--danger); font-weight: 800; font-size: 17px;">
                         <i class="fa-regular fa-clock" id="simulator-timer-icon"></i>
-                        <span id="simulator-timer-display" style="font-family: monospace; letter-spacing: 0.5px;">00:00</span>
+                        <span id="simulator-timer-display" style="font-family: monospace; letter-spacing: 1px;">00:00</span>
                     </div>
                 </div>
                 
-                <div id="simulator-player-body" style="padding: 15px 0; min-height: 300px;">
-                    <!-- Section Questions will render here -->
-                </div>
-                
-                <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 20px; margin-top: 20px; flex-wrap: wrap; gap: 12px;">
-                    <div style="font-size: 13.5px; color: var(--text-muted); font-weight: 700;" id="simulator-progress-text">القسم 1 من 1</div>
-                    <button type="button" class="btn btn-primary" id="simulator-submit-section-btn" onclick="submitSimulatorSection(false)" style="padding: 12px 28px; font-size: 14px; font-weight: 800;">
-                        <span id="simulator-btn-text">تسليم القسم والانتقال للقسم التالي</span>
-                        <i class="fa-solid fa-arrow-left"></i>
-                    </button>
+                <div class="simulator-layout-grid" style="display: grid; grid-template-columns: 270px 1fr; gap: 20px; align-items: start;">
+                    
+                    <!-- RIGHT SIDEBAR: Question Navigation & Legend -->
+                    <div class="simulator-nav-sidebar" style="background: rgba(0,0,0,0.25); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; position: sticky; top: 80px; max-height: calc(100vh - 120px); overflow-y: auto;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; border-bottom: 1px dashed var(--border-color); padding-bottom: 8px;">
+                            <span style="font-size: 13.5px; font-weight: 800; color: var(--text-main);">
+                                <i class="fa-solid fa-list-ol" style="color: var(--accent-orange); margin-left: 6px;"></i> أسئلة هذا القسم
+                            </span>
+                            <span id="simulator-nav-counter-badge" style="font-size: 11px; background: rgba(255,255,255,0.08); padding: 2px 8px; border-radius: 10px; color: var(--text-muted); font-weight: bold;">0 / 0</span>
+                        </div>
+
+                        <!-- Legend Indicators -->
+                        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; font-size: 11px; color: var(--text-muted); background: rgba(0,0,0,0.15); padding: 8px; border-radius: 8px;">
+                            <div style="display: flex; align-items: center; gap: 4px;">
+                                <span style="width: 10px; height: 10px; border-radius: 50%; background: var(--success); display: inline-block;"></span> مجاب ✓
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 4px;">
+                                <span style="width: 10px; height: 10px; border-radius: 50%; background: var(--accent-orange); display: inline-block;"></span> مراجعة 🔖
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 4px;">
+                                <span style="width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,0.2); display: inline-block;"></span> لم يُحل
+                            </div>
+                        </div>
+
+                        <!-- Questions Grid Buttons -->
+                        <div id="simulator-questions-nav-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;">
+                            <!-- Populated dynamically by JS -->
+                        </div>
+                    </div>
+
+                    <!-- LEFT MAIN CONTENT: Questions List -->
+                    <div style="min-width: 0;">
+                        <div id="simulator-player-body" style="min-height: 300px;">
+                            <!-- Section Questions will render here -->
+                        </div>
+                        
+                        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 20px; margin-top: 20px; flex-wrap: wrap; gap: 12px;">
+                            <div style="font-size: 13.5px; color: var(--text-muted); font-weight: 700;" id="simulator-progress-text">القسم 1 من 1</div>
+                            <button type="button" class="btn btn-primary" id="simulator-submit-section-btn" onclick="submitSimulatorSection(false)" style="padding: 12px 28px; font-size: 14px; font-weight: 800;">
+                                <span id="simulator-btn-text">تسليم القسم والانتقال للقسم التالي</span>
+                                <i class="fa-solid fa-arrow-left"></i>
+                            </button>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </section>
@@ -1894,7 +1929,7 @@
     <div class="toast-container" id="toast-container"></div>
 
     <!-- Main JavaScript Logic -->
-    <script src="app.js?v=v1785788669017"></script>
+    <script src="app.js?v=v1785789013841"></script>
     <script>
         // Unregister any legacy cached ServiceWorkers
         if ('serviceWorker' in navigator) {
