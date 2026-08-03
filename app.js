@@ -2089,26 +2089,28 @@ function populateCreateAssignStudentsList() {
     }
 
     appState.students.forEach(student => {
-        const label = document.createElement('label');
-        label.className = 'create-assign-student-item';
-        label.dataset.name = (student.name || '').toLowerCase();
-        label.dataset.username = (student.username || '').toLowerCase();
-        label.style.display = 'inline-flex';
-        label.style.alignItems = 'center';
-        label.style.gap = '8px';
-        label.style.fontSize = '13px';
-        label.style.cursor = 'pointer';
-        label.style.padding = '6px 10px';
-        label.style.borderRadius = '6px';
-        label.style.background = 'rgba(255,255,255,0.03)';
-        label.style.border = '1px solid var(--border-color)';
-        
-        label.innerHTML = `
-            <input type="checkbox" class="create-assign-student-cb" value="${student.id}" style="accent-color: var(--accent-orange);" onchange="updateStudentItemStyle(this)">
-            <strong style="color: var(--text-main);">${escapeHtml(student.name)}</strong>
-            <span style="font-size: 11px; color: var(--text-muted);">(@${escapeHtml(student.username)})</span>
+        const item = document.createElement('div');
+        item.className = 'create-assign-student-item';
+        item.dataset.name = (student.name || '').toLowerCase();
+        item.dataset.username = (student.username || '').toLowerCase();
+        item.style.cssText = 'display: inline-flex; align-items: center; gap: 10px; font-size: 13px; cursor: pointer; padding: 8px 12px; border-radius: 8px; background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); user-select: none; transition: all 0.15s ease;';
+
+        item.onclick = function(e) {
+            const cb = this.querySelector('.create-assign-student-cb');
+            if (cb) {
+                if (e.target !== cb) {
+                    cb.checked = !cb.checked;
+                }
+                updateStudentItemStyle(cb);
+            }
+        };
+
+        item.innerHTML = `
+            <input type="checkbox" class="create-assign-student-cb" value="${student.id}" style="accent-color: var(--accent-orange); width: 17px; height: 17px; cursor: pointer;" onclick="event.stopPropagation(); updateStudentItemStyle(this);" onchange="updateStudentItemStyle(this);">
+            <strong style="color: var(--text-main); pointer-events: none;">${escapeHtml(student.name)}</strong>
+            <span style="font-size: 11px; color: var(--text-muted); pointer-events: none;">(@${escapeHtml(student.username)})</span>
         `;
-        grid.appendChild(label);
+        grid.appendChild(item);
     });
 }
 
@@ -2136,8 +2138,8 @@ function filterCreateAssignStudents(query) {
 function selectAllCreateAssignStudents(checkAll) {
     const cbs = document.querySelectorAll('.create-assign-student-cb');
     cbs.forEach(cb => {
-        const parentLabel = cb.closest('.create-assign-student-item');
-        if (parentLabel && parentLabel.style.display !== 'none') {
+        const parentItem = cb.closest('.create-assign-student-item');
+        if (parentItem && parentItem.style.display !== 'none') {
             cb.checked = checkAll;
             updateStudentItemStyle(cb);
         }
@@ -2171,8 +2173,8 @@ function filterEditAssignStudents(query) {
 function selectAllEditAssignStudents(checkAll) {
     const cbs = document.querySelectorAll('.edit-assign-student-cb');
     cbs.forEach(cb => {
-        const parentLabel = cb.closest('.edit-assign-student-item');
-        if (parentLabel && parentLabel.style.display !== 'none') {
+        const parentItem = cb.closest('.edit-assign-student-item');
+        if (parentItem && parentItem.style.display !== 'none') {
             cb.checked = checkAll;
             updateStudentItemStyle(cb);
         }
@@ -2180,10 +2182,10 @@ function selectAllEditAssignStudents(checkAll) {
 }
 
 function updateStudentItemStyle(cb) {
-    const label = cb.closest('label');
-    if (label) {
-        label.style.background = cb.checked ? 'rgba(255,107,0,0.15)' : 'rgba(255,255,255,0.03)';
-        label.style.border = cb.checked ? '1px solid var(--accent-orange)' : '1px solid var(--border-color)';
+    const item = cb.closest('.create-assign-student-item, .edit-assign-student-item');
+    if (item) {
+        item.style.background = cb.checked ? 'rgba(255,107,0,0.15)' : 'rgba(255,255,255,0.03)';
+        item.style.border = cb.checked ? '1px solid var(--accent-orange)' : '1px solid var(--border-color)';
     }
 }
 
@@ -2385,26 +2387,28 @@ function openEditAssignmentModal(assignId) {
 
     appState.students.forEach(student => {
         const isChecked = targetedIds.includes(student.id);
-        const label = document.createElement('label');
-        label.className = 'edit-assign-student-item';
-        label.dataset.name = (student.name || '').toLowerCase();
-        label.dataset.username = (student.username || '').toLowerCase();
-        label.style.display = 'inline-flex';
-        label.style.alignItems = 'center';
-        label.style.gap = '8px';
-        label.style.fontSize = '13px';
-        label.style.cursor = 'pointer';
-        label.style.padding = '6px 10px';
-        label.style.borderRadius = '6px';
-        label.style.background = isChecked ? 'rgba(255,107,0,0.15)' : 'rgba(255,255,255,0.03)';
-        label.style.border = isChecked ? '1px solid var(--accent-orange)' : '1px solid var(--border-color)';
-        
-        label.innerHTML = `
-            <input type="checkbox" class="edit-assign-student-cb" value="${student.id}" ${isChecked ? 'checked' : ''} style="accent-color: var(--accent-orange);" onchange="updateStudentItemStyle(this)">
-            <strong style="color: var(--text-main);">${escapeHtml(student.name)}</strong>
-            <span style="font-size: 11px; color: var(--text-muted);">(@${escapeHtml(student.username)})</span>
+        const item = document.createElement('div');
+        item.className = 'edit-assign-student-item';
+        item.dataset.name = (student.name || '').toLowerCase();
+        item.dataset.username = (student.username || '').toLowerCase();
+        item.style.cssText = `display: inline-flex; align-items: center; gap: 10px; font-size: 13px; cursor: pointer; padding: 8px 12px; border-radius: 8px; background: ${isChecked ? 'rgba(255,107,0,0.15)' : 'rgba(255,255,255,0.03)'}; border: ${isChecked ? '1px solid var(--accent-orange)' : '1px solid var(--border-color)'}; user-select: none; transition: all 0.15s ease;`;
+
+        item.onclick = function(e) {
+            const cb = this.querySelector('.edit-assign-student-cb');
+            if (cb) {
+                if (e.target !== cb) {
+                    cb.checked = !cb.checked;
+                }
+                updateStudentItemStyle(cb);
+            }
+        };
+
+        item.innerHTML = `
+            <input type="checkbox" class="edit-assign-student-cb" value="${student.id}" ${isChecked ? 'checked' : ''} style="accent-color: var(--accent-orange); width: 17px; height: 17px; cursor: pointer;" onclick="event.stopPropagation(); updateStudentItemStyle(this);" onchange="updateStudentItemStyle(this);">
+            <strong style="color: var(--text-main); pointer-events: none;">${escapeHtml(student.name)}</strong>
+            <span style="font-size: 11px; color: var(--text-muted); pointer-events: none;">(@${escapeHtml(student.username)})</span>
         `;
-        grid.appendChild(label);
+        grid.appendChild(item);
     });
 
     hideAllViews();
