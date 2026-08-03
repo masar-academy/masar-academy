@@ -1344,3 +1344,62 @@ footer span {
     box-shadow: 0 10px 25px rgba(0,0,0,0.3);
 }
 
+/* Simulator Question Navigation Sidebar */
+.sim-nav-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 8px 4px;
+    color: var(--text-main);
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.sim-nav-btn:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: var(--accent-orange);
+    transform: translateY(-1px);
+}
+
+.sim-nav-btn.answered {
+    background: rgba(16, 185, 129, 0.15);
+    border-color: var(--success);
+    color: var(--success);
+}
+
+.sim-nav-btn.flagged {
+    border-color: var(--accent-orange) !important;
+    box-shadow: 0 0 10px rgba(255, 125, 63, 0.4);
+}
+
+.sim-nav-btn.flagged::after {
+    content: '🔖';
+    position: absolute;
+    top: -6px;
+    right: -4px;
+    font-size: 10px;
+}
+
+@media (max-width: 768px) {
+    .simulator-layout-grid {
+        grid-template-columns: 1fr !important;
+    }
+    .simulator-nav-sidebar {
+        position: relative !important;
+        top: 0 !important;
+        max-height: 220px !important;
+        margin-bottom: 15px;
+    }
+    #simulator-questions-nav-grid {
+        grid-template-columns: repeat(6, 1fr) !important;
+    }
+}
+
