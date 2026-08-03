@@ -3133,151 +3133,19 @@ function openEditLessonModal(lessonId) {
     if (mTitle) mTitle.textContent = course.title;
     
     document.getElementById('lesson-title').value = lesson.title;
-    document.getElementById('lesson-duration').value = lesson.duration;
+    document.getElementById('lesson-duration').value = lesson.duration || '10:00';
     
-    if (lesson.videoUrl.startsWith('blob:')) {
+    if (lesson.videoUrl && lesson.videoUrl.startsWith('blob:')) {
         document.getElementById('lesson-video-type').value = 'local';
         toggleVideoSourceInput('local');
     } else {
         document.getElementById('lesson-video-type').value = 'url';
         toggleVideoSourceInput('url');
-        document.getElementById('lesson-video-url').value = lesson.videoUrl;
+        document.getElementById('lesson-video-url').value = lesson.videoUrl || '';
     }
     
     hideAllViews();
     document.getElementById('add-lesson-page-view').style.display = 'block';
-}
-
-async function handleCreateLesson(e) {
-    e.preventDefault();
-    const courseId = document.getElementById('lesson-course-id').value;
-    const editId = document.getElementById('lesson-edit-id').value;
-    const title = document.getElementById('lesson-title').value.trim();
-    const videoSourceType = document.getElementById('lesson-video-type').value;
-    const duration = document.getElementById('lesson-duration').value.trim() || '10:00';
-    
-    let videoUrl = '';
-    if (videoSourceType === 'url') {
-        videoUrl = document.getElementById('lesson-video-url').value.trim();
-    } else {
-        const fileInput = document.getElementById('lesson-video-file');
-        if (fileInput.files.length === 0) {
-            if (editId) {
-                const lesson = appState.lessons.find(l => l.id === editId);
-                videoUrl = lesson ? lesson.videoUrl : '';
-            } else {
-                showToast("يرجى اختيار ملف الفيديو أولاً!", "danger");
-                return;
-            }
-        } else {
-            const file = fileInput.files[0];
-            videoUrl = URL.createObjectURL(file);
-        }
-    }
-
-    if (editId) {
-        // Edit Mode
-        const lesson = appState.lessons.find(l => l.id === editId);
-        if (!lesson) return;
-        const oldTitle = lesson.title;
-        const oldUrl = lesson.videoUrl;
-        const oldDur = lesson.duration;
-        
-        lesson.title = title;
-        lesson.videoUrl = videoUrl;
-        lesson.duration = duration;
-        
-        try {
-            if (isCloudMode && supabaseClient) {
-                const { error } = await supabaseClient.from('lessons').update({
-                    title: lesson.title,
-                    video_url: lesson.videoUrl,
-                    duration: lesson.duration
-                }).eq('id', editId);
-                if (error) throw error;
-            } else {
-                localStorage.setItem('masar_lessons', JSON.stringify(appState.lessons));
-            }
-            closeModal('create-lesson-modal');
-            const form = document.getElementById('create-lesson-form');
-            if (form) form.reset();
-            showToast("تم تعديل درس الفيديو بنجاح! 🎥", "success");
-            showTeacherSection('t-courses-tab');
-            const cmView1 = document.getElementById('teacher-course-manage-page-view');
-            if (cmView1 && cmView1.style.display !== 'none') {
-                openTeacherCourseManageModal(courseId);
-            }
-        } catch (err) {
-            console.error(err);
-            lesson.title = oldTitle;
-            lesson.videoUrl = oldUrl;
-            lesson.duration = oldDur;
-            showToast("فشل تعديل الدرس في السحابة!", "danger");
-        }
-    } else {
-        // Create Mode
-        const newLesson = {
-            id: 'lesson-' + Date.now(),
-            courseId,
-            title,
-            videoUrl,
-            duration
-        };
-
-        try {
-            if (isCloudMode && supabaseClient) {
-                const { error } = await supabaseClient.from('lessons').insert({
-                    id: newLesson.id,
-                    course_id: newLesson.courseId,
-                    title: newLesson.title,
-                    video_url: newLesson.videoUrl,
-                    duration: newLesson.duration
-                });
-                if (error) throw error;
-            } else {
-                appState.lessons.push(newLesson);
-                localStorage.setItem('masar_lessons', JSON.stringify(appState.lessons));
-            }
-
-            closeModal('create-lesson-modal');
-            showToast("تمت إضافة درس الفيديو بنجاح! 🎥", "success");
-            showTeacherSection('t-courses-tab');
-            const cmView2 = document.getElementById('teacher-course-manage-page-view');
-            if (cmView2 && cmView2.style.display !== 'none') {
-                openTeacherCourseManageModal(courseId);
-            }
-        } catch (err) {
-            console.error(err);
-            showToast("فشل إضافة درس الفيديو في السحابة!", "danger");
-        }
-    }
-}
-
-async function deleteLesson(lessonId) {
-    const lesson = appState.lessons.find(l => l.id === lessonId);
-    if (!lesson) return;
-    const courseId = lesson.courseId;
-    
-    if (confirm(`هل أنت متأكد من حذف الدرس "${lesson.title}"؟`)) {
-        try {
-            if (isCloudMode && supabaseClient) {
-                const { error } = await supabaseClient.from('lessons').delete().eq('id', lessonId);
-                if (error) throw error;
-            } else {
-                appState.lessons = appState.lessons.filter(l => l.id !== lessonId);
-                localStorage.setItem('masar_lessons', JSON.stringify(appState.lessons));
-            }
-            showToast("تم حذف الدرس بنجاح.", "success");
-            await renderTeacherDashboard();
-            const cmView3 = document.getElementById('teacher-course-manage-page-view');
-            if (cmView3 && cmView3.style.display !== 'none') {
-                openTeacherCourseManageModal(courseId);
-            }
-        } catch (err) {
-            console.error(err);
-            showToast("فشل حذف الدرس من السحابة!", "danger");
-        }
-    }
 }
 
 function openAddQuizModal(courseId, courseTitle) {
@@ -3374,7 +3242,6 @@ async function handleQuestionImageSelect(inputEl) {
             hiddenInput.value = compressedBase64;
         }
         
-        // Render a preview
         let previewContainer = inputEl.parentElement.querySelector('.question-image-preview-container');
         if (!previewContainer) {
             previewContainer = document.createElement('div');
@@ -3413,20 +3280,20 @@ function addQuizQuestionEditorRow(questionData = null) {
         <button type="button" class="remove-question-btn" onclick="this.parentElement.remove()" title="حذف هذا السؤال">&times;</button>
         <div style="font-weight: 700; font-size: 13px; color: var(--text-orange); margin-bottom: 8px;">السؤال ${index}:</div>
         <div class="form-group">
-            <input type="text" class="question-text" required placeholder="اكتب السؤال هنا (مثال: إذا كان $س = ٥$ فما قيمة $س^٢$؟)" value="${questionData ? escapeHtml(questionData.question) : ''}">
+            <input type="text" class="question-text" placeholder="اكتب السؤال هنا (مثال: إذا كان $س = ٥$ فما قيمة $س^٢$؟)" value="${questionData ? escapeHtml(questionData.question) : ''}">
         </div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
             <div class="form-group">
-                <input type="text" class="opt-0" required placeholder="الخيار الأول (أ)" value="${questionData ? escapeHtml(questionData.options[0] || '') : ''}">
+                <input type="text" class="opt-0" placeholder="الخيار الأول (أ)" value="${questionData ? escapeHtml(questionData.options[0] || '') : ''}">
             </div>
             <div class="form-group">
-                <input type="text" class="opt-1" required placeholder="الخيار الثاني (ب)" value="${questionData ? escapeHtml(questionData.options[1] || '') : ''}">
+                <input type="text" class="opt-1" placeholder="الخيار الثاني (ب)" value="${questionData ? escapeHtml(questionData.options[1] || '') : ''}">
             </div>
             <div class="form-group">
-                <input type="text" class="opt-2" required placeholder="الخيار الثالث (ج)" value="${questionData ? escapeHtml(questionData.options[2] || '') : ''}">
+                <input type="text" class="opt-2" placeholder="الخيار الثالث (ج)" value="${questionData ? escapeHtml(questionData.options[2] || '') : ''}">
             </div>
             <div class="form-group">
-                <input type="text" class="opt-3" required placeholder="الخيار الرابع (د)" value="${questionData ? escapeHtml(questionData.options[3] || '') : ''}">
+                <input type="text" class="opt-3" placeholder="الخيار الرابع (د)" value="${questionData ? escapeHtml(questionData.options[3] || '') : ''}">
             </div>
         </div>
         <div class="form-group" style="margin-top: 4px;">
@@ -3464,7 +3331,6 @@ function toggleQuizSimulatorEditor(checked) {
         simulatorEditor.style.display = 'block';
         titleInput.placeholder = "مثال: محاكي اختبار القدرات التجريبي الأول";
         
-        // Populate one section automatically if empty
         const sectionsContainer = document.getElementById('quiz-sections-editor-container');
         if (sectionsContainer && sectionsContainer.children.length === 0) {
             addQuizSectionEditorRow();
