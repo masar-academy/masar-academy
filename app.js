@@ -4985,6 +4985,7 @@ function startSimulator(quiz) {
     activeSimulatorState.sections = getSimulatorSections(quiz);
     activeSimulatorState.currentSectionIndex = 0;
     activeSimulatorState.answers = [];
+    activeSimulatorState.flagged = [];
     
     if (activeSimulatorState.timerInterval) {
         clearInterval(activeSimulatorState.timerInterval);
@@ -5002,6 +5003,94 @@ function startSimulator(quiz) {
     }
 
     renderSimulatorSection();
+}
+
+function renderSimulatorNavGrid() {
+    const navGrid = document.getElementById('simulator-questions-nav-grid');
+    const counterBadge = document.getElementById('simulator-nav-counter-badge');
+    if (!navGrid) return;
+    
+    navGrid.innerHTML = '';
+    const sectionIdx = activeSimulatorState.currentSectionIndex;
+    const sections = activeSimulatorState.sections || getSimulatorSections(activeSimulatorState.quiz);
+    
+    if (!sections || !sections[sectionIdx]) {
+        if (counterBadge) counterBadge.textContent = '0 / 0';
+        return;
+    }
+    
+    const section = sections[sectionIdx];
+    const questions = section.questions || [];
+    const sectionAnswers = activeSimulatorState.answers[sectionIdx] || [];
+    const sectionFlagged = activeSimulatorState.flagged ? (activeSimulatorState.flagged[sectionIdx] || []) : [];
+    
+    let answeredCount = 0;
+    
+    questions.forEach((q, qIdx) => {
+        const isAnswered = sectionAnswers[qIdx] !== undefined && sectionAnswers[qIdx] !== null;
+        if (isAnswered) answeredCount++;
+        const isFlagged = !!sectionFlagged[qIdx];
+        
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = `sim-nav-btn ${isAnswered ? 'answered' : ''} ${isFlagged ? 'flagged' : ''}`;
+        btn.id = `sim-nav-item-${qIdx}`;
+        btn.onclick = () => scrollToSimulatorQuestion(qIdx);
+        
+        btn.innerHTML = `
+            <span>${qIdx + 1}</span>
+            <span style="font-size: 10px;">${isAnswered ? '✓' : ''}</span>
+        `;
+        
+        navGrid.appendChild(btn);
+    });
+    
+    if (counterBadge) {
+        counterBadge.textContent = `${answeredCount} / ${questions.length} مجاب`;
+    }
+}
+
+function scrollToSimulatorQuestion(questionIndex) {
+    const card = document.getElementById(`sim-question-card-${questionIndex}`);
+    if (card) {
+        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        card.style.borderColor = 'var(--accent-orange)';
+        card.style.boxShadow = '0 0 15px rgba(255, 125, 63, 0.3)';
+        setTimeout(() => {
+            card.style.borderColor = 'var(--border-color)';
+            card.style.boxShadow = 'none';
+        }, 1500);
+    }
+}
+
+function toggleFlagSimulatorQuestion(questionIndex) {
+    const sectionIdx = activeSimulatorState.currentSectionIndex;
+    if (!activeSimulatorState.flagged) {
+        activeSimulatorState.flagged = [];
+    }
+    if (!activeSimulatorState.flagged[sectionIdx]) {
+        activeSimulatorState.flagged[sectionIdx] = [];
+    }
+    
+    activeSimulatorState.flagged[sectionIdx][questionIndex] = !activeSimulatorState.flagged[sectionIdx][questionIndex];
+    const isFlagged = activeSimulatorState.flagged[sectionIdx][questionIndex];
+    
+    const flagBtn = document.querySelector(`.sim-flag-btn-${questionIndex}`);
+    if (flagBtn) {
+        if (isFlagged) {
+            flagBtn.style.background = 'rgba(255, 125, 63, 0.2)';
+            flagBtn.style.borderColor = 'var(--accent-orange)';
+            flagBtn.style.color = 'var(--text-orange)';
+            flagBtn.innerHTML = `<i class="fa-solid fa-bookmark" style="color: var(--accent-orange);"></i> <span>مراجعة 🔖</span>`;
+        } else {
+            flagBtn.style.background = 'transparent';
+            flagBtn.style.borderColor = 'var(--border-color)';
+            flagBtn.style.color = 'var(--text-muted)';
+            flagBtn.innerHTML = `<i class="fa-regular fa-bookmark"></i> <span>علامة للمراجعة 🔖</span>`;
+        }
+    }
+    
+    renderSimulatorNavGrid();
 }
 
 function renderSimulatorSection() {
@@ -5022,6 +5111,7 @@ function renderSimulatorSection() {
         if (progText) progText.textContent = `القسم 0 من 0`;
         const secTitle = document.getElementById('simulator-player-section-title');
         if (secTitle) secTitle.textContent = `القسم الحالي: فارغ`;
+        renderSimulatorNavGrid();
         startSimulatorSectionTimer(0);
         return;
     }
@@ -5060,15 +5150,25 @@ function renderSimulatorSection() {
         questions.forEach((q, qIndex) => {
             const card = document.createElement('div');
             card.className = 'simulator-question-card';
+            card.id = `sim-question-card-${qIndex}`;
             const questionOptions = Array.isArray(q.options) ? q.options : ['أ', 'ب', 'ج', 'د'];
             
             const selectedOptIndex = (activeSimulatorState.answers[sectionIdx] && activeSimulatorState.answers[sectionIdx][qIndex] !== undefined)
                 ? activeSimulatorState.answers[sectionIdx][qIndex]
                 : -1;
                 
+            const isFlagged = !!(activeSimulatorState.flagged && activeSimulatorState.flagged[sectionIdx] && activeSimulatorState.flagged[sectionIdx][qIndex]);
+                
             card.innerHTML = `
-                <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 8px; text-align: right;">السؤال ${qIndex + 1} من ${questions.length}</div>
-                <h4 style="font-size: 14.5px; font-weight: 700; line-height: 1.5; color: var(--text-main); margin-bottom: 12px; text-align: right;">${escapeHtml(q.question || '')}</h4>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px dashed rgba(255,255,255,0.05); padding-bottom: 8px;">
+                    <div style="font-size: 12px; color: var(--text-orange); font-weight: 800;">السؤال ${qIndex + 1} من ${questions.length}</div>
+                    <button type="button" class="btn btn-secondary sim-flag-btn-${qIndex}" onclick="toggleFlagSimulatorQuestion(${qIndex})" style="padding: 4px 10px; font-size: 11.5px; border-radius: 6px; gap: 6px; ${isFlagged ? 'background: rgba(255, 125, 63, 0.2); border-color: var(--accent-orange); color: var(--text-orange);' : 'color: var(--text-muted);'}">
+                        <i class="${isFlagged ? 'fa-solid' : 'fa-regular'} fa-bookmark" style="color: var(--accent-orange);"></i>
+                        <span>${isFlagged ? 'مراجعة 🔖' : 'علامة للمراجعة 🔖'}</span>
+                    </button>
+                </div>
+                
+                <h4 style="font-size: 15px; font-weight: 700; line-height: 1.5; color: var(--text-main); margin-bottom: 12px; text-align: right;">${escapeHtml(q.question || '')}</h4>
                 ${q.image ? `
                     <div style="margin-top: 10px; margin-bottom: 12px; text-align: center;">
                         <img src="${q.image}" style="max-width: 100%; max-height: 180px; border-radius: 6px; border: 1px solid var(--border-color);">
@@ -5089,6 +5189,7 @@ function renderSimulatorSection() {
     }
     
     renderMath('simulator-player-body');
+    renderSimulatorNavGrid();
     
     // Start Section Timer
     startSimulatorSectionTimer(questions.length);
@@ -5104,6 +5205,8 @@ function selectSimulatorQuestionOption(questionIndex, optionIndex) {
     document.querySelectorAll(`.sim-q-${questionIndex}-opt`).forEach((btn, idx) => {
         btn.classList.toggle('selected', idx === optionIndex);
     });
+    
+    renderSimulatorNavGrid();
 }
 
 function startSimulatorSectionTimer(numQuestions) {
