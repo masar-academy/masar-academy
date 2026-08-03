@@ -1373,7 +1373,7 @@ function showCreateAssignmentView() {
     const searchInput = document.getElementById('create-assign-search-input');
     if (searchInput) searchInput.value = '';
 
-    populateCreateAssignStudentsList();
+    populateCreateAssignStudentsList(true);
     toggleCreateAssignStudentsList('all');
     setupDefaultDates();
 }
@@ -2078,9 +2078,11 @@ function toggleAssignmentOptions(type) {
 // STUDENT TARGETING HELPER FUNCTIONS
 // ==========================================
 
-function populateCreateAssignStudentsList() {
+function populateCreateAssignStudentsList(forceReset = false) {
     const grid = document.getElementById('create-assign-students-grid');
     if (!grid) return;
+
+    const currentCheckedIds = forceReset ? [] : Array.from(document.querySelectorAll('.create-assign-student-cb:checked')).map(cb => cb.value);
     grid.innerHTML = '';
 
     if (!appState.students || appState.students.length === 0) {
@@ -2089,11 +2091,12 @@ function populateCreateAssignStudentsList() {
     }
 
     appState.students.forEach(student => {
+        const isChecked = currentCheckedIds.includes(student.id);
         const item = document.createElement('div');
         item.className = 'create-assign-student-item';
         item.dataset.name = (student.name || '').toLowerCase();
         item.dataset.username = (student.username || '').toLowerCase();
-        item.style.cssText = 'display: inline-flex; align-items: center; gap: 10px; font-size: 13px; cursor: pointer; padding: 8px 12px; border-radius: 8px; background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); user-select: none; transition: all 0.15s ease;';
+        item.style.cssText = `display: inline-flex; align-items: center; gap: 10px; font-size: 13px; cursor: pointer; padding: 8px 12px; border-radius: 8px; background: ${isChecked ? 'rgba(255,107,0,0.15)' : 'rgba(255,255,255,0.03)'}; border: ${isChecked ? '1px solid var(--accent-orange)' : '1px solid var(--border-color)'}; user-select: none; transition: all 0.15s ease;`;
 
         item.onclick = function(e) {
             const cb = this.querySelector('.create-assign-student-cb');
@@ -2106,7 +2109,7 @@ function populateCreateAssignStudentsList() {
         };
 
         item.innerHTML = `
-            <input type="checkbox" class="create-assign-student-cb" value="${student.id}" style="accent-color: var(--accent-orange); width: 17px; height: 17px; cursor: pointer;" onclick="event.stopPropagation(); updateStudentItemStyle(this);" onchange="updateStudentItemStyle(this);">
+            <input type="checkbox" class="create-assign-student-cb" value="${student.id}" ${isChecked ? 'checked' : ''} style="accent-color: var(--accent-orange); width: 17px; height: 17px; cursor: pointer;" onclick="event.stopPropagation(); updateStudentItemStyle(this);" onchange="updateStudentItemStyle(this);">
             <strong style="color: var(--text-main); pointer-events: none;">${escapeHtml(student.name)}</strong>
             <span style="font-size: 11px; color: var(--text-muted); pointer-events: none;">(@${escapeHtml(student.username)})</span>
         `;
