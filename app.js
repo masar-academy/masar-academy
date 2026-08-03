@@ -3275,6 +3275,7 @@ function addQuizQuestionEditorRow(questionData = null) {
     row.className = 'quiz-editor-row question-editor-row';
     
     const hasImage = questionData && questionData.image;
+    const opts = (questionData && Array.isArray(questionData.options)) ? questionData.options : [];
     
     row.innerHTML = `
         <button type="button" class="remove-question-btn" onclick="this.parentElement.remove()" title="حذف هذا السؤال">&times;</button>
@@ -3284,16 +3285,16 @@ function addQuizQuestionEditorRow(questionData = null) {
         </div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
             <div class="form-group">
-                <input type="text" class="opt-0" placeholder="الخيار الأول (أ)" value="${questionData ? escapeHtml(questionData.options[0] || '') : ''}">
+                <input type="text" class="opt-0" placeholder="الخيار الأول (أ)" value="${escapeHtml(opts[0] || 'أ')}">
             </div>
             <div class="form-group">
-                <input type="text" class="opt-1" placeholder="الخيار الثاني (ب)" value="${questionData ? escapeHtml(questionData.options[1] || '') : ''}">
+                <input type="text" class="opt-1" placeholder="الخيار الثاني (ب)" value="${escapeHtml(opts[1] || 'ب')}">
             </div>
             <div class="form-group">
-                <input type="text" class="opt-2" placeholder="الخيار الثالث (ج)" value="${questionData ? escapeHtml(questionData.options[2] || '') : ''}">
+                <input type="text" class="opt-2" placeholder="الخيار الثالث (ج)" value="${escapeHtml(opts[2] || 'ج')}">
             </div>
             <div class="form-group">
-                <input type="text" class="opt-3" placeholder="الخيار الرابع (د)" value="${questionData ? escapeHtml(questionData.options[3] || '') : ''}">
+                <input type="text" class="opt-3" placeholder="الخيار الرابع (د)" value="${escapeHtml(opts[3] || 'د')}">
             </div>
         </div>
         <div class="form-group" style="margin-top: 4px;">
@@ -3358,7 +3359,7 @@ function addQuizSectionEditorRow(sectionData = null) {
         <div style="font-weight: 800; font-size: 13.5px; color: var(--success); margin-bottom: 12px;">القسم ${index}:</div>
         <div class="form-group">
             <label style="font-size: 11.5px; font-weight: 700;">اسم القسم (مثل: القسم الكمي الأول):</label>
-            <input type="text" class="section-title-input" required placeholder="ادخل اسم القسم هنا" value="${sectionData ? escapeHtml(sectionData.sectionTitle) : ''}">
+            <input type="text" class="section-title-input" placeholder="ادخل اسم القسم هنا" value="${sectionData ? escapeHtml(sectionData.sectionTitle) : ''}">
         </div>
         
         <div style="margin-top: 15px; border-top: 1px dashed rgba(255,255,255,0.05); padding-top: 12px;">
@@ -3392,29 +3393,30 @@ function addQuizSectionQuestionRow(sectionContainer, questionData = null) {
     row.className = 'quiz-editor-row section-question-editor-row';
     
     const hasImage = questionData && questionData.image;
+    const opts = (questionData && Array.isArray(questionData.options)) ? questionData.options : [];
     
     row.innerHTML = `
         <button type="button" class="remove-question-btn" onclick="this.parentElement.remove()" title="حذف هذا السؤال">&times;</button>
         <div style="font-weight: 700; font-size: 12.5px; color: var(--text-orange); margin-bottom: 6px;">سؤال ${index}:</div>
         <div class="form-group">
-            <input type="text" class="question-text" required placeholder="اكتب السؤال هنا" value="${questionData ? escapeHtml(questionData.question) : ''}">
+            <input type="text" class="question-text" placeholder="اكتب السؤال هنا" value="${questionData ? escapeHtml(questionData.question) : ''}">
         </div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
             <div class="form-group">
-                <input type="text" class="opt-0" required placeholder="الخيار الأول (أ)" value="${questionData ? escapeHtml(questionData.options[0] || '') : ''}">
+                <input type="text" class="opt-0" placeholder="الخيار الأول (أ)" value="${escapeHtml(opts[0] || 'أ')}">
             </div>
             <div class="form-group">
-                <input type="text" class="opt-1" required placeholder="الخيار الثاني (ب)" value="${questionData ? escapeHtml(questionData.options[1] || '') : ''}">
+                <input type="text" class="opt-1" placeholder="الخيار الثاني (ب)" value="${escapeHtml(opts[1] || 'ب')}">
             </div>
             <div class="form-group">
-                <input type="text" class="opt-2" required placeholder="الخيار الثالث (ج)" value="${questionData ? escapeHtml(questionData.options[2] || '') : ''}">
+                <input type="text" class="opt-2" placeholder="الخيار الثالث (ج)" value="${escapeHtml(opts[2] || 'ج')}">
             </div>
             <div class="form-group">
-                <input type="text" class="opt-3" required placeholder="الخيار الرابع (د)" value="${questionData ? escapeHtml(questionData.options[3] || '') : ''}">
+                <input type="text" class="opt-3" placeholder="الخيار الرابع (د)" value="${escapeHtml(opts[3] || 'د')}">
             </div>
         </div>
         <div class="form-group" style="margin-top: 4px;">
-            <label style="font-size: 11px; color: var(--success); font-weight: 700;">الخيار الصحيح:</label>
+            <label style="font-size: 11.5px; color: var(--success); font-weight: 700;">الخيار الصحيح:</label>
             <select class="correct-answer" style="padding: 4px 10px;">
                 <option value="0" ${(questionData && questionData.correct === 0) ? 'selected' : ''}>الخيار الأول (أ)</option>
                 <option value="1" ${(questionData && questionData.correct === 1) ? 'selected' : ''}>الخيار الثاني (ب)</option>
@@ -3476,10 +3478,10 @@ async function handleCreateQuiz(e) {
             const sectionQuestions = [];
             sectionQEls.forEach(row => {
                 const questionText = row.querySelector('.question-text').value.trim();
-                const opt0 = row.querySelector('.opt-0').value.trim();
-                const opt1 = row.querySelector('.opt-1').value.trim();
-                const opt2 = row.querySelector('.opt-2').value.trim();
-                const opt3 = row.querySelector('.opt-3').value.trim();
+                const opt0 = row.querySelector('.opt-0').value.trim() || 'أ';
+                const opt1 = row.querySelector('.opt-1').value.trim() || 'ب';
+                const opt2 = row.querySelector('.opt-2').value.trim() || 'ج';
+                const opt3 = row.querySelector('.opt-3').value.trim() || 'د';
                 const correct = parseInt(row.querySelector('.correct-answer').value);
                 const imageVal = row.querySelector('.question-image-data') ? row.querySelector('.question-image-data').value : '';
 
@@ -3510,10 +3512,10 @@ async function handleCreateQuiz(e) {
 
         rowEls.forEach(row => {
             const questionText = row.querySelector('.question-text').value.trim();
-            const opt0 = row.querySelector('.opt-0').value.trim();
-            const opt1 = row.querySelector('.opt-1').value.trim();
-            const opt2 = row.querySelector('.opt-2').value.trim();
-            const opt3 = row.querySelector('.opt-3').value.trim();
+            const opt0 = row.querySelector('.opt-0').value.trim() || 'أ';
+            const opt1 = row.querySelector('.opt-1').value.trim() || 'ب';
+            const opt2 = row.querySelector('.opt-2').value.trim() || 'ج';
+            const opt3 = row.querySelector('.opt-3').value.trim() || 'د';
             const correct = parseInt(row.querySelector('.correct-answer').value);
             const imageVal = row.querySelector('.question-image-data') ? row.querySelector('.question-image-data').value : '';
 
