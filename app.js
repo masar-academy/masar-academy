@@ -3724,14 +3724,13 @@ async function handleCreateQuiz(e) {
                     is_simulator: newQuiz.isSimulator
                 });
                 if (error) throw error;
-            } else {
-                appState.quizzes.push(newQuiz);
-                localStorage.setItem('masar_quizzes', JSON.stringify(appState.quizzes));
             }
+            appState.quizzes.push(newQuiz);
+            try { localStorage.setItem('masar_quizzes', JSON.stringify(appState.quizzes)); } catch(e) {}
 
             closeModal('create-quiz-modal');
-            showToast("تم نشر الاختبار التفاعلي الجديد بنجاح! 📝", "success");
-            if (courseId === 'simulator') {
+            showToast("تم نشر الاختبار / المحاكي التفاعلي الجديد بنجاح! 📝", "success");
+            if (courseId === 'simulator' || isSimulator) {
                 showTeacherSection('t-simulators-tab');
             } else {
                 await renderTeacherDashboard();
@@ -3745,6 +3744,11 @@ async function handleCreateQuiz(e) {
             showToast("فشل نشر الاختبار في السحابة!", "danger");
         }
     }
+}
+
+// Backup Alias for compatibility
+function handleSaveQuiz(e) {
+    return handleCreateQuiz(e);
 }
 
 async function deleteQuiz(quizId) {
