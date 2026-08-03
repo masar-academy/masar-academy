@@ -4946,8 +4946,43 @@ setInterval(async () => {
 // EXAM SIMULATOR PLAYER LOGIC (Student)
 // ==========================================
 
+function getSimulatorSections(quiz) {
+    if (!quiz) return [];
+    let questionsData = quiz.questions;
+    
+    while (typeof questionsData === 'string') {
+        try {
+            const parsed = JSON.parse(questionsData);
+            if (parsed === questionsData) break;
+            questionsData = parsed;
+        } catch (e) {
+            break;
+        }
+    }
+    
+    if (!questionsData || !Array.isArray(questionsData) || questionsData.length === 0) {
+        return [];
+    }
+    
+    const firstItem = questionsData[0];
+    if (firstItem && typeof firstItem === 'object' && Array.isArray(firstItem.questions)) {
+        return questionsData;
+    }
+    
+    if (firstItem && typeof firstItem === 'object' && (firstItem.question !== undefined || firstItem.options !== undefined)) {
+        return [{
+            sectionTitle: 'القسم الأول',
+            questions: questionsData
+        }];
+    }
+    
+    return [];
+}
+
 function startSimulator(quiz) {
+    if (!quiz) return;
     activeSimulatorState.quiz = quiz;
+    activeSimulatorState.sections = getSimulatorSections(quiz);
     activeSimulatorState.currentSectionIndex = 0;
     activeSimulatorState.answers = [];
     
@@ -4955,20 +4990,41 @@ function startSimulator(quiz) {
         clearInterval(activeSimulatorState.timerInterval);
     }
     
-    document.getElementById('simulator-player-title').textContent = `محاكي الاختبار: ${quiz.title}`;
+    const titleEl = document.getElementById('simulator-player-title');
+    if (titleEl) titleEl.textContent = `محاكي الاختبار: ${quiz.title}`;
+    
     openModal('student-simulator-modal');
     
-    // Change action button back to submit-section
     const submitBtn = document.getElementById('simulator-submit-section-btn');
-    submitBtn.innerHTML = `<span>تسليم القسم والانتقال للقسم التالي</span> <i class="fa-solid fa-arrow-left"></i>`;
-    submitBtn.onclick = () => submitSimulatorSection(false);
+    if (submitBtn) {
+        submitBtn.innerHTML = `<span id="simulator-btn-text">تسليم القسم والانتقال للقسم التالي</span> <i class="fa-solid fa-arrow-left"></i>`;
+        submitBtn.onclick = () => submitSimulatorSection(false);
+    }
 
     renderSimulatorSection();
 }
 
 function renderSimulatorSection() {
     const sectionIdx = activeSimulatorState.currentSectionIndex;
-    const sections = activeSimulatorState.quiz.questions;
+    const sections = activeSimulatorState.sections || getSimulatorSections(activeSimulatorState.quiz);
+    const body = document.getElementById('simulator-player-body');
+    if (!body) return;
+    
+    if (!sections || sections.length === 0) {
+        body.innerHTML = `
+            <div style="text-align: center; padding: 40px; color: var(--text-muted);">
+                <i class="fa-solid fa-triangle-exclamation" style="font-size: 40px; color: var(--warning); margin-bottom: 15px;"></i>
+                <h3 style="font-size: 16px; font-weight: 700; color: var(--text-main); margin-bottom: 8px;">لا توجد أسئلة مضافة في هذا المحاكي بعد!</h3>
+                <p style="font-size: 13px;">يرجى التواصل مع المعلم لإضافة أسئلة للمحاكي.</p>
+            </div>
+        `;
+        const progText = document.getElementById('simulator-progress-text');
+        if (progText) progText.textContent = `القسم 0 من 0`;
+        const secTitle = document.getElementById('simulator-player-section-title');
+        if (secTitle) secTitle.textContent = `القسم الحالي: فارغ`;
+        startSimulatorSectionTimer(0);
+        return;
+    }
     
     if (sectionIdx >= sections.length) {
         renderSimulatorResults();
@@ -4976,48 +5032,66 @@ function renderSimulatorSection() {
     }
     
     const section = sections[sectionIdx];
+    const questions = section.questions || [];
     
     // Update titles
-    document.getElementById('simulator-player-section-title').textContent = `القسم الحالي: ${section.sectionTitle || 'القسم ' + (sectionIdx + 1)}`;
-    document.getElementById('simulator-progress-text').textContent = `القسم ${sectionIdx + 1} من ${sections.length}`;
+    const secTitleEl = document.getElementById('simulator-player-section-title');
+    if (secTitleEl) secTitleEl.textContent = `القسم الحالي: ${section.sectionTitle || 'القسم ' + (sectionIdx + 1)}`;
+    
+    const progTextEl = document.getElementById('simulator-progress-text');
+    if (progTextEl) progTextEl.textContent = `القسم ${sectionIdx + 1} من ${sections.length}`;
     
     // Last section button text change
     const isLast = (sectionIdx === sections.length - 1);
-    document.getElementById('simulator-btn-text').textContent = isLast ? "تسليم وإنهاء المحاكي" : "تسليم القسم والانتقال للقسم التالي";
+    const btnTextEl = document.getElementById('simulator-btn-text');
+    if (btnTextEl) btnTextEl.textContent = isLast ? "تسليم وإنهاء المحاكي" : "تسليم القسم والانتقال للقسم التالي";
     
     // Render all questions of current section
-    const body = document.getElementById('simulator-player-body');
     body.innerHTML = '';
     
-    section.questions.forEach((q, qIndex) => {
-        const card = document.createElement('div');
-        card.className = 'simulator-question-card';
-        card.innerHTML = `
-            <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 8px; text-align: right;">السؤال ${qIndex + 1} من ${section.questions.length}</div>
-            <h4 style="font-size: 14.5px; font-weight: 700; line-height: 1.5; color: var(--text-main); margin-bottom: 12px; text-align: right;">${q.question}</h4>
-            ${q.image ? `
-                <div style="margin-top: 10px; margin-bottom: 12px; text-align: center;">
-                    <img src="${q.image}" style="max-width: 100%; max-height: 180px; border-radius: 6px; border: 1px solid var(--border-color);">
-                </div>
-            ` : ''}
-            
-            <div class="quiz-options-list" style="grid-template-columns: 1fr 1fr; gap: 8px;">
-                ${q.options.map((opt, oIndex) => `
-                    <button type="button" class="quiz-option-btn sim-q-${qIndex}-opt" onclick="selectSimulatorQuestionOption(${qIndex}, ${oIndex})">
-                        <span class="option-indicator">${String.fromCharCode(1601 + oIndex)}</span>
-                        <span>${opt}</span>
-                    </button>
-                `).join('')}
+    if (questions.length === 0) {
+        body.innerHTML = `
+            <div style="text-align: center; padding: 40px; color: var(--text-muted);">
+                <i class="fa-solid fa-folder-open" style="font-size: 36px; color: var(--text-orange); margin-bottom: 10px;"></i>
+                <p style="font-size: 14px; font-weight: 600;">لا توجد أسئلة مضافة في هذا القسم بعد.</p>
             </div>
         `;
-        body.appendChild(card);
-    });
+    } else {
+        questions.forEach((q, qIndex) => {
+            const card = document.createElement('div');
+            card.className = 'simulator-question-card';
+            const questionOptions = Array.isArray(q.options) ? q.options : ['أ', 'ب', 'ج', 'د'];
+            
+            const selectedOptIndex = (activeSimulatorState.answers[sectionIdx] && activeSimulatorState.answers[sectionIdx][qIndex] !== undefined)
+                ? activeSimulatorState.answers[sectionIdx][qIndex]
+                : -1;
+                
+            card.innerHTML = `
+                <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 8px; text-align: right;">السؤال ${qIndex + 1} من ${questions.length}</div>
+                <h4 style="font-size: 14.5px; font-weight: 700; line-height: 1.5; color: var(--text-main); margin-bottom: 12px; text-align: right;">${escapeHtml(q.question || '')}</h4>
+                ${q.image ? `
+                    <div style="margin-top: 10px; margin-bottom: 12px; text-align: center;">
+                        <img src="${q.image}" style="max-width: 100%; max-height: 180px; border-radius: 6px; border: 1px solid var(--border-color);">
+                    </div>
+                ` : ''}
+                
+                <div class="quiz-options-list" style="grid-template-columns: 1fr 1fr; gap: 8px;">
+                    ${questionOptions.map((opt, oIndex) => `
+                        <button type="button" class="quiz-option-btn sim-q-${qIndex}-opt ${selectedOptIndex === oIndex ? 'selected' : ''}" onclick="selectSimulatorQuestionOption(${qIndex}, ${oIndex})">
+                            <span class="option-indicator">${String.fromCharCode(1601 + oIndex)}</span>
+                            <span>${escapeHtml(opt)}</span>
+                        </button>
+                    `).join('')}
+                </div>
+            `;
+            body.appendChild(card);
+        });
+    }
     
     renderMath('simulator-player-body');
     
     // Start Section Timer
-    const numQuestions = section.questions.length;
-    startSimulatorSectionTimer(numQuestions);
+    startSimulatorSectionTimer(questions.length);
 }
 
 function selectSimulatorQuestionOption(questionIndex, optionIndex) {
@@ -5037,7 +5111,8 @@ function startSimulatorSectionTimer(numQuestions) {
         clearInterval(activeSimulatorState.timerInterval);
     }
     
-    const durationMinutes = numQuestions + 1;
+    const count = Math.max(1, parseInt(numQuestions) || 1);
+    const durationMinutes = count + 1;
     activeSimulatorState.secondsRemaining = durationMinutes * 60;
     
     updateSimulatorTimerDisplay();
@@ -5058,12 +5133,13 @@ function updateSimulatorTimerDisplay() {
     const display = document.getElementById('simulator-timer-display');
     if (!display) return;
     
-    const mins = Math.floor(activeSimulatorState.secondsRemaining / 60);
-    const secs = activeSimulatorState.secondsRemaining % 60;
+    const totalSecs = Math.max(0, parseInt(activeSimulatorState.secondsRemaining) || 0);
+    const mins = Math.floor(totalSecs / 60);
+    const secs = totalSecs % 60;
     
     display.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
     
-    const isLow = activeSimulatorState.secondsRemaining <= 60;
+    const isLow = totalSecs <= 60;
     const timerIcon = document.getElementById('simulator-timer-icon');
     const timerDisplayParent = display.parentElement;
     
@@ -5084,13 +5160,16 @@ function updateSimulatorTimerDisplay() {
 
 function submitSimulatorSection(force = false) {
     const sectionIdx = activeSimulatorState.currentSectionIndex;
-    const sections = activeSimulatorState.quiz.questions;
-    const currentSection = sections[sectionIdx];
+    const sections = activeSimulatorState.sections || getSimulatorSections(activeSimulatorState.quiz);
+    if (!sections || sections.length === 0) return;
     
-    if (!force) {
+    const currentSection = sections[sectionIdx];
+    const sectionQuestions = currentSection ? (currentSection.questions || []) : [];
+    
+    if (!force && sectionQuestions.length > 0) {
         const sectionAnswers = activeSimulatorState.answers[sectionIdx] || [];
         let unansweredCount = 0;
-        for (let i = 0; i < currentSection.questions.length; i++) {
+        for (let i = 0; i < sectionQuestions.length; i++) {
             if (sectionAnswers[i] === undefined || sectionAnswers[i] === null) {
                 unansweredCount++;
             }
@@ -5113,17 +5192,19 @@ function submitSimulatorSection(force = false) {
 
 async function renderSimulatorResults() {
     const container = document.getElementById('simulator-player-body');
+    if (!container) return;
     const quiz = activeSimulatorState.quiz;
-    const sections = quiz.questions;
+    const sections = activeSimulatorState.sections || getSimulatorSections(quiz);
     
     let totalQuestions = 0;
     let totalCorrect = 0;
     
     sections.forEach((sect, sIdx) => {
         const sectionAnswers = activeSimulatorState.answers[sIdx] || [];
-        sect.questions.forEach((q, qIdx) => {
+        const questions = sect.questions || [];
+        questions.forEach((q, qIdx) => {
             totalQuestions++;
-            const correctIndex = q.correct;
+            const correctIndex = parseInt(q.correct) || 0;
             const myAns = sectionAnswers[qIdx];
             if (myAns === correctIndex) {
                 totalCorrect++;
@@ -5131,7 +5212,7 @@ async function renderSimulatorResults() {
         });
     });
     
-    const percent = Math.round((totalCorrect / totalQuestions) * 100);
+    const percent = totalQuestions > 0 ? Math.round((totalCorrect / totalQuestions) * 100) : 0;
     const passed = percent >= 50;
     const gainedXp = passed ? quiz.points : 0;
     
@@ -5253,13 +5334,12 @@ function renderTeacherSimulators() {
     }
     
     simulatorQuizzes.forEach(quiz => {
-        const sectionsCount = (quiz.questions && Array.isArray(quiz.questions)) ? quiz.questions.length : 0;
+        const sections = getSimulatorSections(quiz);
+        const sectionsCount = sections.length;
         let questionsCount = 0;
-        if (quiz.questions && Array.isArray(quiz.questions)) {
-            quiz.questions.forEach(sect => {
-                if (sect.questions) questionsCount += sect.questions.length;
-            });
-        }
+        sections.forEach(sect => {
+            if (sect.questions && Array.isArray(sect.questions)) questionsCount += sect.questions.length;
+        });
         
         const card = document.createElement('div');
         card.className = 'glass-card course-card';
@@ -5295,7 +5375,7 @@ function renderStudentSimulators() {
     if (!list) return;
     list.innerHTML = '';
     
-    const sId = appState.currentUser.id;
+    const sId = appState.currentUser ? appState.currentUser.id : '';
     const student = appState.students.find(s => s.id === sId);
     const enrolledList = (student && student.enrolled_courses) ? student.enrolled_courses : [];
     
@@ -5311,13 +5391,12 @@ function renderStudentSimulators() {
     }
     
     simulatorQuizzes.forEach(quiz => {
-        const sectionsCount = (quiz.questions && Array.isArray(quiz.questions)) ? quiz.questions.length : 0;
+        const sections = getSimulatorSections(quiz);
+        const sectionsCount = sections.length;
         let questionsCount = 0;
-        if (quiz.questions && Array.isArray(quiz.questions)) {
-            quiz.questions.forEach(sect => {
-                if (sect.questions) questionsCount += sect.questions.length;
-            });
-        }
+        sections.forEach(sect => {
+            if (sect.questions && Array.isArray(sect.questions)) questionsCount += sect.questions.length;
+        });
         
         const isEnrolled = enrolledList.includes(quiz.id);
         
