@@ -2715,6 +2715,53 @@ async function handleAdjustXP(e) {
     }
 }
 
+async function resetAllStudentsXP() {
+    if (!appState.students || appState.students.length === 0) {
+        showToast("لا يوجد طلاب مسجلون بالمنصة حالياً!", "warning");
+        return;
+    }
+
+    const confirmReset = confirm(
+        `🚨 تصفير رصيد النقاط (XP) لجميع الطلاب:\n\n` +
+        `هل أنت متأكد من رغبتك في تصفير نقاط جميع الطلاب (${appState.students.length} طالب) إلى 0؟\n\n` +
+        `يُستخدم هذا الإجراء لإعادة إطلاق الفعاليات والمسابقات الشهرية من جديد، ولا يمكن التراجع عنه!`
+    );
+
+    if (!confirmReset) return;
+
+    try {
+        // Reset all local XP
+        appState.students.forEach(student => {
+            student.xp = 0;
+        });
+
+        // Sync with Supabase Cloud
+        if (isCloudMode && supabaseClient) {
+            for (const student of appState.students) {
+                try {
+                    await supabaseClient.from('students').update({ xp: 0 }).eq('id', student.id);
+                } catch(e) {
+                    console.warn(`Supabase reset XP error for ${student.id}:`, e);
+                }
+            }
+        }
+
+        try {
+            localStorage.setItem('masar_students', JSON.stringify(appState.students));
+        } catch (e) {}
+
+        if (appState.currentUser && appState.currentUser.role === 'student') {
+            appState.currentUser.xp = 0;
+        }
+
+        showToast("تم بنجاح تصفير رصيد نقاط (XP) جميع الطلاب لبدء الفعالية الشهرية الجديدة! 🏆🔄", "success");
+        await renderTeacherDashboard();
+    } catch (err) {
+        console.error("Reset all students XP error:", err);
+        showToast("حدث خطأ أثناء تصفير نقاط الطلاب!", "danger");
+    }
+}
+
 // Open grading modal
 function openGradeModal(submissionId) {
     const sub = appState.submissions.find(s => s.id === submissionId);
