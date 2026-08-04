@@ -959,7 +959,8 @@ async function handleLogin(e) {
             appState.currentUser = {
                 role: 'student',
                 id: student.id,
-                name: student.name
+                name: student.name,
+                xp: student.xp || 0
             };
             showToast(`مرحباً بك يا ${student.name} في لوحة تحكم الطالب!`, 'success');
         } else {
@@ -1039,9 +1040,13 @@ function renderDrawerMenu() {
     optionsContainer.innerHTML = '';
     
     if (user && user.role === 'student') {
+        const studentRecord = appState.students.find(s => String(s.id) === String(user.id));
+        const studentXp = (studentRecord && studentRecord.xp !== undefined) ? studentRecord.xp : (user.xp || 0);
+        const levelInfo = calculateLevel(studentXp);
+        
         if (avatarEl) avatarEl.textContent = user.name.charAt(0);
         if (nameEl) nameEl.textContent = user.name;
-        if (statusEl) statusEl.textContent = `طالب مسجل - ${user.xp || 0} XP`;
+        if (statusEl) statusEl.textContent = `طالب مسجل - ⭐ ${studentXp} XP (${levelInfo.title})`;
         
         optionsContainer.innerHTML = `
             <div class="drawer-option-item" onclick="closeModal('hamburger-drawer-modal'); openStudentDashboardModal();">
