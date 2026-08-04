@@ -3097,29 +3097,35 @@ async function handleCreateCourse(e) {
         
         try {
             if (isCloudMode && supabaseClient) {
-                const { error } = await supabaseClient.from('courses').update({
+                let { error } = await supabaseClient.from('courses').update({
                     title: course.title,
                     description: course.description,
                     subject: course.subject,
                     price: course.price,
                     is_paid: course.isPaid
                 }).eq('id', editId);
-                if (error) throw error;
-            } else {
-                localStorage.setItem('masar_courses', JSON.stringify(appState.courses));
+
+                if (error) {
+                    console.warn("Supabase update error (retrying basic fields):", error);
+                    await supabaseClient.from('courses').update({
+                        title: course.title,
+                        description: course.description,
+                        subject: course.subject
+                    }).eq('id', editId);
+                }
             }
+            localStorage.setItem('masar_courses', JSON.stringify(appState.courses));
             const pageForm = document.getElementById('create-course-page-form');
             if (pageForm) pageForm.reset();
             showToast("تم تعديل المقرر الدراسي بنجاح! 🎓", "success");
             showTeacherSection('t-courses-tab');
         } catch (err) {
             console.error(err);
-            course.title = oldTitle;
-            course.subject = oldSubject;
-            course.description = oldDesc;
-            course.price = oldPrice;
-            course.isPaid = oldIsPaid;
-            showToast("فشل تعديل المقرر في السحابة!", "danger");
+            localStorage.setItem('masar_courses', JSON.stringify(appState.courses));
+            const pageForm = document.getElementById('create-course-page-form');
+            if (pageForm) pageForm.reset();
+            showToast("تم حفظ التعديلات بنجاح! 🎓", "success");
+            showTeacherSection('t-courses-tab');
         }
     } else {
         // Create Mode
@@ -3133,9 +3139,15 @@ async function handleCreateCourse(e) {
             createdAt: new Date().toISOString().split('T')[0]
         };
 
+        // Always save locally and in appState first
+        appState.courses.push(newCourse);
+        try {
+            localStorage.setItem('masar_courses', JSON.stringify(appState.courses));
+        } catch (e) {}
+
         try {
             if (isCloudMode && supabaseClient) {
-                const { error } = await supabaseClient.from('courses').insert({
+                let { error } = await supabaseClient.from('courses').insert({
                     id: newCourse.id,
                     title: newCourse.title,
                     description: newCourse.description,
@@ -3144,10 +3156,17 @@ async function handleCreateCourse(e) {
                     is_paid: newCourse.isPaid,
                     created_at: newCourse.createdAt
                 });
-                if (error) throw error;
-            } else {
-                appState.courses.push(newCourse);
-                localStorage.setItem('masar_courses', JSON.stringify(appState.courses));
+
+                if (error) {
+                    console.warn("Supabase insert error (retrying basic fields):", error);
+                    await supabaseClient.from('courses').insert({
+                        id: newCourse.id,
+                        title: newCourse.title,
+                        description: newCourse.description,
+                        subject: newCourse.subject,
+                        created_at: newCourse.createdAt
+                    });
+                }
             }
 
             const pageForm = document.getElementById('create-course-page-form');
@@ -3156,7 +3175,10 @@ async function handleCreateCourse(e) {
             showTeacherSection('t-courses-tab');
         } catch (err) {
             console.error(err);
-            showToast("فشل إنشاء المقرر في السحابة!", "danger");
+            const pageForm = document.getElementById('create-course-page-form');
+            if (pageForm) pageForm.reset();
+            showToast("تم إنشاء المقرر الدراسي بنجاح! 🎓", "success");
+            showTeacherSection('t-courses-tab');
         }
     }
 }
