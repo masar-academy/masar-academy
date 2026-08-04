@@ -1572,6 +1572,13 @@ function handleLandingCourseClick(courseId) {
     }
 }
 
+function toggleCoursePriceInput(val) {
+    const group = document.getElementById('page-course-price-group');
+    if (group) {
+        group.style.display = (val === 'paid') ? 'block' : 'none';
+    }
+}
+
 function renderLandingPage() {
     const grid = document.getElementById('landing-courses-grid');
     const countEl = document.getElementById('landing-courses-count');
@@ -1587,22 +1594,25 @@ function renderLandingPage() {
                 <p>لا توجد دورات تعليمية منشورة حالياً في المنصة.</p>
             </div>`;
     } else {
-        const isLoggedIn = !!appState.currentUser;
-        const btnText = isLoggedIn ? '<i class="fa-solid fa-book-open"></i> تصفح الدورة' : '<i class="fa-solid fa-lock"></i> سجل دخول لتصفح الدورة';
-        
         appState.courses.forEach(course => {
-            const lessonsCount = appState.lessons.filter(l => l.courseId === course.id).length;
-            const quizzesCount = appState.quizzes.filter(q => q.courseId === course.id).length;
+            const lessonsCount = appState.lessons.filter(l => String(l.courseId) === String(course.id)).length;
+            const quizzesCount = appState.quizzes.filter(q => String(q.courseId) === String(course.id)).length;
+
+            const isFree = !course.isPaid && (!course.price || course.price === 0);
+            const priceBadge = isFree 
+                ? `<span style="background: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.3); padding: 3px 10px; border-radius: 20px; font-weight: 800; font-size: 11.5px;"><i class="fa-solid fa-gift"></i> مجانية</span>`
+                : `<span style="background: rgba(245, 158, 11, 0.15); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.3); padding: 3px 10px; border-radius: 20px; font-weight: 800; font-size: 11.5px;"><i class="fa-solid fa-tag"></i> ${course.price} ر.س</span>`;
 
             const card = document.createElement('div');
             card.className = 'glass-card course-card';
             card.innerHTML = `
                 <div>
-                    <div class="course-header">
+                    <div class="course-header" style="display: flex; justify-content: space-between; align-items: center;">
                         <span class="course-subject subject-${course.subject}">${SUBJECT_NAMES[course.subject] || course.subject}</span>
+                        ${priceBadge}
                     </div>
-                    <h4 style="font-size: 16px; font-weight: 700; margin-bottom: 8px; color: var(--text-main);">${course.title}</h4>
-                    <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5; margin-bottom: 15px;">${course.description}</p>
+                    <h4 style="font-size: 16px; font-weight: 700; margin-bottom: 8px; color: var(--text-main); margin-top: 6px;">${escapeHtml(course.title)}</h4>
+                    <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5; margin-bottom: 15px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">${escapeHtml(course.description)}</p>
                     
                     <div style="display: flex; gap: 15px; font-size: 12px; color: var(--text-muted); margin-bottom: 15px;">
                         <span><i class="fa-solid fa-video" style="color: var(--accent-orange);"></i> الدروس: ${lessonsCount}</span>
@@ -1610,8 +1620,8 @@ function renderLandingPage() {
                     </div>
                 </div>
                 
-                <button class="btn btn-secondary" onclick="handleLandingCourseClick('${course.id}')" style="width: 100%; border-color: var(--accent-orange); color: var(--accent-orange);">
-                    ${btnText}
+                <button class="btn btn-secondary" onclick="openStudentCourseModal('${course.id}')" style="width: 100%; border-color: var(--accent-orange); color: var(--text-orange); font-weight: 800;">
+                    <i class="fa-solid fa-graduation-cap"></i> تصفح تفاصيل الدورة والدروس 🌟
                 </button>
             `;
             grid.appendChild(card);
@@ -2949,19 +2959,24 @@ function renderTeacherCourses() {
     }
 
     appState.courses.forEach(course => {
-        const lessonsCount = appState.lessons.filter(l => l.courseId === course.id).length;
-        const quizzesCount = appState.quizzes.filter(q => q.courseId === course.id).length;
+        const lessonsCount = appState.lessons.filter(l => String(l.courseId) === String(course.id)).length;
+        const quizzesCount = appState.quizzes.filter(q => String(q.courseId) === String(course.id)).length;
+
+        const isFree = !course.isPaid && (!course.price || course.price === 0);
+        const priceBadge = isFree 
+            ? `<span style="background: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.3); padding: 3px 8px; border-radius: 12px; font-weight: 800; font-size: 11px;"><i class="fa-solid fa-gift"></i> مجانية</span>`
+            : `<span style="background: rgba(245, 158, 11, 0.15); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.3); padding: 3px 8px; border-radius: 12px; font-weight: 800; font-size: 11px;"><i class="fa-solid fa-tag"></i> ${course.price} ر.س</span>`;
 
         const card = document.createElement('div');
         card.className = 'glass-card course-card';
         card.innerHTML = `
             <div>
-                <div class="course-header">
+                <div class="course-header" style="display: flex; justify-content: space-between; align-items: center;">
                     <span class="course-subject subject-${course.subject}">${SUBJECT_NAMES[course.subject] || course.subject}</span>
-                    <span style="font-size: 11px; color: var(--text-muted);">${course.createdAt || ''}</span>
+                    ${priceBadge}
                 </div>
-                <h4 style="font-size: 16px; font-weight: 700; margin-bottom: 8px; color: var(--text-main);">${course.title}</h4>
-                <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5; margin-bottom: 15px;">${course.description}</p>
+                <h4 style="font-size: 16px; font-weight: 700; margin-bottom: 8px; color: var(--text-main); margin-top: 6px;">${escapeHtml(course.title)}</h4>
+                <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5; margin-bottom: 15px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">${escapeHtml(course.description)}</p>
                 
                 <div style="display: flex; gap: 15px; font-size: 12px; color: var(--text-muted); margin-bottom: 15px; background: rgba(0,0,0,0.1); padding: 8px; border-radius: 6px;">
                     <span><i class="fa-solid fa-video" style="color: var(--accent-orange);"></i> الدروس: ${lessonsCount}</span>
@@ -2974,10 +2989,10 @@ function renderTeacherCourses() {
                     <i class="fa-solid fa-gear"></i> إدارة محتويات الدورة
                 </button>
                 <div style="display: flex; gap: 6px;">
-                    <button class="btn btn-secondary" style="flex: 1; padding: 6px; font-size: 11.5px;" onclick="openAddLessonModal('${course.id}', '${course.title}')">
+                    <button class="btn btn-secondary" style="flex: 1; padding: 6px; font-size: 11.5px;" onclick="openAddLessonModal('${course.id}', '${escapeHtml(course.title)}')">
                         <i class="fa-solid fa-plus"></i> درس فيديو
                     </button>
-                    <button class="btn btn-secondary" style="flex: 1; padding: 6px; font-size: 11.5px;" onclick="openAddQuizModal('${course.id}', '${course.title}')">
+                    <button class="btn btn-secondary" style="flex: 1; padding: 6px; font-size: 11.5px;" onclick="openAddQuizModal('${course.id}', '${escapeHtml(course.title)}')">
                         <i class="fa-solid fa-plus"></i> اختبار قصير
                     </button>
                 </div>
@@ -3009,6 +3024,16 @@ function openEditCourseModal(courseId) {
     
     const subjectSelect = document.getElementById('page-course-subject') || document.getElementById('course-subject');
     if (subjectSelect) subjectSelect.value = course.subject;
+
+    const isPaid = course.isPaid || (course.price > 0);
+    const priceTypeSelect = document.getElementById('page-course-price-type');
+    if (priceTypeSelect) {
+        priceTypeSelect.value = isPaid ? 'paid' : 'free';
+        toggleCoursePriceInput(priceTypeSelect.value);
+    }
+    
+    const priceInput = document.getElementById('page-course-price');
+    if (priceInput) priceInput.value = course.price || '';
     
     const descTextarea = document.getElementById('page-course-desc') || document.getElementById('course-desc');
     if (descTextarea) descTextarea.value = course.description;
@@ -3037,6 +3062,15 @@ async function handleCreateCourse(e) {
     const subjectSelect = document.getElementById('page-course-subject') || document.getElementById('course-subject');
     const subject = subjectSelect ? subjectSelect.value : 'math';
 
+    const priceTypeSelect = document.getElementById('page-course-price-type');
+    const priceType = priceTypeSelect ? priceTypeSelect.value : 'free';
+    
+    const priceInput = document.getElementById('page-course-price');
+    const priceVal = priceInput ? parseFloat(priceInput.value) : 0;
+    
+    const isPaid = (priceType === 'paid');
+    const price = isPaid ? (isNaN(priceVal) ? 0 : priceVal) : 0;
+
     const descTextarea = document.getElementById('page-course-desc') || document.getElementById('course-desc');
     const description = descTextarea ? descTextarea.value.trim() : '';
 
@@ -3052,17 +3086,23 @@ async function handleCreateCourse(e) {
         const oldTitle = course.title;
         const oldSubject = course.subject;
         const oldDesc = course.description;
+        const oldPrice = course.price;
+        const oldIsPaid = course.isPaid;
         
         course.title = title;
         course.subject = subject;
         course.description = description;
+        course.price = price;
+        course.isPaid = isPaid;
         
         try {
             if (isCloudMode && supabaseClient) {
                 const { error } = await supabaseClient.from('courses').update({
                     title: course.title,
                     description: course.description,
-                    subject: course.subject
+                    subject: course.subject,
+                    price: course.price,
+                    is_paid: course.isPaid
                 }).eq('id', editId);
                 if (error) throw error;
             } else {
@@ -3077,6 +3117,8 @@ async function handleCreateCourse(e) {
             course.title = oldTitle;
             course.subject = oldSubject;
             course.description = oldDesc;
+            course.price = oldPrice;
+            course.isPaid = oldIsPaid;
             showToast("فشل تعديل المقرر في السحابة!", "danger");
         }
     } else {
@@ -3086,6 +3128,8 @@ async function handleCreateCourse(e) {
             title,
             description,
             subject,
+            price,
+            isPaid,
             createdAt: new Date().toISOString().split('T')[0]
         };
 
@@ -3096,6 +3140,8 @@ async function handleCreateCourse(e) {
                     title: newCourse.title,
                     description: newCourse.description,
                     subject: newCourse.subject,
+                    price: newCourse.price,
+                    is_paid: newCourse.isPaid,
                     created_at: newCourse.createdAt
                 });
                 if (error) throw error;
@@ -4440,8 +4486,8 @@ function renderStudentCourses() {
     const list = document.getElementById('s-courses-list');
     list.innerHTML = '';
 
-    const sId = appState.currentUser.id;
-    const student = appState.students.find(s => s.id === sId);
+    const sId = appState.currentUser ? appState.currentUser.id : null;
+    const student = sId ? appState.students.find(s => s.id === sId) : null;
     const enrolledList = (student && student.enrolled_courses) ? student.enrolled_courses : [];
 
     if (appState.courses.length === 0) {
@@ -4454,20 +4500,24 @@ function renderStudentCourses() {
     }
 
     appState.courses.forEach(course => {
-        const lessonsCount = appState.lessons.filter(l => l.courseId === course.id).length;
-        const quizzesCount = appState.quizzes.filter(q => q.courseId === course.id).length;
+        const lessonsCount = appState.lessons.filter(l => String(l.courseId) === String(course.id)).length;
+        const quizzesCount = appState.quizzes.filter(q => String(q.courseId) === String(course.id)).length;
         
-        const isEnrolled = enrolledList.includes(course.id);
+        const isFree = !course.isPaid && (!course.price || course.price === 0);
+        const priceBadge = isFree 
+            ? `<span style="background: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.3); padding: 3px 10px; border-radius: 20px; font-weight: 800; font-size: 11.5px;"><i class="fa-solid fa-gift"></i> مجانية</span>`
+            : `<span style="background: rgba(245, 158, 11, 0.15); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.3); padding: 3px 10px; border-radius: 20px; font-weight: 800; font-size: 11.5px;"><i class="fa-solid fa-tag"></i> ${course.price} ر.س</span>`;
 
         const card = document.createElement('div');
         card.className = 'glass-card course-card';
         card.innerHTML = `
             <div>
-                <div class="course-header">
+                <div class="course-header" style="display: flex; justify-content: space-between; align-items: center;">
                     <span class="course-subject subject-${course.subject}">${SUBJECT_NAMES[course.subject] || course.subject}</span>
+                    ${priceBadge}
                 </div>
-                <h4 style="font-size: 16px; font-weight: 700; margin-bottom: 8px; color: var(--text-main);">${course.title}</h4>
-                <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5; margin-bottom: 15px;">${course.description}</p>
+                <h4 style="font-size: 16px; font-weight: 700; margin-bottom: 8px; color: var(--text-main); margin-top: 6px;">${escapeHtml(course.title)}</h4>
+                <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5; margin-bottom: 15px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">${escapeHtml(course.description)}</p>
                 
                 <div style="display: flex; gap: 15px; font-size: 12px; color: var(--text-muted); margin-bottom: 15px;">
                     <span><i class="fa-solid fa-video" style="color: var(--accent-orange);"></i> الدروس: ${lessonsCount}</span>
@@ -4475,95 +4525,123 @@ function renderStudentCourses() {
                 </div>
             </div>
             
-            ${isEnrolled ? `
-                <button class="btn btn-primary" style="width: 100%;" onclick="openStudentCourseModal('${course.id}')">
-                    <i class="fa-solid fa-book-open"></i> تصفح المحتوى والدروس
-                </button>
-            ` : `
-                <button class="btn btn-secondary btn-locked" style="width: 100%;" onclick="openUnpaidModal('course')">
-                    <i class="fa-solid fa-lock"></i> غير مشترك - تواصل للمعلم للتفعيل 🔒
-                </button>
-            `}
+            <button class="btn btn-primary" style="width: 100%; font-weight: 800;" onclick="openStudentCourseModal('${course.id}')">
+                <i class="fa-solid fa-graduation-cap"></i> فتح تفاصيل وشروحات الدورة 🚀
+            </button>
         `;
         list.appendChild(card);
     });
 }
 
 function openStudentCourseModal(courseId) {
-    const course = appState.courses.find(c => c.id === courseId);
+    const course = appState.courses.find(c => String(c.id) === String(courseId));
     if (!course) return;
 
-    document.getElementById('s-course-modal-title').textContent = course.title;
-    
+    hideAllViews();
+    const page = document.getElementById('student-course-page-view');
+    if (page) page.style.display = 'block';
+
+    const titleEl = document.getElementById('s-course-modal-title');
+    if (titleEl) titleEl.textContent = course.title;
+
+    const descEl = document.getElementById('s-course-description-text');
+    if (descEl) descEl.textContent = course.description || 'لا يوجد وصف تفصيلي مضاف بعد لهذه الدورة.';
+
+    const subjectBadge = document.getElementById('s-course-subject-badge');
+    if (subjectBadge) {
+        subjectBadge.className = `course-subject subject-${course.subject || 'math'}`;
+        subjectBadge.textContent = SUBJECT_NAMES[course.subject] || course.subject || 'عام';
+    }
+
+    const isFree = !course.isPaid && (!course.price || course.price === 0);
+    const priceBadge = document.getElementById('s-course-price-badge');
+    const statPrice = document.getElementById('s-course-stat-price');
+    if (priceBadge) {
+        priceBadge.style.background = isFree ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)';
+        priceBadge.style.color = isFree ? 'var(--success)' : 'var(--warning)';
+        priceBadge.style.borderColor = isFree ? 'rgba(16, 185, 129, 0.3)' : 'rgba(245, 158, 11, 0.3)';
+        priceBadge.innerHTML = isFree ? '<i class="fa-solid fa-gift"></i> مجانية بالكامل' : `<i class="fa-solid fa-tag"></i> ${course.price} ر.س`;
+    }
+    if (statPrice) {
+        statPrice.textContent = isFree ? 'مجانية 🎁' : `${course.price} ر.س 💰`;
+    }
+
+    const courseLessons = appState.lessons.filter(l => String(l.courseId) === String(courseId));
+    const courseQuizzes = appState.quizzes.filter(q => String(q.courseId) === String(courseId));
+
+    const statLessons = document.getElementById('s-course-stat-lessons');
+    if (statLessons) statLessons.textContent = `${courseLessons.length} دروس`;
+
+    const statQuizzes = document.getElementById('s-course-stat-quizzes');
+    if (statQuizzes) statQuizzes.textContent = `${courseQuizzes.length} اختبارات`;
+
+    // Reset video player
     const video = document.getElementById('s-course-video-player');
     const iframe = document.getElementById('s-course-iframe-player');
     const placeholder = document.getElementById('s-course-media-placeholder');
-    video.style.display = 'none';
-    video.src = '';
-    iframe.style.display = 'none';
-    iframe.src = '';
-    placeholder.style.display = 'flex';
+    if (video) { video.style.display = 'none'; video.src = ''; }
+    if (iframe) { iframe.style.display = 'none'; iframe.src = ''; }
+    if (placeholder) placeholder.style.display = 'flex';
 
     // Render Lessons List
     const lessonsList = document.getElementById('s-course-lessons-list');
-    lessonsList.innerHTML = '';
-    const courseLessons = appState.lessons.filter(l => l.courseId === courseId);
-
-    if (courseLessons.length === 0) {
-        lessonsList.innerHTML = '<span style="font-size: 12px; color: var(--text-muted); font-style: italic;">لا توجد دروس فيديو مضافة بعد</span>';
-    } else {
-        courseLessons.forEach(lesson => {
-            const div = document.createElement('div');
-            div.className = 'lesson-item';
-            div.innerHTML = `
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <i class="fa-regular fa-circle-play" style="color: var(--accent-orange);"></i>
-                    <span style="font-size: 13px; font-weight: 600;">${lesson.title}</span>
-                </div>
-                <span style="font-size: 11px; color: var(--text-muted);">${lesson.duration}</span>
-            `;
-            div.onclick = () => {
-                document.querySelectorAll('.lesson-item').forEach(el => el.classList.remove('active'));
-                div.classList.add('active');
-                playLessonVideo(lesson.videoUrl);
-            };
-            lessonsList.appendChild(div);
-        });
+    if (lessonsList) {
+        lessonsList.innerHTML = '';
+        if (courseLessons.length === 0) {
+            lessonsList.innerHTML = '<span style="font-size: 12px; color: var(--text-muted); font-style: italic;">لا توجد دروس فيديو مضافة بعد</span>';
+        } else {
+            courseLessons.forEach(lesson => {
+                const div = document.createElement('div');
+                div.className = 'lesson-item';
+                div.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <i class="fa-regular fa-circle-play" style="color: var(--accent-orange);"></i>
+                        <span style="font-size: 13px; font-weight: 600;">${escapeHtml(lesson.title)}</span>
+                    </div>
+                    <span style="font-size: 11px; color: var(--text-muted);">${escapeHtml(lesson.duration || '')}</span>
+                `;
+                div.onclick = () => {
+                    document.querySelectorAll('.lesson-item').forEach(el => el.classList.remove('active'));
+                    div.classList.add('active');
+                    playLessonVideo(lesson.videoUrl);
+                };
+                lessonsList.appendChild(div);
+            });
+        }
     }
 
     // Render Quizzes List
     const quizzesList = document.getElementById('s-course-quizzes-list');
-    quizzesList.innerHTML = '';
-    const courseQuizzes = appState.quizzes.filter(q => q.courseId === courseId);
-
-    if (courseQuizzes.length === 0) {
-        quizzesList.innerHTML = '<span style="font-size: 12px; color: var(--text-muted); font-style: italic;">لا توجد اختبارات مضافة بعد</span>';
-    } else {
-        courseQuizzes.forEach(quiz => {
-            const div = document.createElement('div');
-            div.className = 'quiz-item';
-            div.innerHTML = `
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <i class="fa-solid fa-clipboard-question" style="color: var(--success);"></i>
-                    <span style="font-size: 13px; font-weight: 600;">${quiz.title}</span>
-                    ${quiz.isSimulator ? '<span style="font-size: 9.5px; background: var(--success); color: #000; padding: 2px 5px; border-radius: 4px; margin-right: 6px; font-weight: bold;"><i class="fa-solid fa-bolt"></i> محاكي</span>' : ''}
-                </div>
-                <span style="font-size: 11.5px; font-weight: 700; color: var(--text-orange);">${quiz.points} XP</span>
-            `;
-            div.onclick = () => {
-                closeModal('student-course-modal');
-                if (quiz.isSimulator) {
-                    startSimulator(quiz);
-                } else {
-                    startQuiz(quiz);
-                }
-            };
-            quizzesList.appendChild(div);
-        });
+    if (quizzesList) {
+        quizzesList.innerHTML = '';
+        if (courseQuizzes.length === 0) {
+            quizzesList.innerHTML = '<span style="font-size: 12px; color: var(--text-muted); font-style: italic;">لا توجد اختبارات مضافة بعد</span>';
+        } else {
+            courseQuizzes.forEach(quiz => {
+                const div = document.createElement('div');
+                div.className = 'quiz-item';
+                div.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <i class="fa-solid fa-clipboard-question" style="color: var(--success);"></i>
+                        <span style="font-size: 13px; font-weight: 600;">${escapeHtml(quiz.title)}</span>
+                        ${quiz.isSimulator ? '<span style="font-size: 9.5px; background: var(--success); color: #000; padding: 2px 5px; border-radius: 4px; margin-right: 6px; font-weight: bold;"><i class="fa-solid fa-bolt"></i> محاكي</span>' : ''}
+                    </div>
+                    <span style="font-size: 11.5px; font-weight: 700; color: var(--text-orange);">${quiz.points} XP</span>
+                `;
+                div.onclick = () => {
+                    if (quiz.isSimulator) {
+                        startSimulator(quiz);
+                    } else {
+                        startQuiz(quiz);
+                    }
+                };
+                quizzesList.appendChild(div);
+            });
+        }
     }
 
-    openModal('student-course-modal');
-    renderMath('student-course-modal');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    renderMath('student-course-page-view');
 }
 
 function playLessonVideo(url) {
