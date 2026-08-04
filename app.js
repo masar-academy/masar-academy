@@ -1580,6 +1580,73 @@ function handleLandingCourseClick(courseId) {
     }
 }
 
+function deriveCoursePricing(course) {
+    if (!course) return { price: 0, isPaid: false, isFree: true };
+
+    let price = (course.price !== undefined && course.price !== null && !isNaN(course.price)) ? parseFloat(course.price) : 0;
+    let isPaid = (course.isPaid !== undefined && course.isPaid !== null) ? Boolean(course.isPaid) : (price > 0);
+
+    if (!isPaid || price === 0) {
+        const text = ((course.title || '') + ' ' + (course.description || '')).toLowerCase();
+        const priceMatch = text.match(/(\d+)\s*(ر\.س|ريال|رس|رـس)/i);
+        if (priceMatch && priceMatch[1]) {
+            price = parseFloat(priceMatch[1]);
+            isPaid = true;
+        } else if (text.includes('مدفوع') || text.includes('رسوم') || text.includes('سعر')) {
+            isPaid = true;
+            const numMatch = text.match(/(\d+)/);
+            if (numMatch && numMatch[1]) {
+                price = parseFloat(numMatch[1]);
+            }
+        }
+    }
+
+    return { price, isPaid, isFree: !isPaid };
+}
+
+function openQuickPriceModal(courseId) {
+    const course = appState.courses.find(c => String(c.id) === String(courseId));
+    if (!course) return;
+
+    const pricing = deriveCoursePricing(course);
+    const defaultVal = pricing.price > 0 ? pricing.price : '';
+    const newPriceStr = prompt(
+        `💰 تحديث سعر الاشتراك بالدورة:\n"${course.title}"\n\n` +
+        `أدخل سعر الدورة الجديد بالريال السعودي (أو اتركه 0 إذا كانت الدورة مجانية بالكامل):`,
+        defaultVal
+    );
+
+    if (newPriceStr === null) return;
+
+    const inputVal = newPriceStr.trim();
+    const newPrice = parseFloat(inputVal);
+
+    if (isNaN(newPrice) || newPrice <= 0) {
+        course.price = 0;
+        course.isPaid = false;
+    } else {
+        course.price = newPrice;
+        course.isPaid = true;
+    }
+
+    try {
+        localStorage.setItem('masar_courses', JSON.stringify(appState.courses));
+        if (isCloudMode && supabaseClient) {
+            supabaseClient.from('courses').update({
+                price: course.price,
+                is_paid: course.isPaid
+            }).eq('id', course.id).then(() => {}).catch(() => {});
+        }
+    } catch (e) {}
+
+    showToast(`تم بنجاح تحديث سعر الدورة إلى (${course.isPaid ? course.price + ' ر.س' : 'مجانية'})! 🎉`, 'success');
+    renderTeacherCourses();
+    renderLandingPage();
+    if (appState.currentUser && appState.currentUser.role === 'student') {
+        renderStudentCourses();
+    }
+}
+
 function toggleCoursePriceInput(val) {
     const group = document.getElementById('page-course-price-group');
     if (group) {
@@ -1606,11 +1673,10 @@ function renderLandingPage() {
             const lessonsCount = appState.lessons.filter(l => String(l.courseId) === String(course.id)).length;
             const quizzesCount = appState.quizzes.filter(q => String(q.courseId) === String(course.id)).length;
 
-            const isPaid = Boolean(course.isPaid) || (Number(course.price) > 0);
-            const isFree = !isPaid;
-            const priceBadge = isFree 
+            const pricing = deriveCoursePricing(course);
+            const priceBadge = pricing.isFree 
                 ? `<span style="background: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.3); padding: 3px 10px; border-radius: 20px; font-weight: 800; font-size: 11.5px;"><i class="fa-solid fa-gift"></i> مجانية</span>`
-                : `<span style="background: rgba(245, 158, 11, 0.15); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.3); padding: 3px 10px; border-radius: 20px; font-weight: 800; font-size: 11.5px;"><i class="fa-solid fa-tag"></i> ${course.price} ر.س</span>`;
+                : `<span style="background: rgba(245, 158, 11, 0.15); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.3); padding: 3px 10px; border-radius: 20px; font-weight: 800; font-size: 11.5px;"><i class="fa-solid fa-tag"></i> ${pricing.price} ر.س</span>`;
 
             const card = document.createElement('div');
             card.className = 'glass-card course-card';
@@ -2971,11 +3037,10 @@ function renderTeacherCourses() {
         const lessonsCount = appState.lessons.filter(l => String(l.courseId) === String(course.id)).length;
         const quizzesCount = appState.quizzes.filter(q => String(q.courseId) === String(course.id)).length;
 
-        const isPaid = Boolean(course.isPaid) || (Number(course.price) > 0);
-        const isFree = !isPaid;
-        const priceBadge = isFree 
+        const pricing = deriveCoursePricing(course);
+        const priceBadge = pricing.isFree 
             ? `<span style="background: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.3); padding: 3px 8px; border-radius: 12px; font-weight: 800; font-size: 11px;"><i class="fa-solid fa-gift"></i> مجانية</span>`
-            : `<span style="background: rgba(245, 158, 11, 0.15); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.3); padding: 3px 8px; border-radius: 12px; font-weight: 800; font-size: 11px;"><i class="fa-solid fa-tag"></i> ${course.price} ر.س</span>`;
+            : `<span style="background: rgba(245, 158, 11, 0.15); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.3); padding: 3px 8px; border-radius: 12px; font-weight: 800; font-size: 11px;"><i class="fa-solid fa-tag"></i> ${pricing.price} ر.س</span>`;
 
         const card = document.createElement('div');
         card.className = 'glass-card course-card';
@@ -3007,11 +3072,14 @@ function renderTeacherCourses() {
                     </button>
                 </div>
                 <div style="display: flex; gap: 6px;">
-                    <button class="btn btn-secondary" style="flex: 1; padding: 6px; font-size: 11.5px; border-color: var(--accent-orange); color: var(--text-orange);" onclick="openEditCourseModal('${course.id}')">
-                        <i class="fa-regular fa-edit"></i> تعديل المقرر
+                    <button class="btn btn-secondary" style="flex: 1; padding: 6px; font-size: 11.5px; border-color: var(--warning); color: var(--warning);" onclick="openQuickPriceModal('${course.id}')" title="تحديث وتعيين سعر الدورة سريعا">
+                        <i class="fa-solid fa-tag"></i> تعديل السعر 💰
                     </button>
-                    <button class="btn btn-danger btn-secondary" style="flex: 1; padding: 6px; font-size: 11.5px;" onclick="deleteCourse('${course.id}')">
-                        <i class="fa-regular fa-trash-can"></i> حذف المقرر
+                    <button class="btn btn-secondary" style="flex: 1; padding: 6px; font-size: 11.5px; border-color: var(--accent-orange); color: var(--text-orange);" onclick="openEditCourseModal('${course.id}')">
+                        <i class="fa-regular fa-edit"></i> تعديل البيانات
+                    </button>
+                    <button class="btn btn-danger btn-secondary" style="padding: 6px 10px; font-size: 11.5px;" onclick="deleteCourse('${course.id}')" title="حذف الدورة">
+                        <i class="fa-regular fa-trash-can"></i>
                     </button>
                 </div>
             </div>
