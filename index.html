@@ -17,7 +17,7 @@
     <script>
         // Automatic Cache-Buster: Forces fresh online build fetch from GitHub
         (function() {
-            const CURRENT_BUILD = "v1785883482359";
+            const CURRENT_BUILD = "v1785883899623";
             const storedBuild = localStorage.getItem('masar_app_build');
             if (storedBuild !== CURRENT_BUILD) {
                 localStorage.setItem('masar_app_build', CURRENT_BUILD);
@@ -43,7 +43,7 @@
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
     <!-- Main Style Sheet -->
-    <link rel="stylesheet" href="style.css?v=v1785883482359">
+    <link rel="stylesheet" href="style.css?v=v1785883899623">
 </head>
 <body>
 
@@ -392,8 +392,11 @@
                         
                         <!-- Tab 3: Students Progress and Reports -->
                         <div id="t-students-tab" class="tab-content">
-                            <div class="section-title">
+                            <div class="section-title" style="flex-wrap: wrap; gap: 10px;">
                                 <h3>ملفات الطلاب المسجلين وصلاحيات التحكم</h3>
+                                <button type="button" class="btn btn-secondary" onclick="resetAllStudentsXP()" style="padding: 8px 16px; font-size: 12.5px; border-color: rgba(239, 68, 68, 0.4); color: var(--danger); font-weight: 800;" title="تصفير نقاط XP لجميع الطلاب لبدء المسابقة والفعالية الشهرية الجديدة">
+                                    <i class="fa-solid fa-rotate-left"></i> تصفير نقاط (XP) الطلاب الشهري 🔄
+                                </button>
                             </div>
                             <div class="students-grid" id="t-students-list">
                                 <!-- Populated by JavaScript -->
@@ -1929,7 +1932,7 @@
     <div class="toast-container" id="toast-container"></div>
 
     <!-- Main JavaScript Logic -->
-    <script src="app.js?v=v1785883482359"></script>
+    <script src="app.js?v=v1785883899623"></script>
     <script>
         // Unregister any legacy cached ServiceWorkers
         if ('serviceWorker' in navigator) {
