@@ -550,13 +550,21 @@ async function syncFromCloud() {
         }
 
         if (courses.length > 0) {
-            appState.courses = courses.map(c => ({
-                id: c.id,
-                title: c.title,
-                description: c.description,
-                subject: c.subject,
-                createdAt: c.created_at
-            }));
+            const localCourses = safeJsonParse(localStorage.getItem('masar_courses'), []);
+            appState.courses = courses.map(c => {
+                const matchedLocal = localCourses.find(lc => String(lc.id) === String(c.id));
+                const price = c.price !== undefined && c.price !== null ? parseFloat(c.price) : (matchedLocal && matchedLocal.price ? parseFloat(matchedLocal.price) : 0);
+                const isPaid = c.is_paid !== undefined && c.is_paid !== null ? Boolean(c.is_paid) : (matchedLocal && matchedLocal.isPaid !== undefined ? Boolean(matchedLocal.isPaid) : (price > 0));
+                return {
+                    id: c.id,
+                    title: c.title,
+                    description: c.description,
+                    subject: c.subject,
+                    price: price,
+                    isPaid: isPaid,
+                    createdAt: c.created_at || c.createdAt
+                };
+            });
         } else {
             const localCourses = safeJsonParse(localStorage.getItem('masar_courses'), INITIAL_COURSES);
             if (localCourses && localCourses.length > 0) {
@@ -1598,7 +1606,8 @@ function renderLandingPage() {
             const lessonsCount = appState.lessons.filter(l => String(l.courseId) === String(course.id)).length;
             const quizzesCount = appState.quizzes.filter(q => String(q.courseId) === String(course.id)).length;
 
-            const isFree = !course.isPaid && (!course.price || course.price === 0);
+            const isPaid = Boolean(course.isPaid) || (Number(course.price) > 0);
+            const isFree = !isPaid;
             const priceBadge = isFree 
                 ? `<span style="background: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.3); padding: 3px 10px; border-radius: 20px; font-weight: 800; font-size: 11.5px;"><i class="fa-solid fa-gift"></i> مجانية</span>`
                 : `<span style="background: rgba(245, 158, 11, 0.15); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.3); padding: 3px 10px; border-radius: 20px; font-weight: 800; font-size: 11.5px;"><i class="fa-solid fa-tag"></i> ${course.price} ر.س</span>`;
@@ -2962,7 +2971,8 @@ function renderTeacherCourses() {
         const lessonsCount = appState.lessons.filter(l => String(l.courseId) === String(course.id)).length;
         const quizzesCount = appState.quizzes.filter(q => String(q.courseId) === String(course.id)).length;
 
-        const isFree = !course.isPaid && (!course.price || course.price === 0);
+        const isPaid = Boolean(course.isPaid) || (Number(course.price) > 0);
+        const isFree = !isPaid;
         const priceBadge = isFree 
             ? `<span style="background: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.3); padding: 3px 8px; border-radius: 12px; font-weight: 800; font-size: 11px;"><i class="fa-solid fa-gift"></i> مجانية</span>`
             : `<span style="background: rgba(245, 158, 11, 0.15); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.3); padding: 3px 8px; border-radius: 12px; font-weight: 800; font-size: 11px;"><i class="fa-solid fa-tag"></i> ${course.price} ر.س</span>`;
@@ -4525,7 +4535,8 @@ function renderStudentCourses() {
         const lessonsCount = appState.lessons.filter(l => String(l.courseId) === String(course.id)).length;
         const quizzesCount = appState.quizzes.filter(q => String(q.courseId) === String(course.id)).length;
         
-        const isFree = !course.isPaid && (!course.price || course.price === 0);
+        const isPaid = Boolean(course.isPaid) || (Number(course.price) > 0);
+        const isFree = !isPaid;
         const priceBadge = isFree 
             ? `<span style="background: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.3); padding: 3px 10px; border-radius: 20px; font-weight: 800; font-size: 11.5px;"><i class="fa-solid fa-gift"></i> مجانية</span>`
             : `<span style="background: rgba(245, 158, 11, 0.15); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.3); padding: 3px 10px; border-radius: 20px; font-weight: 800; font-size: 11.5px;"><i class="fa-solid fa-tag"></i> ${course.price} ر.س</span>`;
@@ -4575,7 +4586,8 @@ function openStudentCourseModal(courseId) {
         subjectBadge.textContent = SUBJECT_NAMES[course.subject] || course.subject || 'عام';
     }
 
-    const isFree = !course.isPaid && (!course.price || course.price === 0);
+    const isPaid = Boolean(course.isPaid) || (Number(course.price) > 0);
+    const isFree = !isPaid;
     const priceBadge = document.getElementById('s-course-price-badge');
     const statPrice = document.getElementById('s-course-stat-price');
     if (priceBadge) {
