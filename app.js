@@ -4993,6 +4993,11 @@ function startSimulator(quiz) {
         clearInterval(activeSimulatorState.timerInterval);
     }
     
+    const sidebar = document.getElementById('simulator-nav-sidebar');
+    const layoutGrid = document.getElementById('simulator-layout-grid');
+    if (sidebar) sidebar.style.display = 'block';
+    if (layoutGrid) layoutGrid.style.gridTemplateColumns = '270px 1fr';
+
     const titleEl = document.getElementById('simulator-player-title');
     if (titleEl) titleEl.textContent = `محاكي الاختبار: ${quiz.title}`;
     
@@ -5100,6 +5105,13 @@ function renderSimulatorSection() {
     const sections = activeSimulatorState.sections || getSimulatorSections(activeSimulatorState.quiz);
     const body = document.getElementById('simulator-player-body');
     if (!body) return;
+    
+    if (sectionIdx < sections.length) {
+        const sidebar = document.getElementById('simulator-nav-sidebar');
+        const layoutGrid = document.getElementById('simulator-layout-grid');
+        if (sidebar) sidebar.style.display = 'block';
+        if (layoutGrid) layoutGrid.style.gridTemplateColumns = '270px 1fr';
+    }
     
     if (!sections || sections.length === 0) {
         body.innerHTML = `
@@ -5347,6 +5359,11 @@ async function renderSimulatorResults() {
         console.error(err);
     }
     
+    const sidebar = document.getElementById('simulator-nav-sidebar');
+    const layoutGrid = document.getElementById('simulator-layout-grid');
+    if (sidebar) sidebar.style.display = 'none';
+    if (layoutGrid) layoutGrid.style.gridTemplateColumns = '1fr';
+
     document.getElementById('simulator-timer-display').textContent = "--:--";
     document.getElementById('simulator-progress-text').textContent = "انتهى المحاكي";
     const submitBtn = document.getElementById('simulator-submit-section-btn');
