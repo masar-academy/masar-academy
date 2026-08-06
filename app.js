@@ -418,7 +418,8 @@ async function syncFromCloud() {
             resCourses,
             resLessons,
             resQuizzes,
-            resMessages
+            resMessages,
+            resTestimonials
         ] = await Promise.all([
             supabaseClient.from('teachers').select('*'),
             supabaseClient.from('students').select('*'),
@@ -427,7 +428,8 @@ async function syncFromCloud() {
             supabaseClient.from('courses').select('*'),
             supabaseClient.from('lessons').select('*'),
             supabaseClient.from('quizzes').select('*'),
-            supabaseClient.from('messages').select('*').order('created_at', { ascending: true })
+            supabaseClient.from('messages').select('*').order('created_at', { ascending: true }),
+            supabaseClient.from('testimonials').select('*')
         ]);
 
         const teachers = resTeachers.data || [];
@@ -438,6 +440,23 @@ async function syncFromCloud() {
         const lessons = resLessons.data || [];
         const quizzes = resQuizzes.data || [];
         const messages = resMessages.data || [];
+        const testimonials = (resTestimonials && resTestimonials.data) ? resTestimonials.data : [];
+
+        if (testimonials.length > 0) {
+            appState.testimonials = testimonials.map(t => ({
+                id: t.id,
+                studentName: t.student_name,
+                studentRole: t.student_role,
+                rating: t.rating,
+                comment: t.comment,
+                createdAt: t.created_at
+            }));
+        } else {
+            const localTestimonials = safeJsonParse(localStorage.getItem('masar_testimonials'), INITIAL_TESTIMONIALS);
+            if (localTestimonials && localTestimonials.length > 0) {
+                appState.testimonials = localTestimonials;
+            }
+        }
         
         appState.teachers = teachers;
         appState.messages = messages.map(m => ({
@@ -6060,6 +6079,12 @@ function createTestimonialCardHTML(rev, isTeacher) {
 }
 
 function openAddTestimonialModal() {
+    if (!appState.currentUser) {
+        showToast("سجل الآن بحساب طالب مجاناً لإضافة رأيك وتجربتك! 🎓", "info");
+        openModal('student-register-modal');
+        return;
+    }
+
     const form = document.getElementById('add-testimonial-form');
     if (form) form.reset();
 
@@ -6073,13 +6098,25 @@ function openAddTestimonialModal() {
 
 async function handleCreateTestimonial(e) {
     e.preventDefault();
-    const name = document.getElementById('testim-name').value.trim();
-    const role = document.getElementById('testim-role').value;
-    const rating = parseInt(document.getElementById('testim-rating').value, 10) || 5;
-    const comment = document.getElementById('testim-comment').value.trim();
+    if (!appState.currentUser) {
+        showToast("سجل الآن بحساب طالب مجاناً لإضافة رأيك وتجربتك! 🎓", "info");
+        closeModal('add-testimonial-modal');
+        openModal('student-register-modal');
+        return;
+    }
+
+    const nameInput = document.getElementById('testim-name');
+    const roleInput = document.getElementById('testim-role');
+    const ratingInput = document.getElementById('testim-rating');
+    const commentInput = document.getElementById('testim-comment');
+
+    const name = nameInput ? nameInput.value.trim() : (appState.currentUser ? appState.currentUser.name : '');
+    const role = roleInput ? roleInput.value : 'طالب منصة مسار';
+    const rating = ratingInput ? parseInt(ratingInput.value, 10) || 5 : 5;
+    const comment = commentInput ? commentInput.value.trim() : '';
 
     if (!name || !comment) {
-        showToast("يرجى كتابة اسمك ونصف الرأي والتجربة!", "danger");
+        showToast("يرجى كتابة اسمك ونص الرأي والتجربة!", "danger");
         return;
     }
 
@@ -6092,9 +6129,18 @@ async function handleCreateTestimonial(e) {
         createdAt: new Date().toISOString().split('T')[0]
     };
 
+    if (!appState.testimonials || appState.testimonials.length === 0) {
+        appState.testimonials = [...INITIAL_TESTIMONIALS];
+    }
+    appState.testimonials.unshift(newRev);
+
+    try {
+        localStorage.setItem('masar_testimonials', JSON.stringify(appState.testimonials));
+    } catch(e) {}
+
     try {
         if (isCloudMode && supabaseClient) {
-            await supabaseClient.from('testimonials').insert({
+            const { error } = await supabaseClient.from('testimonials').insert({
                 id: newRev.id,
                 student_name: newRev.studentName,
                 student_role: newRev.studentRole,
@@ -6102,18 +6148,13 @@ async function handleCreateTestimonial(e) {
                 comment: newRev.comment,
                 created_at: newRev.createdAt
             });
+            if (error) {
+                console.warn("Supabase insert testimonial notice:", error);
+            }
         }
     } catch(err) {
-        console.warn("Supabase insert testimonial warning:", err);
+        console.warn("Supabase insert testimonial catch:", err);
     }
-
-    if (!appState.testimonials || appState.testimonials.length === 0) {
-        appState.testimonials = [...INITIAL_TESTIMONIALS];
-    }
-    appState.testimonials.unshift(newRev);
-    try {
-        localStorage.setItem('masar_testimonials', JSON.stringify(appState.testimonials));
-    } catch(e) {}
 
     closeModal('add-testimonial-modal');
     showToast("شكراً لك! تم نشر رأيك وتجربتك بنجاح 🌟", "success");
