@@ -553,15 +553,28 @@ async function syncFromCloud() {
             const localCourses = safeJsonParse(localStorage.getItem('masar_courses'), []);
             appState.courses = courses.map(c => {
                 const matchedLocal = localCourses.find(lc => String(lc.id) === String(c.id));
-                const price = c.price !== undefined && c.price !== null ? parseFloat(c.price) : (matchedLocal && matchedLocal.price ? parseFloat(matchedLocal.price) : 0);
-                const isPaid = c.is_paid !== undefined && c.is_paid !== null ? Boolean(c.is_paid) : (matchedLocal && matchedLocal.isPaid !== undefined ? Boolean(matchedLocal.isPaid) : (price > 0));
+                let p = c.price !== undefined && c.price !== null && Number(c.price) > 0 
+                    ? parseFloat(c.price) 
+                    : (matchedLocal && matchedLocal.price ? parseFloat(matchedLocal.price) : 0);
+                
+                let paid = (c.is_paid === true) || (matchedLocal && matchedLocal.isPaid === true) || (p > 0);
+                
+                const derived = deriveCoursePricing({
+                    id: c.id,
+                    title: c.title,
+                    description: c.description,
+                    subject: c.subject,
+                    price: p,
+                    isPaid: paid
+                });
+
                 return {
                     id: c.id,
                     title: c.title,
                     description: c.description,
                     subject: c.subject,
-                    price: price,
-                    isPaid: isPaid,
+                    price: derived.price,
+                    isPaid: derived.isPaid,
                     createdAt: c.created_at || c.createdAt
                 };
             });
@@ -1584,7 +1597,7 @@ function deriveCoursePricing(course) {
     if (!course) return { price: 0, isPaid: false, isFree: true };
 
     let price = (course.price !== undefined && course.price !== null && !isNaN(course.price)) ? parseFloat(course.price) : 0;
-    let isPaid = (course.isPaid !== undefined && course.isPaid !== null) ? Boolean(course.isPaid) : (price > 0);
+    let isPaid = (course.isPaid === true || course.is_paid === true || price > 0);
 
     if (!isPaid || price === 0) {
         const text = ((course.title || '') + ' ' + (course.description || '')).toLowerCase();
@@ -1592,7 +1605,7 @@ function deriveCoursePricing(course) {
         if (priceMatch && priceMatch[1]) {
             price = parseFloat(priceMatch[1]);
             isPaid = true;
-        } else if (text.includes('مدفوع') || text.includes('رسوم') || text.includes('سعر')) {
+        } else if (text.includes('مدفوع') || text.includes('رسوم') || text.includes('سعر الاشتراك') || text.includes('اشتراك')) {
             isPaid = true;
             const numMatch = text.match(/(\d+)/);
             if (numMatch && numMatch[1]) {
@@ -1601,7 +1614,8 @@ function deriveCoursePricing(course) {
         }
     }
 
-    return { price, isPaid, isFree: !isPaid };
+    const finalIsPaid = isPaid || (price > 0);
+    return { price, isPaid: finalIsPaid, isFree: !finalIsPaid };
 }
 
 function openQuickPriceModal(courseId) {
