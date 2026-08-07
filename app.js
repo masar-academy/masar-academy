@@ -4695,7 +4695,7 @@ function renderStudentCourses() {
         const lessonsCount = appState.lessons.filter(l => String(l.courseId) === String(course.id)).length;
         const quizzesCount = appState.quizzes.filter(q => String(q.courseId) === String(course.id)).length;
         
-        const isEnrolled = (student && student.enrolled_courses) ? student.enrolled_courses.includes(course.id) : false;
+        const isEnrolled = (student && student.enrolled_courses) ? student.enrolled_courses.some(id => String(id) === String(course.id)) : false;
         const pricing = deriveCoursePricing(course);
         
         let priceBadge = '';
@@ -4741,7 +4741,7 @@ function renderStudentMyCourses() {
     const student = sId ? appState.students.find(s => s.id === sId) : null;
     const enrolledList = (student && student.enrolled_courses) ? student.enrolled_courses : [];
 
-    const myCourses = appState.courses.filter(c => enrolledList.includes(c.id));
+    const myCourses = appState.courses.filter(c => enrolledList.some(id => String(id) === String(c.id)));
 
     if (myCourses.length === 0) {
         list.innerHTML = `
@@ -4824,7 +4824,7 @@ function openStudentCourseModal(courseId) {
     const sId = appState.currentUser ? appState.currentUser.id : null;
     const student = sId ? appState.students.find(s => s.id === sId) : null;
     const enrolledList = student ? (student.enrolled_courses || []) : [];
-    const isEnrolled = enrolledList.includes(course.id);
+    const isEnrolled = enrolledList.some(id => String(id) === String(course.id));
 
     const pricing = deriveCoursePricing(course);
     const priceBadge = document.getElementById('s-course-price-badge');
@@ -5006,7 +5006,7 @@ async function subscribeToCourse(courseId) {
         student.enrolled_courses = [];
     }
     
-    if (!student.enrolled_courses.includes(courseId)) {
+    if (!student.enrolled_courses.some(id => String(id) === String(courseId))) {
         student.enrolled_courses.push(courseId);
         
         try {
