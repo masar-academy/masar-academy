@@ -469,17 +469,24 @@ async function syncFromCloud() {
             createdAt: m.created_at
         }));
         
-        // Map students with enrolled_courses column
+        // Map students with enrolled_courses and watched_lessons
         if (students.length > 0) {
-            appState.students = students.map(s => ({
-                id: s.id,
-                username: s.username,
-                name: s.name,
-                password: s.password,
-                xp: s.xp || 0,
-                badges: safeJsonParse(s.badges, []),
-                enrolled_courses: safeJsonParse(s.enrolled_courses, [])
-            }));
+            const localStudents = safeJsonParse(localStorage.getItem('masar_students'), []);
+            appState.students = students.map(s => {
+                const matchedLocal = localStudents.find(ls => String(ls.id) === String(s.id));
+                return {
+                    id: s.id,
+                    username: s.username,
+                    name: s.name,
+                    password: s.password,
+                    xp: s.xp || 0,
+                    badges: safeJsonParse(s.badges, []),
+                    enrolled_courses: safeJsonParse(s.enrolled_courses, []),
+                    watched_lessons: (s.watched_lessons !== undefined && s.watched_lessons !== null) 
+                                        ? safeJsonParse(s.watched_lessons, {}) 
+                                        : (matchedLocal && matchedLocal.watched_lessons ? matchedLocal.watched_lessons : {})
+                };
+            });
         } else {
             const localStudents = safeJsonParse(localStorage.getItem('masar_students'), []);
             if (localStudents && localStudents.length > 0) {
@@ -4361,6 +4368,7 @@ async function renderStudentDashboard() {
 
     renderStudentActiveHomeworks(sId);
     renderStudentHomeworkHistory(sId);
+    renderStudentMyCourses();
     renderStudentCourses();
     renderStudentSimulators();
 
@@ -4707,6 +4715,72 @@ function renderStudentCourses() {
     });
 }
 
+function renderStudentMyCourses() {
+    const list = document.getElementById('s-my-courses-list');
+    if (!list) return;
+    list.innerHTML = '';
+
+    const sId = appState.currentUser ? appState.currentUser.id : null;
+    const student = sId ? appState.students.find(s => s.id === sId) : null;
+    const enrolledList = (student && student.enrolled_courses) ? student.enrolled_courses : [];
+
+    const myCourses = appState.courses.filter(c => enrolledList.includes(c.id));
+
+    if (myCourses.length === 0) {
+        list.innerHTML = `
+            <div class="empty-state" style="grid-column: 1 / -1;">
+                <i class="fa-solid fa-folder-open"></i>
+                <p>أنت غير مشترك في أي دورة حالياً.</p>
+                <button class="btn btn-primary" style="margin-top: 15px;" onclick="document.querySelector('#s-courses-tab').previousElementSibling.click();">
+                    تصفح الدورات المتاحة
+                </button>
+            </div>`;
+        return;
+    }
+
+    myCourses.forEach(course => {
+        const courseLessons = appState.lessons.filter(l => String(l.courseId) === String(course.id));
+        const lessonsCount = courseLessons.length;
+        const quizzesCount = appState.quizzes.filter(q => String(q.courseId) === String(course.id)).length;
+        
+        // Progress tracking (local calculation for now based on watched_lessons if available)
+        const watchedList = (student && student.watched_lessons && student.watched_lessons[course.id]) ? student.watched_lessons[course.id] : [];
+        const completedLessons = watchedList.length;
+        const percent = lessonsCount === 0 ? 0 : Math.round((completedLessons / lessonsCount) * 100);
+
+        const card = document.createElement('div');
+        card.className = 'glass-card course-card';
+        card.innerHTML = `
+            <div>
+                <div class="course-header" style="display: flex; justify-content: space-between; align-items: center;">
+                    <span class="course-subject subject-${course.subject}">${SUBJECT_NAMES[course.subject] || course.subject}</span>
+                    <span style="background: rgba(16, 185, 129, 0.15); color: var(--success); padding: 3px 10px; border-radius: 20px; font-weight: 800; font-size: 11.5px;"><i class="fa-solid fa-check"></i> مشترك</span>
+                </div>
+                <h4 style="font-size: 16px; font-weight: 700; margin-bottom: 8px; color: var(--text-main); margin-top: 6px;">${escapeHtml(course.title)}</h4>
+                
+                <div style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; margin-bottom: 15px; border: 1px solid var(--border-color);">
+                    <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); margin-bottom: 6px;">
+                        <span>نسبة الإنجاز:</span>
+                        <span style="color: var(--success); font-weight: bold;">${percent}%</span>
+                    </div>
+                    <div style="width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden;">
+                        <div style="width: ${percent}%; height: 100%; background: var(--success); border-radius: 4px; transition: 0.3s;"></div>
+                    </div>
+                    <div style="margin-top: 8px; font-size: 11px; color: var(--text-muted); display: flex; justify-content: space-between;">
+                        <span><i class="fa-solid fa-play"></i> اكتمل: ${completedLessons}/${lessonsCount}</span>
+                        <span><i class="fa-solid fa-clipboard-question"></i> اختبارات: ${quizzesCount}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <button class="btn btn-primary" style="width: 100%; font-weight: 800;" onclick="openStudentCourseModal('${course.id}')">
+                <i class="fa-solid fa-forward-step"></i> إكمال الدورة 🚀
+            </button>
+        `;
+        list.appendChild(card);
+    });
+}
+
 function openStudentCourseModal(courseId) {
     const course = appState.courses.find(c => String(c.id) === String(courseId));
     if (!course) return;
@@ -4749,6 +4823,27 @@ function openStudentCourseModal(courseId) {
     const statQuizzes = document.getElementById('s-course-stat-quizzes');
     if (statQuizzes) statQuizzes.textContent = `${courseQuizzes.length} اختبارات`;
 
+    // Check enrollment
+    const sId = appState.currentUser ? appState.currentUser.id : null;
+    const student = sId ? appState.students.find(s => s.id === sId) : null;
+    const enrolledList = student ? (student.enrolled_courses || []) : [];
+    const isEnrolled = enrolledList.includes(course.id);
+
+    const subscriptionView = document.getElementById('s-course-subscription-view');
+    const contentContainer = document.getElementById('s-course-content-container');
+    const subscribeBtn = document.getElementById('s-course-subscribe-btn');
+
+    if (subscriptionView && contentContainer && subscribeBtn) {
+        if (isEnrolled) {
+            subscriptionView.style.display = 'none';
+            contentContainer.style.display = 'grid';
+        } else {
+            subscriptionView.style.display = 'block';
+            contentContainer.style.display = 'none';
+            subscribeBtn.onclick = () => subscribeToCourse(course.id);
+        }
+    }
+
     // Reset video player
     const video = document.getElementById('s-course-video-player');
     const iframe = document.getElementById('s-course-iframe-player');
@@ -4764,23 +4859,52 @@ function openStudentCourseModal(courseId) {
         if (courseLessons.length === 0) {
             lessonsList.innerHTML = '<span style="font-size: 12px; color: var(--text-muted); font-style: italic;">لا توجد دروس فيديو مضافة بعد</span>';
         } else {
+            const watchedList = (student && student.watched_lessons && student.watched_lessons[courseId]) ? student.watched_lessons[courseId] : [];
+            let firstUnwatchedDiv = null;
+
             courseLessons.forEach(lesson => {
+                const isWatched = watchedList.includes(lesson.id);
+                const watchIcon = isWatched ? '<i class="fa-solid fa-circle-check" style="color: var(--success);"></i>' : '<i class="fa-regular fa-circle-play" style="color: var(--accent-orange);"></i>';
+
                 const div = document.createElement('div');
                 div.className = 'lesson-item';
                 div.innerHTML = `
                     <div style="display: flex; align-items: center; gap: 8px;">
-                        <i class="fa-regular fa-circle-play" style="color: var(--accent-orange);"></i>
-                        <span style="font-size: 13px; font-weight: 600;">${escapeHtml(lesson.title)}</span>
+                        ${watchIcon}
+                        <span style="font-size: 13px; font-weight: 600; ${isWatched ? 'color: var(--success);' : ''}">${escapeHtml(lesson.title)}</span>
                     </div>
                     <span style="font-size: 11px; color: var(--text-muted);">${escapeHtml(lesson.duration || '')}</span>
                 `;
                 div.onclick = () => {
                     document.querySelectorAll('.lesson-item').forEach(el => el.classList.remove('active'));
                     div.classList.add('active');
-                    playLessonVideo(lesson.videoUrl);
+                    playLessonVideo(lesson.videoUrl, lesson.id, courseId);
+                    
+                    // Optimistically update UI to checked if not already
+                    if (!isWatched) {
+                        div.querySelector('.fa-circle-play')?.classList.replace('fa-regular', 'fa-solid');
+                        div.querySelector('.fa-circle-play')?.classList.replace('fa-circle-play', 'fa-circle-check');
+                        div.querySelector('.fa-circle-check').style.color = 'var(--success)';
+                        div.querySelector('span').style.color = 'var(--success)';
+                    }
                 };
                 lessonsList.appendChild(div);
+
+                if (!isWatched && !firstUnwatchedDiv) {
+                    firstUnwatchedDiv = div;
+                }
             });
+
+            // Auto-resume logic
+            if (isEnrolled && courseLessons.length > 0) {
+                setTimeout(() => {
+                    if (firstUnwatchedDiv) {
+                        firstUnwatchedDiv.click();
+                    } else if (lessonsList.firstElementChild) {
+                        lessonsList.firstElementChild.click();
+                    }
+                }, 100);
+            }
         }
     }
 
@@ -4818,12 +4942,87 @@ function openStudentCourseModal(courseId) {
     renderMath('student-course-page-view');
 }
 
-function playLessonVideo(url) {
+async function subscribeToCourse(courseId) {
+    const course = appState.courses.find(c => String(c.id) === String(courseId));
+    if (!course) return;
+
+    if (!appState.currentUser) {
+        showToast("للاشتراك في الدورة، يرجى التسجيل أو تسجيل الدخول كطالب أولاً! 🎓", "warning");
+        openModal('student-register-modal');
+        return;
+    }
+
+    const pricing = deriveCoursePricing(course);
+
+    if (!pricing.isFree) {
+        // Redirect to WhatsApp
+        const teacherPhone = "966501976467";
+        const message = `مرحباً، أريد الاشتراك وتفعيل دورة: ${course.title}`;
+        const encodedMessage = encodeURIComponent(message);
+        window.open(`https://wa.me/${teacherPhone}?text=${encodedMessage}`, '_blank');
+        return;
+    }
+
+    // Free course: instant enrollment
+    const student = appState.students.find(s => s.id === appState.currentUser.id);
+    if (!student) return;
+
+    if (!student.enrolled_courses) {
+        student.enrolled_courses = [];
+    }
+    
+    if (!student.enrolled_courses.includes(courseId)) {
+        student.enrolled_courses.push(courseId);
+        
+        try {
+            if (isCloudMode && supabaseClient) {
+                await supabaseClient.from('students').update({
+                    enrolled_courses: student.enrolled_courses
+                }).eq('id', student.id);
+            }
+            appState.currentUser.enrolled_courses = student.enrolled_courses;
+            localStorage.setItem('masar_students', JSON.stringify(appState.students));
+            localStorage.setItem('masar_currentUser', JSON.stringify(appState.currentUser));
+            
+            showToast('تم اشتراكك في الدورة بنجاح! 🚀', 'success');
+            openStudentCourseModal(courseId); // refresh
+        } catch (err) {
+            console.error("Enrollment failed:", err);
+            // rollback
+            student.enrolled_courses = student.enrolled_courses.filter(id => id !== courseId);
+            showToast('فشل الاشتراك السحابي، تفقد الاتصال!', 'danger');
+        }
+    }
+}
+
+async function playLessonVideo(url, lessonId, courseId) {
     const video = document.getElementById('s-course-video-player');
     const iframe = document.getElementById('s-course-iframe-player');
     const placeholder = document.getElementById('s-course-media-placeholder');
     
     placeholder.style.display = 'none';
+
+    // Mark as watched
+    const sId = appState.currentUser ? appState.currentUser.id : null;
+    const student = sId ? appState.students.find(s => s.id === sId) : null;
+    if (student && lessonId && courseId) {
+        if (!student.watched_lessons) student.watched_lessons = {};
+        if (!student.watched_lessons[courseId]) student.watched_lessons[courseId] = [];
+        
+        if (!student.watched_lessons[courseId].includes(lessonId)) {
+            student.watched_lessons[courseId].push(lessonId);
+            try {
+                if (isCloudMode && supabaseClient) {
+                    await supabaseClient.from('students').update({
+                        watched_lessons: student.watched_lessons
+                    }).eq('id', student.id);
+                }
+                localStorage.setItem('masar_students', JSON.stringify(appState.students));
+            } catch(e) {
+                console.warn("Failed to sync watched lesson:", e);
+            }
+        }
+    }
     
     if (url.includes('youtube.com') || url.includes('youtu.be') || url.includes('youtube.com/embed')) {
         let videoId = '';
