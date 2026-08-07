@@ -17,7 +17,7 @@
     <script>
         // Automatic Cache-Buster: Forces fresh online build fetch from GitHub
         (function() {
-            const CURRENT_BUILD = "v1786138486748";
+            const CURRENT_BUILD = "v1786140010274";
             const storedBuild = localStorage.getItem('masar_app_build');
             if (storedBuild !== CURRENT_BUILD) {
                 localStorage.setItem('masar_app_build', CURRENT_BUILD);
@@ -43,7 +43,7 @@
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
     <!-- Main Style Sheet -->
-    <link rel="stylesheet" href="style.css?v=v1786138486748">
+    <link rel="stylesheet" href="style.css?v=v1786140010274">
 </head>
 <body>
 
@@ -1070,6 +1070,9 @@
                     <button class="tab-btn active" onclick="switchTab('student', 's-active-tab', this)">
                         <i class="fa-solid fa-hourglass-half"></i> الواجبات المطلوبة
                     </button>
+                    <button class="tab-btn" onclick="switchTab('student', 's-my-courses-tab', this)">
+                        <i class="fa-solid fa-book-open-reader"></i> دوراتي المشترك بها
+                    </button>
                     <button class="tab-btn" onclick="switchTab('student', 's-courses-tab', this)">
                         <i class="fa-solid fa-graduation-cap"></i> الدورات التعليمية
                     </button>
@@ -1095,6 +1098,16 @@
                                 <span id="s-active-count">0 واجبات متبقية</span>
                             </div>
                             <div class="list-container" id="s-active-list">
+                                <!-- Populated by JavaScript -->
+                            </div>
+                        </div>
+
+                        <!-- Tab 1.5: Student Subscribed Courses -->
+                        <div id="s-my-courses-tab" class="tab-content">
+                            <div class="section-title">
+                                <h3>دوراتي المشترك بها ومتابعة الإنجاز</h3>
+                            </div>
+                            <div class="students-grid" id="s-my-courses-list" style="margin-top: 15px;">
                                 <!-- Populated by JavaScript -->
                             </div>
                         </div>
@@ -1539,8 +1552,18 @@
                     <p id="s-course-description-text" style="font-size: 14.5px; color: var(--text-main); line-height: 1.7; white-space: pre-line; margin: 0;"></p>
                 </div>
                 
+                <!-- NEW: Subscription View -->
+                <div id="s-course-subscription-view" style="display: none; text-align: center; padding: 40px; background: rgba(0,0,0,0.2); border-radius: 14px; border: 1px solid var(--border-color); margin-bottom: 25px;">
+                    <i class="fa-solid fa-lock" style="font-size: 40px; color: var(--text-muted); margin-bottom: 15px;"></i>
+                    <h3 style="font-size: 20px; font-weight: 800; margin-bottom: 10px;">عذراً، أنت غير مشترك في هذه الدورة!</h3>
+                    <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 25px;">للاستمتاع بمشاهدة الدروس وحل الاختبارات، يرجى الاشتراك في الدورة.</p>
+                    <button id="s-course-subscribe-btn" class="btn btn-primary" style="padding: 14px 30px; font-size: 16px; font-weight: 800; border-radius: 10px;">
+                        <i class="fa-solid fa-cart-plus"></i> أشترك في الدورة الآن
+                    </button>
+                </div>
+
                 <!-- Video Player & Syllabus Container -->
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 25px; margin-bottom: 15px;">
+                <div id="s-course-content-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 25px; margin-bottom: 15px;">
                     <!-- Video Player Container -->
                     <div style="display: flex; flex-direction: column; justify-content: center; min-height: 380px; background: rgba(0,0,0,0.5); border-radius: 14px; border: 1px solid var(--border-color); position: relative; overflow: hidden; padding: 10px;">
                         
@@ -1991,7 +2014,7 @@
     <div class="toast-container" id="toast-container"></div>
 
     <!-- Main JavaScript Logic -->
-    <script src="app.js?v=v1786138486748"></script>
+    <script src="app.js?v=v1786140010274"></script>
     <script>
         // Unregister any legacy cached ServiceWorkers
         if ('serviceWorker' in navigator) {
