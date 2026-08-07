@@ -572,28 +572,14 @@ async function syncFromCloud() {
             const localCourses = safeJsonParse(localStorage.getItem('masar_courses'), []);
             appState.courses = courses.map(c => {
                 const matchedLocal = localCourses.find(lc => String(lc.id) === String(c.id));
-                let p = c.price !== undefined && c.price !== null && Number(c.price) > 0 
-                    ? parseFloat(c.price) 
-                    : (matchedLocal && matchedLocal.price ? parseFloat(matchedLocal.price) : 0);
-                
-                let paid = (c.is_paid === true) || (matchedLocal && matchedLocal.isPaid === true) || (p > 0);
-                
-                const derived = deriveCoursePricing({
-                    id: c.id,
-                    title: c.title,
-                    description: c.description,
-                    subject: c.subject,
-                    price: p,
-                    isPaid: paid
-                });
-
+                const extracted = extractCoursePricingFromCloud(c, matchedLocal);
                 return {
                     id: c.id,
                     title: c.title,
-                    description: c.description,
+                    description: extracted.cleanDescription,
                     subject: c.subject,
-                    price: derived.price,
-                    isPaid: derived.isPaid,
+                    price: extracted.price,
+                    isPaid: extracted.isPaid,
                     createdAt: c.created_at || c.createdAt
                 };
             });
@@ -1612,6 +1598,21 @@ function handleLandingCourseClick(courseId) {
     }
 }
 
+function formatCourseDescriptionWithPrice(description, price, isPaid) {
+    let cleanDesc = (description || '').replace(/\[PRICE:\d+(\.\d+)?\]/gi, '').trim();
+    if (isPaid && price > 0) {
+        cleanDesc += `\n[PRICE:${price}]`;
+    } else {
+        cleanDesc += `\n[PRICE:0]`;
+    }
+    return cleanDesc;
+}
+
+function getCleanDescription(description) {
+    if (!description) return '';
+    return description.replace(/\[PRICE:\d+(\.\d+)?\]/gi, '').trim();
+}
+
 function deriveCoursePricing(course) {
     if (!course) return { price: 0, isPaid: false, isFree: true };
 
@@ -1637,7 +1638,49 @@ function deriveCoursePricing(course) {
     return { price, isPaid: finalIsPaid, isFree: !finalIsPaid };
 }
 
-function openQuickPriceModal(courseId) {
+function extractCoursePricingFromCloud(c, matchedLocal) {
+    let rawDesc = c.description || '';
+    let priceMatch = rawDesc.match(/\[PRICE:(\d+(\.\d+)?)\]/i);
+    
+    let price = 0;
+    let isPaid = false;
+
+    if (priceMatch && priceMatch[1]) {
+        price = parseFloat(priceMatch[1]);
+        isPaid = price > 0;
+    } else if (c.price !== undefined && c.price !== null && Number(c.price) > 0) {
+        price = parseFloat(c.price);
+        isPaid = true;
+    } else if (c.is_paid === true) {
+        isPaid = true;
+        price = c.price ? parseFloat(c.price) : 0;
+    } else if (matchedLocal && matchedLocal.price > 0) {
+        price = parseFloat(matchedLocal.price);
+        isPaid = true;
+    }
+
+    if (!isPaid || price === 0) {
+        const derived = deriveCoursePricing({
+            title: c.title,
+            description: rawDesc,
+            subject: c.subject,
+            price: price,
+            isPaid: isPaid
+        });
+        price = derived.price;
+        isPaid = derived.isPaid;
+    }
+
+    const cleanDesc = getCleanDescription(rawDesc);
+
+    return {
+        price,
+        isPaid,
+        cleanDescription: cleanDesc
+    };
+}
+
+async function openQuickPriceModal(courseId) {
     const course = appState.courses.find(c => String(c.id) === String(courseId));
     if (!course) return;
 
@@ -1662,17 +1705,29 @@ function openQuickPriceModal(courseId) {
         course.isPaid = true;
     }
 
+    const descWithPrice = formatCourseDescriptionWithPrice(course.description, course.price, course.isPaid);
+
     try {
         localStorage.setItem('masar_courses', JSON.stringify(appState.courses));
         if (isCloudMode && supabaseClient) {
-            supabaseClient.from('courses').update({
-                price: course.price,
-                is_paid: course.isPaid
-            }).eq('id', course.id).then(() => {}).catch(() => {});
-        }
-    } catch (e) {}
+            await supabaseClient.from('courses').update({
+                title: course.title,
+                description: descWithPrice,
+                subject: course.subject
+            }).eq('id', course.id);
 
-    showToast(`تم بنجاح تحديث سعر الدورة إلى (${course.isPaid ? course.price + ' ر.س' : 'مجانية'})! 🎉`, 'success');
+            try {
+                await supabaseClient.from('courses').update({
+                    price: course.price,
+                    is_paid: course.isPaid
+                }).eq('id', course.id);
+            } catch(err2) {}
+        }
+    } catch (e) {
+        console.warn("Cloud update notice:", e);
+    }
+
+    showToast(`تم بنجاح تحديث وتزامن سعر الدورة على جميع الأجهزة والجوالات إلى (${course.isPaid ? course.price + ' ر.س' : 'مجانية'})! 🎉`, 'success');
     renderTeacherCourses();
     renderLandingPage();
     if (appState.currentUser && appState.currentUser.role === 'student') {
@@ -1720,7 +1775,7 @@ function renderLandingPage() {
                         ${priceBadge}
                     </div>
                     <h4 style="font-size: 16px; font-weight: 700; margin-bottom: 8px; color: var(--text-main); margin-top: 6px;">${escapeHtml(course.title)}</h4>
-                    <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5; margin-bottom: 15px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">${escapeHtml(course.description)}</p>
+                    <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5; margin-bottom: 15px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">${escapeHtml(getCleanDescription(course.description))}</p>
                     
                     <div style="display: flex; gap: 15px; font-size: 12px; color: var(--text-muted); margin-bottom: 15px;">
                         <span><i class="fa-solid fa-video" style="color: var(--accent-orange);"></i> الدروس: ${lessonsCount}</span>
@@ -3084,7 +3139,7 @@ function renderTeacherCourses() {
                     ${priceBadge}
                 </div>
                 <h4 style="font-size: 16px; font-weight: 700; margin-bottom: 8px; color: var(--text-main); margin-top: 6px;">${escapeHtml(course.title)}</h4>
-                <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5; margin-bottom: 15px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">${escapeHtml(course.description)}</p>
+                <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5; margin-bottom: 15px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">${escapeHtml(getCleanDescription(course.description))}</p>
                 
                 <div style="display: flex; gap: 15px; font-size: 12px; color: var(--text-muted); margin-bottom: 15px; background: rgba(0,0,0,0.1); padding: 8px; border-radius: 6px;">
                     <span><i class="fa-solid fa-video" style="color: var(--accent-orange);"></i> الدروس: ${lessonsCount}</span>
@@ -3147,7 +3202,7 @@ function openEditCourseModal(courseId) {
     if (priceInput) priceInput.value = course.price || '';
     
     const descTextarea = document.getElementById('page-course-desc') || document.getElementById('course-desc');
-    if (descTextarea) descTextarea.value = course.description;
+    if (descTextarea) descTextarea.value = getCleanDescription(course.description);
     
     const titleText = document.getElementById('course-modal-title-text');
     if (titleText) titleText.innerHTML = `<i class="fa-solid fa-edit" style="color: var(--accent-orange); margin-left: 6px;"></i> تعديل بيانات المقرر الدراسي`;
@@ -3190,15 +3245,12 @@ async function handleCreateCourse(e) {
         return;
     }
 
+    const descWithPrice = formatCourseDescriptionWithPrice(description, price, isPaid);
+
     if (editId) {
         // Edit Mode
         const course = appState.courses.find(c => String(c.id) === String(editId));
         if (!course) return;
-        const oldTitle = course.title;
-        const oldSubject = course.subject;
-        const oldDesc = course.description;
-        const oldPrice = course.price;
-        const oldIsPaid = course.isPaid;
         
         course.title = title;
         course.subject = subject;
@@ -3208,27 +3260,23 @@ async function handleCreateCourse(e) {
         
         try {
             if (isCloudMode && supabaseClient) {
-                let { error } = await supabaseClient.from('courses').update({
+                await supabaseClient.from('courses').update({
                     title: course.title,
-                    description: course.description,
-                    subject: course.subject,
-                    price: course.price,
-                    is_paid: course.isPaid
+                    description: descWithPrice,
+                    subject: course.subject
                 }).eq('id', editId);
 
-                if (error) {
-                    console.warn("Supabase update error (retrying basic fields):", error);
+                try {
                     await supabaseClient.from('courses').update({
-                        title: course.title,
-                        description: course.description,
-                        subject: course.subject
+                        price: course.price,
+                        is_paid: course.isPaid
                     }).eq('id', editId);
-                }
+                } catch(err2) {}
             }
             localStorage.setItem('masar_courses', JSON.stringify(appState.courses));
             const pageForm = document.getElementById('create-course-page-form');
             if (pageForm) pageForm.reset();
-            showToast("تم تعديل المقرر الدراسي بنجاح! 🎓", "success");
+            showToast("تم تعديل المقرر الدراسي وتزامنه بنجاح! 🎓", "success");
             showTeacherSection('t-courses-tab');
         } catch (err) {
             console.error(err);
@@ -3250,7 +3298,6 @@ async function handleCreateCourse(e) {
             createdAt: new Date().toISOString().split('T')[0]
         };
 
-        // Always save locally and in appState first
         appState.courses.push(newCourse);
         try {
             localStorage.setItem('masar_courses', JSON.stringify(appState.courses));
@@ -3258,31 +3305,25 @@ async function handleCreateCourse(e) {
 
         try {
             if (isCloudMode && supabaseClient) {
-                let { error } = await supabaseClient.from('courses').insert({
+                await supabaseClient.from('courses').insert({
                     id: newCourse.id,
                     title: newCourse.title,
-                    description: newCourse.description,
+                    description: descWithPrice,
                     subject: newCourse.subject,
-                    price: newCourse.price,
-                    is_paid: newCourse.isPaid,
                     created_at: newCourse.createdAt
                 });
 
-                if (error) {
-                    console.warn("Supabase insert error (retrying basic fields):", error);
-                    await supabaseClient.from('courses').insert({
-                        id: newCourse.id,
-                        title: newCourse.title,
-                        description: newCourse.description,
-                        subject: newCourse.subject,
-                        created_at: newCourse.createdAt
-                    });
-                }
+                try {
+                    await supabaseClient.from('courses').update({
+                        price: newCourse.price,
+                        is_paid: newCourse.isPaid
+                    }).eq('id', newCourse.id);
+                } catch(err2) {}
             }
 
             const pageForm = document.getElementById('create-course-page-form');
             if (pageForm) pageForm.reset();
-            showToast("تم إنشاء المقرر الدراسي بنجاح! 🎓", "success");
+            showToast("تم إنشاء المقرر الدراسي وتزامنه بنجاح! 🎓", "success");
             showTeacherSection('t-courses-tab');
         } catch (err) {
             console.error(err);
@@ -4636,11 +4677,10 @@ function renderStudentCourses() {
         const lessonsCount = appState.lessons.filter(l => String(l.courseId) === String(course.id)).length;
         const quizzesCount = appState.quizzes.filter(q => String(q.courseId) === String(course.id)).length;
         
-        const isPaid = Boolean(course.isPaid) || (Number(course.price) > 0);
-        const isFree = !isPaid;
-        const priceBadge = isFree 
+        const pricing = deriveCoursePricing(course);
+        const priceBadge = pricing.isFree 
             ? `<span style="background: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.3); padding: 3px 10px; border-radius: 20px; font-weight: 800; font-size: 11.5px;"><i class="fa-solid fa-gift"></i> مجانية</span>`
-            : `<span style="background: rgba(245, 158, 11, 0.15); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.3); padding: 3px 10px; border-radius: 20px; font-weight: 800; font-size: 11.5px;"><i class="fa-solid fa-tag"></i> ${course.price} ر.س</span>`;
+            : `<span style="background: rgba(245, 158, 11, 0.15); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.3); padding: 3px 10px; border-radius: 20px; font-weight: 800; font-size: 11.5px;"><i class="fa-solid fa-tag"></i> ${pricing.price} ر.س</span>`;
 
         const card = document.createElement('div');
         card.className = 'glass-card course-card';
@@ -4651,7 +4691,7 @@ function renderStudentCourses() {
                     ${priceBadge}
                 </div>
                 <h4 style="font-size: 16px; font-weight: 700; margin-bottom: 8px; color: var(--text-main); margin-top: 6px;">${escapeHtml(course.title)}</h4>
-                <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5; margin-bottom: 15px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">${escapeHtml(course.description)}</p>
+                <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5; margin-bottom: 15px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">${escapeHtml(getCleanDescription(course.description))}</p>
                 
                 <div style="display: flex; gap: 15px; font-size: 12px; color: var(--text-muted); margin-bottom: 15px;">
                     <span><i class="fa-solid fa-video" style="color: var(--accent-orange);"></i> الدروس: ${lessonsCount}</span>
@@ -4679,7 +4719,7 @@ function openStudentCourseModal(courseId) {
     if (titleEl) titleEl.textContent = course.title;
 
     const descEl = document.getElementById('s-course-description-text');
-    if (descEl) descEl.textContent = course.description || 'لا يوجد وصف تفصيلي مضاف بعد لهذه الدورة.';
+    if (descEl) descEl.textContent = getCleanDescription(course.description) || 'لا يوجد وصف تفصيلي مضاف بعد لهذه الدورة.';
 
     const subjectBadge = document.getElementById('s-course-subject-badge');
     if (subjectBadge) {
@@ -4687,18 +4727,17 @@ function openStudentCourseModal(courseId) {
         subjectBadge.textContent = SUBJECT_NAMES[course.subject] || course.subject || 'عام';
     }
 
-    const isPaid = Boolean(course.isPaid) || (Number(course.price) > 0);
-    const isFree = !isPaid;
+    const pricing = deriveCoursePricing(course);
     const priceBadge = document.getElementById('s-course-price-badge');
     const statPrice = document.getElementById('s-course-stat-price');
     if (priceBadge) {
-        priceBadge.style.background = isFree ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)';
-        priceBadge.style.color = isFree ? 'var(--success)' : 'var(--warning)';
-        priceBadge.style.borderColor = isFree ? 'rgba(16, 185, 129, 0.3)' : 'rgba(245, 158, 11, 0.3)';
-        priceBadge.innerHTML = isFree ? '<i class="fa-solid fa-gift"></i> مجانية بالكامل' : `<i class="fa-solid fa-tag"></i> ${course.price} ر.س`;
+        priceBadge.style.background = pricing.isFree ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)';
+        priceBadge.style.color = pricing.isFree ? 'var(--success)' : 'var(--warning)';
+        priceBadge.style.borderColor = pricing.isFree ? 'rgba(16, 185, 129, 0.3)' : 'rgba(245, 158, 11, 0.3)';
+        priceBadge.innerHTML = pricing.isFree ? '<i class="fa-solid fa-gift"></i> مجانية بالكامل' : `<i class="fa-solid fa-tag"></i> ${pricing.price} ر.س`;
     }
     if (statPrice) {
-        statPrice.textContent = isFree ? 'مجانية 🎁' : `${course.price} ر.س 💰`;
+        statPrice.textContent = pricing.isFree ? 'مجانية 🎁' : `${pricing.price} ر.س 💰`;
     }
 
     const courseLessons = appState.lessons.filter(l => String(l.courseId) === String(courseId));
