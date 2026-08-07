@@ -1768,10 +1768,20 @@ function renderLandingPage() {
             const lessonsCount = appState.lessons.filter(l => String(l.courseId) === String(course.id)).length;
             const quizzesCount = appState.quizzes.filter(q => String(q.courseId) === String(course.id)).length;
 
+            const isEnrolled = (appState.currentUser && appState.currentUser.role === 'student' && appState.currentUser.enrolled_courses) 
+                                ? appState.currentUser.enrolled_courses.includes(course.id) 
+                                : false;
+            
             const pricing = deriveCoursePricing(course);
-            const priceBadge = pricing.isFree 
-                ? `<span style="background: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.3); padding: 3px 10px; border-radius: 20px; font-weight: 800; font-size: 11.5px;"><i class="fa-solid fa-gift"></i> مجانية</span>`
-                : `<span style="background: rgba(245, 158, 11, 0.15); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.3); padding: 3px 10px; border-radius: 20px; font-weight: 800; font-size: 11.5px;"><i class="fa-solid fa-tag"></i> ${pricing.price} ر.س</span>`;
+            
+            let priceBadge = '';
+            if (isEnrolled) {
+                priceBadge = `<span style="background: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.3); padding: 3px 10px; border-radius: 20px; font-weight: 800; font-size: 11.5px;"><i class="fa-solid fa-check-circle"></i> مشترك</span>`;
+            } else {
+                priceBadge = pricing.isFree 
+                    ? `<span style="background: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.3); padding: 3px 10px; border-radius: 20px; font-weight: 800; font-size: 11.5px;"><i class="fa-solid fa-gift"></i> مجانية</span>`
+                    : `<span style="background: rgba(245, 158, 11, 0.15); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.3); padding: 3px 10px; border-radius: 20px; font-weight: 800; font-size: 11.5px;"><i class="fa-solid fa-tag"></i> ${pricing.price} ر.س</span>`;
+            }
 
             const card = document.createElement('div');
             card.className = 'glass-card course-card';
@@ -4685,10 +4695,17 @@ function renderStudentCourses() {
         const lessonsCount = appState.lessons.filter(l => String(l.courseId) === String(course.id)).length;
         const quizzesCount = appState.quizzes.filter(q => String(q.courseId) === String(course.id)).length;
         
+        const isEnrolled = (student && student.enrolled_courses) ? student.enrolled_courses.includes(course.id) : false;
         const pricing = deriveCoursePricing(course);
-        const priceBadge = pricing.isFree 
-            ? `<span style="background: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.3); padding: 3px 10px; border-radius: 20px; font-weight: 800; font-size: 11.5px;"><i class="fa-solid fa-gift"></i> مجانية</span>`
-            : `<span style="background: rgba(245, 158, 11, 0.15); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.3); padding: 3px 10px; border-radius: 20px; font-weight: 800; font-size: 11.5px;"><i class="fa-solid fa-tag"></i> ${pricing.price} ر.س</span>`;
+        
+        let priceBadge = '';
+        if (isEnrolled) {
+            priceBadge = `<span style="background: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.3); padding: 3px 10px; border-radius: 20px; font-weight: 800; font-size: 11.5px;"><i class="fa-solid fa-check-circle"></i> مشترك</span>`;
+        } else {
+            priceBadge = pricing.isFree 
+                ? `<span style="background: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.3); padding: 3px 10px; border-radius: 20px; font-weight: 800; font-size: 11.5px;"><i class="fa-solid fa-gift"></i> مجانية</span>`
+                : `<span style="background: rgba(245, 158, 11, 0.15); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.3); padding: 3px 10px; border-radius: 20px; font-weight: 800; font-size: 11.5px;"><i class="fa-solid fa-tag"></i> ${pricing.price} ر.س</span>`;
+        }
 
         const card = document.createElement('div');
         card.className = 'glass-card course-card';
@@ -4750,6 +4767,8 @@ function renderStudentMyCourses() {
 
         const card = document.createElement('div');
         card.className = 'glass-card course-card';
+        const buttonText = (percent >= 100) ? "إعادة مشاهدة الدورة 🔄" : "إكمال الدورة 🚀";
+        
         card.innerHTML = `
             <div>
                 <div class="course-header" style="display: flex; justify-content: space-between; align-items: center;">
@@ -4774,7 +4793,7 @@ function renderStudentMyCourses() {
             </div>
             
             <button class="btn btn-primary" style="width: 100%; font-weight: 800;" onclick="openStudentCourseModal('${course.id}')">
-                <i class="fa-solid fa-forward-step"></i> إكمال الدورة 🚀
+                <i class="fa-solid fa-forward-step"></i> ${buttonText}
             </button>
         `;
         list.appendChild(card);
@@ -4801,17 +4820,36 @@ function openStudentCourseModal(courseId) {
         subjectBadge.textContent = SUBJECT_NAMES[course.subject] || course.subject || 'عام';
     }
 
+    // Check enrollment first to use in pricing UI
+    const sId = appState.currentUser ? appState.currentUser.id : null;
+    const student = sId ? appState.students.find(s => s.id === sId) : null;
+    const enrolledList = student ? (student.enrolled_courses || []) : [];
+    const isEnrolled = enrolledList.includes(course.id);
+
     const pricing = deriveCoursePricing(course);
     const priceBadge = document.getElementById('s-course-price-badge');
     const statPrice = document.getElementById('s-course-stat-price');
+    
     if (priceBadge) {
-        priceBadge.style.background = pricing.isFree ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)';
-        priceBadge.style.color = pricing.isFree ? 'var(--success)' : 'var(--warning)';
-        priceBadge.style.borderColor = pricing.isFree ? 'rgba(16, 185, 129, 0.3)' : 'rgba(245, 158, 11, 0.3)';
-        priceBadge.innerHTML = pricing.isFree ? '<i class="fa-solid fa-gift"></i> مجانية بالكامل' : `<i class="fa-solid fa-tag"></i> ${pricing.price} ر.س`;
+        if (isEnrolled) {
+            priceBadge.style.background = 'rgba(16, 185, 129, 0.15)';
+            priceBadge.style.color = 'var(--success)';
+            priceBadge.style.borderColor = 'rgba(16, 185, 129, 0.3)';
+            priceBadge.innerHTML = '<i class="fa-solid fa-check-circle"></i> مشترك';
+        } else {
+            priceBadge.style.background = pricing.isFree ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)';
+            priceBadge.style.color = pricing.isFree ? 'var(--success)' : 'var(--warning)';
+            priceBadge.style.borderColor = pricing.isFree ? 'rgba(16, 185, 129, 0.3)' : 'rgba(245, 158, 11, 0.3)';
+            priceBadge.innerHTML = pricing.isFree ? '<i class="fa-solid fa-gift"></i> مجانية بالكامل' : `<i class="fa-solid fa-tag"></i> ${pricing.price} ر.س`;
+        }
     }
+    
     if (statPrice) {
-        statPrice.textContent = pricing.isFree ? 'مجانية 🎁' : `${pricing.price} ر.س 💰`;
+        if (isEnrolled) {
+            statPrice.textContent = 'مشترك ✅';
+        } else {
+            statPrice.textContent = pricing.isFree ? 'مجانية 🎁' : `${pricing.price} ر.س 💰`;
+        }
     }
 
     const courseLessons = appState.lessons.filter(l => String(l.courseId) === String(courseId));
@@ -4822,12 +4860,6 @@ function openStudentCourseModal(courseId) {
 
     const statQuizzes = document.getElementById('s-course-stat-quizzes');
     if (statQuizzes) statQuizzes.textContent = `${courseQuizzes.length} اختبارات`;
-
-    // Check enrollment
-    const sId = appState.currentUser ? appState.currentUser.id : null;
-    const student = sId ? appState.students.find(s => s.id === sId) : null;
-    const enrolledList = student ? (student.enrolled_courses || []) : [];
-    const isEnrolled = enrolledList.includes(course.id);
 
     const subscriptionView = document.getElementById('s-course-subscription-view');
     const contentContainer = document.getElementById('s-course-content-container');
@@ -4947,19 +4979,22 @@ async function subscribeToCourse(courseId) {
     if (!course) return;
 
     if (!appState.currentUser) {
-        showToast("للاشتراك في الدورة، يرجى التسجيل أو تسجيل الدخول كطالب أولاً! 🎓", "warning");
-        openModal('student-register-modal');
+        showToast("سجل دخول او انشئ حساب مجانا لتصفح الدورة 🎓", "warning");
+        showLogin();
+        selectLoginRole('student');
         return;
     }
 
     const pricing = deriveCoursePricing(course);
 
     if (!pricing.isFree) {
-        // Redirect to WhatsApp
-        const teacherPhone = "966501976467";
-        const message = `مرحباً، أريد الاشتراك وتفعيل دورة: ${course.title}`;
-        const encodedMessage = encodeURIComponent(message);
-        window.open(`https://wa.me/${teacherPhone}?text=${encodedMessage}`, '_blank');
+        // Show Unpaid Course Alert Page View
+        hideAllViews();
+        const page = document.getElementById('unpaid-course-page-view');
+        if (page) {
+            page.style.display = 'block';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
         return;
     }
 
