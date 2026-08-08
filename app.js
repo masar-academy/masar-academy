@@ -5550,11 +5550,16 @@ function startSimulator(quiz) {
     if (sidebar) sidebar.style.display = 'block';
     if (layoutGrid) layoutGrid.style.gridTemplateColumns = '270px 1fr';
     
-    document.getElementById('simulator-header-title').textContent = quiz.title;
-    closeModal('quiz-instructions-modal');
+    const titleEl = document.getElementById('simulator-player-title');
+    if (titleEl) titleEl.textContent = `محاكي الاختبار: ${quiz.title}`;
     
-    hideAllViews();
-    document.getElementById('simulator-player-view').style.display = 'flex';
+    openModal('student-simulator-modal');
+    
+    const submitBtn = document.getElementById('simulator-submit-section-btn');
+    if (submitBtn) {
+        submitBtn.innerHTML = `<span id="simulator-btn-text">تسليم القسم والانتقال للقسم التالي</span> <i class="fa-solid fa-arrow-left"></i>`;
+        submitBtn.onclick = () => submitSimulatorSection(false);
+    }
     
     renderSimulatorSection(true);
 }
@@ -5779,7 +5784,8 @@ function submitSimulatorSection(force = false) {
     }
     
     activeSimulatorState.currentSectionIndex++;
-    renderSimulatorSection();
+    activeSimulatorState.currentQuestionIndex = 0;
+    renderSimulatorSection(true);
 }
 
 async function renderSimulatorResults() {
