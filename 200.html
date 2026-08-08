@@ -17,7 +17,7 @@
     <script>
         // Automatic Cache-Buster: Forces fresh online build fetch from GitHub
         (function() {
-            const CURRENT_BUILD = "v1786141386302";
+            const CURRENT_BUILD = "v1786231674521";
             const storedBuild = localStorage.getItem('masar_app_build');
             if (storedBuild !== CURRENT_BUILD) {
                 localStorage.setItem('masar_app_build', CURRENT_BUILD);
@@ -43,7 +43,7 @@
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
     <!-- Main Style Sheet -->
-    <link rel="stylesheet" href="style.css?v=v1786141386302">
+    <link rel="stylesheet" href="style.css?v=v1786231674521">
 </head>
 <body>
 
@@ -426,6 +426,33 @@
                             </div>
                             <div class="students-grid" id="t-simulators-list" style="margin-top: 15px;">
                                 <!-- Populated by JavaScript -->
+                            </div>
+                        </div>
+
+                        <!-- Tab 4.6: Simulators Results -->
+                        <div id="t-simulators-results-tab" class="tab-content">
+                            <div class="section-title" style="flex-wrap: wrap; gap: 10px;">
+                                <h3><i class="fa-solid fa-chart-bar" style="color: #10B981; margin-left: 8px;"></i>نتائج اختبارات المحاكاة (السرية)</h3>
+                            </div>
+                            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">
+                                هذه النتائج تسجل بصمت ليتمكن المعلم من متابعة مستويات الطلاب قبل الاختبارات الفعلية. (تُعرض أعلى درجة تم الحصول عليها)
+                            </p>
+                            
+                            <div style="background: rgba(0,0,0,0.15); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden;">
+                                <table style="width: 100%; text-align: right; border-collapse: collapse; min-width: 600px;">
+                                    <thead style="background: rgba(255,255,255,0.05);">
+                                        <tr>
+                                            <th style="padding: 15px; border-bottom: 1px solid var(--border-color); color: var(--text-muted); font-size: 13px;">اسم الطالب</th>
+                                            <th style="padding: 15px; border-bottom: 1px solid var(--border-color); color: var(--text-muted); font-size: 13px;">اسم المحاكي</th>
+                                            <th style="padding: 15px; border-bottom: 1px solid var(--border-color); color: var(--text-muted); font-size: 13px;">النتيجة (%)</th>
+                                            <th style="padding: 15px; border-bottom: 1px solid var(--border-color); color: var(--text-muted); font-size: 13px;">النقاط (XP)</th>
+                                            <th style="padding: 15px; border-bottom: 1px solid var(--border-color); color: var(--text-muted); font-size: 13px;">تاريخ آخر محاولة</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="t-simulators-results-table-body">
+                                        <!-- Populated by JavaScript -->
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
 
@@ -2014,7 +2041,7 @@
     <div class="toast-container" id="toast-container"></div>
 
     <!-- Main JavaScript Logic -->
-    <script src="app.js?v=v1786141386302"></script>
+    <script src="app.js?v=v1786231674521"></script>
     <script>
         // Unregister any legacy cached ServiceWorkers
         if ('serviceWorker' in navigator) {
