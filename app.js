@@ -485,8 +485,8 @@ async function syncFromCloud() {
                     watched_lessons: (s.watched_lessons !== undefined && s.watched_lessons !== null) 
                                         ? safeJsonParse(s.watched_lessons, {}) 
                                         : (matchedLocal && matchedLocal.watched_lessons ? matchedLocal.watched_lessons : {}),
-                    simulator_results: (s.simulator_results !== undefined && s.simulator_results !== null) 
-                                        ? safeJsonParse(s.simulator_results, {}) 
+                    simulator_results: (s.watched_lessons !== undefined && s.watched_lessons !== null) 
+                                        ? (safeJsonParse(s.watched_lessons, {})['_sim_results'] || {}) 
                                         : (matchedLocal && matchedLocal.simulator_results ? matchedLocal.simulator_results : {})
                 };
             });
@@ -5911,14 +5911,23 @@ async function renderSimulatorResults() {
     }
 
     try {
-        if (student && isCloudMode && supabaseClient) {
-            await supabaseClient.from('students').update({ 
-                xp: student.xp, 
-                badges: student.badges,
-                simulator_results: student.simulator_results
-            }).eq('id', sId);
-        } else if (student) {
+        if (student) {
+            if (!student.watched_lessons) student.watched_lessons = {};
+            student.watched_lessons['_sim_results'] = student.simulator_results;
+
+            if (isCloudMode && supabaseClient) {
+                await supabaseClient.from('students').update({ 
+                    xp: student.xp, 
+                    badges: student.badges,
+                    watched_lessons: student.watched_lessons
+                }).eq('id', sId);
+            }
+            
             localStorage.setItem('masar_students', JSON.stringify(appState.students));
+            if (appState.currentUser && appState.currentUser.id === sId) {
+                appState.currentUser = { ...appState.currentUser, xp: student.xp, badges: student.badges };
+                localStorage.setItem('masar_currentUser', JSON.stringify(appState.currentUser));
+            }
         }
     } catch (err) {
         console.error("Failed to sync simulator results:", err);
