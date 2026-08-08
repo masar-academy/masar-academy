@@ -5537,6 +5537,7 @@ function startSimulator(quiz) {
     activeSimulatorState.quiz = quiz;
     activeSimulatorState.sections = getSimulatorSections(quiz);
     activeSimulatorState.currentSectionIndex = 0;
+    activeSimulatorState.currentQuestionIndex = 0;
     activeSimulatorState.answers = [];
     activeSimulatorState.flagged = [];
     
@@ -5548,110 +5549,33 @@ function startSimulator(quiz) {
     const layoutGrid = document.getElementById('simulator-layout-grid');
     if (sidebar) sidebar.style.display = 'block';
     if (layoutGrid) layoutGrid.style.gridTemplateColumns = '270px 1fr';
-
-    const titleEl = document.getElementById('simulator-player-title');
-    if (titleEl) titleEl.textContent = `محاكي الاختبار: ${quiz.title}`;
     
-    openModal('student-simulator-modal');
+    document.getElementById('simulator-header-title').textContent = quiz.title;
+    closeModal('quiz-instructions-modal');
     
-    const submitBtn = document.getElementById('simulator-submit-section-btn');
-    if (submitBtn) {
-        submitBtn.innerHTML = `<span id="simulator-btn-text">تسليم القسم والانتقال للقسم التالي</span> <i class="fa-solid fa-arrow-left"></i>`;
-        submitBtn.onclick = () => submitSimulatorSection(false);
-    }
-
-    renderSimulatorSection();
-}
-
-function renderSimulatorNavGrid() {
-    const navGrid = document.getElementById('simulator-questions-nav-grid');
-    const counterBadge = document.getElementById('simulator-nav-counter-badge');
-    if (!navGrid) return;
+    hideAllViews();
+    document.getElementById('simulator-player-view').style.display = 'flex';
     
-    navGrid.innerHTML = '';
-    const sectionIdx = activeSimulatorState.currentSectionIndex;
-    const sections = activeSimulatorState.sections || getSimulatorSections(activeSimulatorState.quiz);
-    
-    if (!sections || !sections[sectionIdx]) {
-        if (counterBadge) counterBadge.textContent = '0 / 0';
-        return;
-    }
-    
-    const section = sections[sectionIdx];
-    const questions = section.questions || [];
-    const sectionAnswers = activeSimulatorState.answers[sectionIdx] || [];
-    const sectionFlagged = activeSimulatorState.flagged ? (activeSimulatorState.flagged[sectionIdx] || []) : [];
-    
-    let answeredCount = 0;
-    
-    questions.forEach((q, qIdx) => {
-        const isAnswered = sectionAnswers[qIdx] !== undefined && sectionAnswers[qIdx] !== null;
-        if (isAnswered) answeredCount++;
-        const isFlagged = !!sectionFlagged[qIdx];
-        
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = `sim-nav-btn ${isAnswered ? 'answered' : ''} ${isFlagged ? 'flagged' : ''}`;
-        btn.id = `sim-nav-item-${qIdx}`;
-        btn.onclick = () => scrollToSimulatorQuestion(qIdx);
-        
-        btn.innerHTML = `
-            <span>${qIdx + 1}</span>
-            <span style="font-size: 10px;">${isAnswered ? '✓' : ''}</span>
-        `;
-        
-        navGrid.appendChild(btn);
-    });
-    
-    if (counterBadge) {
-        counterBadge.textContent = `${answeredCount} / ${questions.length} مجاب`;
-    }
+    renderSimulatorSection(true);
 }
 
 function scrollToSimulatorQuestion(questionIndex) {
-    const card = document.getElementById(`sim-question-card-${questionIndex}`);
-    if (card) {
-        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        card.style.borderColor = 'var(--accent-orange)';
-        card.style.boxShadow = '0 0 15px rgba(255, 125, 63, 0.3)';
-        setTimeout(() => {
-            card.style.borderColor = 'var(--border-color)';
-            card.style.boxShadow = 'none';
-        }, 1500);
-    }
+    activeSimulatorState.currentQuestionIndex = questionIndex;
+    renderSimulatorSection();
 }
 
 function toggleFlagSimulatorQuestion(questionIndex) {
     const sectionIdx = activeSimulatorState.currentSectionIndex;
-    if (!activeSimulatorState.flagged) {
-        activeSimulatorState.flagged = [];
-    }
-    if (!activeSimulatorState.flagged[sectionIdx]) {
-        activeSimulatorState.flagged[sectionIdx] = [];
-    }
+    if (!activeSimulatorState.flagged) activeSimulatorState.flagged = [];
+    if (!activeSimulatorState.flagged[sectionIdx]) activeSimulatorState.flagged[sectionIdx] = [];
     
     activeSimulatorState.flagged[sectionIdx][questionIndex] = !activeSimulatorState.flagged[sectionIdx][questionIndex];
-    const isFlagged = activeSimulatorState.flagged[sectionIdx][questionIndex];
-    
-    const flagBtn = document.querySelector(`.sim-flag-btn-${questionIndex}`);
-    if (flagBtn) {
-        if (isFlagged) {
-            flagBtn.style.background = 'rgba(255, 125, 63, 0.2)';
-            flagBtn.style.borderColor = 'var(--accent-orange)';
-            flagBtn.style.color = 'var(--text-orange)';
-            flagBtn.innerHTML = `<i class="fa-solid fa-bookmark" style="color: var(--accent-orange);"></i> <span>مراجعة 🔖</span>`;
-        } else {
-            flagBtn.style.background = 'transparent';
-            flagBtn.style.borderColor = 'var(--border-color)';
-            flagBtn.style.color = 'var(--text-muted)';
-            flagBtn.innerHTML = `<i class="fa-regular fa-bookmark"></i> <span>علامة للمراجعة 🔖</span>`;
-        }
-    }
     
     renderSimulatorNavGrid();
+    renderSimulatorSection(); // Re-render to update the flag button state
 }
 
-function renderSimulatorSection() {
+function renderSimulatorSection(isNewSection = false) {
     const sectionIdx = activeSimulatorState.currentSectionIndex;
     const sections = activeSimulatorState.sections || getSimulatorSections(activeSimulatorState.quiz);
     const body = document.getElementById('simulator-player-body');
@@ -5668,8 +5592,8 @@ function renderSimulatorSection() {
         body.innerHTML = `
             <div style="text-align: center; padding: 40px; color: var(--text-muted);">
                 <i class="fa-solid fa-triangle-exclamation" style="font-size: 40px; color: var(--warning); margin-bottom: 15px;"></i>
-                <h3 style="font-size: 16px; font-weight: 700; color: var(--text-main); margin-bottom: 8px;">لا توجد أسئلة مضافة في هذا المحاكي بعد!</h3>
-                <p style="font-size: 13px;">يرجى التواصل مع المعلم لإضافة أسئلة للمحاكي.</p>
+                <h3 style="font-size: 16px; font-weight: 700; color: var(--text-main); margin-bottom: 8px;">لا توجد أقسام مسجلة في هذا المحاكي بعد!</h3>
+                <p style="font-size: 13px;">يرجى التواصل مع المعلم لإضافة أقسام وأسئلة.</p>
             </div>
         `;
         const progText = document.getElementById('simulator-progress-text');
