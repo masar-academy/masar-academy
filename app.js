@@ -5915,18 +5915,18 @@ async function renderSimulatorResults() {
             if (!student.watched_lessons) student.watched_lessons = {};
             student.watched_lessons['_sim_results'] = student.simulator_results;
 
+            localStorage.setItem('masar_students', JSON.stringify(appState.students));
+            if (appState.currentUser && appState.currentUser.id === sId) {
+                appState.currentUser = { ...appState.currentUser, xp: student.xp, badges: student.badges };
+                localStorage.setItem('masar_currentUser', JSON.stringify(appState.currentUser));
+            }
+
             if (isCloudMode && supabaseClient) {
                 await supabaseClient.from('students').update({ 
                     xp: student.xp, 
                     badges: student.badges,
                     watched_lessons: student.watched_lessons
                 }).eq('id', sId);
-            }
-            
-            localStorage.setItem('masar_students', JSON.stringify(appState.students));
-            if (appState.currentUser && appState.currentUser.id === sId) {
-                appState.currentUser = { ...appState.currentUser, xp: student.xp, badges: student.badges };
-                localStorage.setItem('masar_currentUser', JSON.stringify(appState.currentUser));
             }
         }
     } catch (err) {
