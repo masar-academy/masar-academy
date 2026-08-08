@@ -17,7 +17,7 @@
     <script>
         // Automatic Cache-Buster: Forces fresh online build fetch from GitHub
         (function() {
-            const CURRENT_BUILD = "v1786231674521";
+            const CURRENT_BUILD = "v1786231996315";
             const storedBuild = localStorage.getItem('masar_app_build');
             if (storedBuild !== CURRENT_BUILD) {
                 localStorage.setItem('masar_app_build', CURRENT_BUILD);
@@ -43,7 +43,7 @@
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
     <!-- Main Style Sheet -->
-    <link rel="stylesheet" href="style.css?v=v1786231674521">
+    <link rel="stylesheet" href="style.css?v=v1786231996315">
 </head>
 <body>
 
@@ -351,6 +351,9 @@
                     </button>
                     <button class="tab-btn" onclick="switchTab('teacher', 't-simulators-tab', this)">
                         <i class="fa-solid fa-bolt"></i> إدارة اختبارات المحاكاة
+                    </button>
+                    <button class="tab-btn" onclick="switchTab('teacher', 't-simulators-results-tab', this)">
+                        <i class="fa-solid fa-chart-bar" style="color: #10B981;"></i> نتائج المحاكاة
                     </button>
                     <button class="tab-btn" onclick="switchTab('teacher', 't-account-tab', this)">
                         <i class="fa-solid fa-user-lock"></i> إدارة الحساب والمعلمين
@@ -2041,7 +2044,7 @@
     <div class="toast-container" id="toast-container"></div>
 
     <!-- Main JavaScript Logic -->
-    <script src="app.js?v=v1786231674521"></script>
+    <script src="app.js?v=v1786231996315"></script>
     <script>
         // Unregister any legacy cached ServiceWorkers
         if ('serviceWorker' in navigator) {
