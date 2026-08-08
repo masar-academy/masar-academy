@@ -480,14 +480,19 @@ async function syncFromCloud() {
                     name: s.name,
                     password: s.password,
                     xp: s.xp || 0,
-                    badges: safeJsonParse(s.badges, []),
                     enrolled_courses: safeJsonParse(s.enrolled_courses, []),
                     watched_lessons: (s.watched_lessons !== undefined && s.watched_lessons !== null) 
                                         ? safeJsonParse(s.watched_lessons, {}) 
                                         : (matchedLocal && matchedLocal.watched_lessons ? matchedLocal.watched_lessons : {}),
-                    simulator_results: (s.watched_lessons !== undefined && s.watched_lessons !== null) 
-                                        ? (safeJsonParse(s.watched_lessons, {})['_sim_results'] || {}) 
-                                        : (matchedLocal && matchedLocal.simulator_results ? matchedLocal.simulator_results : {})
+                    badges: safeJsonParse(s.badges, []).filter(b => typeof b !== 'string' || !b.startsWith('sim_res:')),
+                    simulator_results: (() => {
+                        const badgesArr = safeJsonParse(s.badges, []);
+                        const simStr = badgesArr.find(b => typeof b === 'string' && b.startsWith('sim_res:'));
+                        if (simStr) {
+                            return safeJsonParse(simStr.substring(8), {});
+                        }
+                        return (matchedLocal && matchedLocal.simulator_results ? matchedLocal.simulator_results : {});
+                    })()
                 };
             });
         } else {
@@ -5912,8 +5917,11 @@ async function renderSimulatorResults() {
 
     try {
         if (student) {
-            if (!student.watched_lessons) student.watched_lessons = {};
-            student.watched_lessons['_sim_results'] = student.simulator_results;
+            if (!student.simulator_results) student.simulator_results = {};
+            // (Simulator results are already computed above and placed in student.simulator_results)
+
+            student.badges = student.badges.filter(b => typeof b !== 'string' || !b.startsWith('sim_res:'));
+            student.badges.push('sim_res:' + JSON.stringify(student.simulator_results));
 
             localStorage.setItem('masar_students', JSON.stringify(appState.students));
             if (appState.currentUser && appState.currentUser.id === sId) {
@@ -5924,8 +5932,7 @@ async function renderSimulatorResults() {
             if (isCloudMode && supabaseClient) {
                 await supabaseClient.from('students').update({ 
                     xp: student.xp, 
-                    badges: student.badges,
-                    watched_lessons: student.watched_lessons
+                    badges: student.badges
                 }).eq('id', sId);
             }
         }
