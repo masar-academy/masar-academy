@@ -5553,7 +5553,8 @@ function startSimulator(quiz) {
     const titleEl = document.getElementById('simulator-player-title');
     if (titleEl) titleEl.textContent = `محاكي الاختبار: ${quiz.title}`;
     
-    openModal('student-simulator-modal');
+    hideAllViews();
+    document.getElementById('student-simulator-page-view').style.display = 'block';
     
     const submitBtn = document.getElementById('simulator-submit-section-btn');
     if (submitBtn) {
