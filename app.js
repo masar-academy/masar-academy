@@ -484,7 +484,10 @@ async function syncFromCloud() {
                     enrolled_courses: safeJsonParse(s.enrolled_courses, []),
                     watched_lessons: (s.watched_lessons !== undefined && s.watched_lessons !== null) 
                                         ? safeJsonParse(s.watched_lessons, {}) 
-                                        : (matchedLocal && matchedLocal.watched_lessons ? matchedLocal.watched_lessons : {})
+                                        : (matchedLocal && matchedLocal.watched_lessons ? matchedLocal.watched_lessons : {}),
+                    simulator_results: (s.simulator_results !== undefined && s.simulator_results !== null) 
+                                        ? safeJsonParse(s.simulator_results, {}) 
+                                        : (matchedLocal && matchedLocal.simulator_results ? matchedLocal.simulator_results : {})
                 };
             });
         } else {
@@ -1157,6 +1160,10 @@ function renderDrawerMenu() {
                 <div class="drawer-option-item" onclick="closeModal('hamburger-drawer-modal'); showTeacherSection('t-simulators-tab');">
                     <i class="fa-solid fa-bolt" style="color: var(--success);"></i>
                     <span>إدارة اختبارات المحاكاة</span>
+                </div>
+                <div class="drawer-option-item" onclick="closeModal('hamburger-drawer-modal'); showTeacherSection('t-simulators-results-tab');">
+                    <i class="fa-solid fa-chart-bar" style="color: #10B981;"></i>
+                    <span>نتائج اختبارات المحاكاة</span>
                 </div>
                 <div class="drawer-option-item" onclick="closeModal('hamburger-drawer-modal'); showTeacherSection('t-students-tab');">
                     <i class="fa-solid fa-users-gear" style="color: #60A5FA;"></i>
@@ -1929,6 +1936,7 @@ async function renderTeacherDashboard() {
     renderTeacherStudents();
     if (!isSupervisor) renderTeacherCourses();
     if (!isSupervisor) renderTeacherSimulators();
+    if (!isSupervisor) renderTeacherSimulatorResults();
     renderTeacherAccountSettings();
     
     // Populate Students Select inside Chat Tab
@@ -5887,14 +5895,33 @@ async function renderSimulatorResults() {
         }
     }
 
+    if (student) {
+        if (!student.simulator_results) student.simulator_results = {};
+        const now = new Date().toISOString();
+        const existing = student.simulator_results[quiz.id];
+        
+        if (!existing || percent > existing.score) {
+            student.simulator_results[quiz.id] = {
+                score: percent,
+                last_attempt: now
+            };
+        } else {
+            existing.last_attempt = now;
+        }
+    }
+
     try {
-        if (passed && student && isCloudMode && supabaseClient) {
-            await supabaseClient.from('students').update({ xp: student.xp, badges: student.badges }).eq('id', sId);
-        } else if (passed && student) {
+        if (student && isCloudMode && supabaseClient) {
+            await supabaseClient.from('students').update({ 
+                xp: student.xp, 
+                badges: student.badges,
+                simulator_results: student.simulator_results
+            }).eq('id', sId);
+        } else if (student) {
             localStorage.setItem('masar_students', JSON.stringify(appState.students));
         }
     } catch (err) {
-        console.error(err);
+        console.error("Failed to sync simulator results:", err);
     }
     
     const sidebar = document.getElementById('simulator-nav-sidebar');
@@ -6028,6 +6055,56 @@ function renderTeacherSimulators() {
         `;
         list.appendChild(card);
     });
+}
+
+function renderTeacherSimulatorResults() {
+    const tbody = document.getElementById('t-simulators-results-table-body');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    
+    let hasResults = false;
+    
+    appState.students.forEach(student => {
+        if (student.simulator_results) {
+            Object.keys(student.simulator_results).forEach(quizId => {
+                const result = student.simulator_results[quizId];
+                const quiz = appState.quizzes.find(q => String(q.id) === String(quizId));
+                const quizName = quiz ? quiz.title : 'محاكي محذوف';
+                const quizPoints = quiz ? quiz.points : 0;
+                
+                let scoreColor = 'var(--text-main)';
+                if (result.score >= 80) scoreColor = 'var(--success)';
+                else if (result.score >= 50) scoreColor = 'var(--warning)';
+                else scoreColor = 'var(--danger)';
+                
+                const dateObj = new Date(result.last_attempt);
+                const dateStr = !isNaN(dateObj) ? dateObj.toLocaleDateString('ar-SA', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'غير معروف';
+
+                const tr = document.createElement('tr');
+                tr.style.borderBottom = '1px solid rgba(255,255,255,0.05)';
+                tr.innerHTML = `
+                    <td style="padding: 15px; font-weight: bold; color: var(--text-orange);">${escapeHtml(student.name)}</td>
+                    <td style="padding: 15px;">${escapeHtml(quizName)}</td>
+                    <td style="padding: 15px; font-weight: 800; color: ${scoreColor};" dir="ltr">${result.score}%</td>
+                    <td style="padding: 15px; color: var(--success);">${quizPoints} XP</td>
+                    <td style="padding: 15px; font-size: 12px; color: var(--text-muted);">${dateStr}</td>
+                `;
+                tbody.appendChild(tr);
+                hasResults = true;
+            });
+        }
+    });
+    
+    if (!hasResults) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="5" style="padding: 30px; text-align: center; color: var(--text-muted);">
+                    <i class="fa-solid fa-folder-open" style="font-size: 30px; margin-bottom: 10px; opacity: 0.5;"></i><br>
+                    لا توجد نتائج مسجلة لاختبارات المحاكاة حتى الآن.
+                </td>
+            </tr>
+        `;
+    }
 }
 
 function renderStudentSimulators() {
