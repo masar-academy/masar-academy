@@ -5565,6 +5565,51 @@ function startSimulator(quiz) {
     renderSimulatorSection(true);
 }
 
+function renderSimulatorNavGrid() {
+    const navGrid = document.getElementById('simulator-questions-nav-grid');
+    const counterBadge = document.getElementById('simulator-nav-counter-badge');
+    if (!navGrid) return;
+    
+    navGrid.innerHTML = '';
+    const sectionIdx = activeSimulatorState.currentSectionIndex;
+    const sections = activeSimulatorState.sections || getSimulatorSections(activeSimulatorState.quiz);
+    
+    if (!sections || !sections[sectionIdx]) {
+        if (counterBadge) counterBadge.textContent = '0 / 0';
+        return;
+    }
+    
+    const section = sections[sectionIdx];
+    const questions = section.questions || [];
+    const sectionAnswers = activeSimulatorState.answers[sectionIdx] || [];
+    const sectionFlagged = activeSimulatorState.flagged ? (activeSimulatorState.flagged[sectionIdx] || []) : [];
+    
+    let answeredCount = 0;
+    
+    questions.forEach((q, qIdx) => {
+        const isAnswered = sectionAnswers[qIdx] !== undefined && sectionAnswers[qIdx] !== null;
+        if (isAnswered) answeredCount++;
+        const isFlagged = !!sectionFlagged[qIdx];
+        
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = `sim-nav-btn ${isAnswered ? 'answered' : ''} ${isFlagged ? 'flagged' : ''}`;
+        btn.id = `sim-nav-item-${qIdx}`;
+        btn.onclick = () => scrollToSimulatorQuestion(qIdx);
+        
+        btn.innerHTML = `
+            <span>${qIdx + 1}</span>
+            <span style="font-size: 10px;">${isAnswered ? '✓' : ''}</span>
+        `;
+        
+        navGrid.appendChild(btn);
+    });
+    
+    if (counterBadge) {
+        counterBadge.textContent = `${answeredCount} / ${questions.length} مجاب`;
+    }
+}
+
 function scrollToSimulatorQuestion(questionIndex) {
     activeSimulatorState.currentQuestionIndex = questionIndex;
     renderSimulatorSection();
@@ -5607,7 +5652,7 @@ function renderSimulatorSection(isNewSection = false) {
         const secTitle = document.getElementById('simulator-player-section-title');
         if (secTitle) secTitle.textContent = `القسم الحالي: فارغ`;
         renderSimulatorNavGrid();
-        startSimulatorSectionTimer(0);
+        if (isNewSection) startSimulatorSectionTimer(0);
         return;
     }
     
@@ -5631,7 +5676,7 @@ function renderSimulatorSection(isNewSection = false) {
     const btnTextEl = document.getElementById('simulator-btn-text');
     if (btnTextEl) btnTextEl.textContent = isLast ? "تسليم وإنهاء المحاكي" : "تسليم القسم والانتقال للقسم التالي";
     
-    // Render all questions of current section
+    // Render current question
     body.innerHTML = '';
     
     if (questions.length === 0) {
@@ -5642,45 +5687,55 @@ function renderSimulatorSection(isNewSection = false) {
             </div>
         `;
     } else {
-        questions.forEach((q, qIndex) => {
-            const card = document.createElement('div');
-            card.className = 'simulator-question-card';
-            card.id = `sim-question-card-${qIndex}`;
-            const questionOptions = Array.isArray(q.options) ? q.options : ['أ', 'ب', 'ج', 'د'];
+        const qIndex = activeSimulatorState.currentQuestionIndex || 0;
+        const q = questions[qIndex];
+        
+        const card = document.createElement('div');
+        card.className = 'simulator-question-card';
+        card.id = `sim-question-card-${qIndex}`;
+        const questionOptions = Array.isArray(q.options) ? q.options : ['أ', 'ب', 'ج', 'د'];
+        
+        const selectedOptIndex = (activeSimulatorState.answers[sectionIdx] && activeSimulatorState.answers[sectionIdx][qIndex] !== undefined)
+            ? activeSimulatorState.answers[sectionIdx][qIndex]
+            : -1;
             
-            const selectedOptIndex = (activeSimulatorState.answers[sectionIdx] && activeSimulatorState.answers[sectionIdx][qIndex] !== undefined)
-                ? activeSimulatorState.answers[sectionIdx][qIndex]
-                : -1;
-                
-            const isFlagged = !!(activeSimulatorState.flagged && activeSimulatorState.flagged[sectionIdx] && activeSimulatorState.flagged[sectionIdx][qIndex]);
-                
-            card.innerHTML = `
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px dashed rgba(255,255,255,0.05); padding-bottom: 8px;">
-                    <div style="font-size: 12px; color: var(--text-orange); font-weight: 800;">السؤال ${qIndex + 1} من ${questions.length}</div>
-                    <button type="button" class="btn btn-secondary sim-flag-btn-${qIndex}" onclick="toggleFlagSimulatorQuestion(${qIndex})" style="padding: 4px 10px; font-size: 11.5px; border-radius: 6px; gap: 6px; ${isFlagged ? 'background: rgba(255, 125, 63, 0.2); border-color: var(--accent-orange); color: var(--text-orange);' : 'color: var(--text-muted);'}">
-                        <i class="${isFlagged ? 'fa-solid' : 'fa-regular'} fa-bookmark" style="color: var(--accent-orange);"></i>
-                        <span>${isFlagged ? 'مراجعة 🔖' : 'علامة للمراجعة 🔖'}</span>
+        const isFlagged = !!(activeSimulatorState.flagged && activeSimulatorState.flagged[sectionIdx] && activeSimulatorState.flagged[sectionIdx][qIndex]);
+            
+        card.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px dashed rgba(255,255,255,0.05); padding-bottom: 8px;">
+                <div style="font-size: 12px; color: var(--text-orange); font-weight: 800;">السؤال ${qIndex + 1} من ${questions.length}</div>
+                <button type="button" class="btn btn-secondary sim-flag-btn-${qIndex}" onclick="toggleFlagSimulatorQuestion(${qIndex})" style="padding: 4px 10px; font-size: 11.5px; border-radius: 6px; gap: 6px; ${isFlagged ? 'background: rgba(255, 125, 63, 0.2); border-color: var(--accent-orange); color: var(--text-orange);' : 'color: var(--text-muted);'}">
+                    <i class="${isFlagged ? 'fa-solid' : 'fa-regular'} fa-bookmark" style="color: var(--accent-orange);"></i>
+                    <span>${isFlagged ? 'مراجعة 🔖' : 'علامة للمراجعة 🔖'}</span>
+                </button>
+            </div>
+            
+            <h4 style="font-size: 15px; font-weight: 700; line-height: 1.5; color: var(--text-main); margin-bottom: 12px; text-align: right;">${escapeHtml(q.question || '')}</h4>
+            ${q.image ? `
+                <div style="margin-top: 10px; margin-bottom: 12px; text-align: center;">
+                    <img src="${q.image}" style="max-width: 100%; max-height: 180px; border-radius: 6px; border: 1px solid var(--border-color);">
+                </div>
+            ` : ''}
+            
+            <div class="quiz-options-list" style="grid-template-columns: 1fr 1fr; gap: 8px;">
+                ${questionOptions.map((opt, oIndex) => `
+                    <button type="button" class="quiz-option-btn sim-q-${qIndex}-opt ${selectedOptIndex === oIndex ? 'selected' : ''}" onclick="selectSimulatorQuestionOption(${qIndex}, ${oIndex})">
+                        <span class="option-indicator">${String.fromCharCode(1601 + oIndex)}</span>
+                        <span>${escapeHtml(opt)}</span>
                     </button>
-                </div>
-                
-                <h4 style="font-size: 15px; font-weight: 700; line-height: 1.5; color: var(--text-main); margin-bottom: 12px; text-align: right;">${escapeHtml(q.question || '')}</h4>
-                ${q.image ? `
-                    <div style="margin-top: 10px; margin-bottom: 12px; text-align: center;">
-                        <img src="${q.image}" style="max-width: 100%; max-height: 180px; border-radius: 6px; border: 1px solid var(--border-color);">
-                    </div>
-                ` : ''}
-                
-                <div class="quiz-options-list" style="grid-template-columns: 1fr 1fr; gap: 8px;">
-                    ${questionOptions.map((opt, oIndex) => `
-                        <button type="button" class="quiz-option-btn sim-q-${qIndex}-opt ${selectedOptIndex === oIndex ? 'selected' : ''}" onclick="selectSimulatorQuestionOption(${qIndex}, ${oIndex})">
-                            <span class="option-indicator">${String.fromCharCode(1601 + oIndex)}</span>
-                            <span>${escapeHtml(opt)}</span>
-                        </button>
-                    `).join('')}
-                </div>
-            `;
-            body.appendChild(card);
-        });
+                `).join('')}
+            </div>
+
+            <div style="display: flex; justify-content: space-between; margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px;">
+                <button type="button" class="btn btn-secondary" onclick="scrollToSimulatorQuestion(${qIndex - 1})" ${qIndex === 0 ? 'disabled style="opacity: 0.5; pointer-events: none;"' : ''}>
+                    <i class="fa-solid fa-arrow-right"></i> السؤال السابق
+                </button>
+                <button type="button" class="btn btn-primary" onclick="scrollToSimulatorQuestion(${qIndex + 1})" ${qIndex === questions.length - 1 ? 'disabled style="opacity: 0.5; pointer-events: none;"' : 'style="background: var(--accent-orange); border-color: var(--accent-orange); color: #fff;"'}>
+                    السؤال التالي <i class="fa-solid fa-arrow-left"></i>
+                </button>
+            </div>
+        `;
+        body.appendChild(card);
     }
     
     renderMath('simulator-player-body');
