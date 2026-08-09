@@ -5795,8 +5795,8 @@ function startSimulatorSectionTimer(numQuestions) {
         
         if (activeSimulatorState.secondsRemaining <= 0) {
             clearInterval(activeSimulatorState.timerInterval);
-            showToast("انتهى وقت القسم الحالي! تم تسليم القسم تلقائياً.", "warning");
-            submitSimulatorSection(true);
+            showToast("انتهى الوقت! تم إنهاء الاختبار وعرض النتيجة تلقائياً.", "warning");
+            renderSimulatorResults();
         }
     }, 1000);
 }
