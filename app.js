@@ -5687,55 +5687,74 @@ function renderSimulatorSection(isNewSection = false) {
             </div>
         `;
     } else {
-        const qIndex = activeSimulatorState.currentQuestionIndex || 0;
-        const q = questions[qIndex];
-        
-        const card = document.createElement('div');
-        card.className = 'simulator-question-card';
-        card.id = `sim-question-card-${qIndex}`;
-        const questionOptions = Array.isArray(q.options) ? q.options : ['أ', 'ب', 'ج', 'د'];
-        
-        const selectedOptIndex = (activeSimulatorState.answers[sectionIdx] && activeSimulatorState.answers[sectionIdx][qIndex] !== undefined)
-            ? activeSimulatorState.answers[sectionIdx][qIndex]
-            : -1;
+        try {
+            const qIndex = parseInt(activeSimulatorState.currentQuestionIndex) || 0;
+            const q = questions[qIndex] || questions[0];
             
-        const isFlagged = !!(activeSimulatorState.flagged && activeSimulatorState.flagged[sectionIdx] && activeSimulatorState.flagged[sectionIdx][qIndex]);
+            if (!q) {
+                console.error("Question object is missing for index", qIndex);
+                body.innerHTML = `<div style="padding: 20px; color: red; text-align: center;">خطأ: لم يتم العثور على بيانات السؤال. يرجى تحديث الصفحة.</div>`;
+                return;
+            }
             
-        card.innerHTML = `
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px dashed rgba(255,255,255,0.05); padding-bottom: 8px;">
-                <div style="font-size: 12px; color: var(--text-orange); font-weight: 800;">السؤال ${qIndex + 1} من ${questions.length}</div>
-                <button type="button" class="btn btn-secondary sim-flag-btn-${qIndex}" onclick="toggleFlagSimulatorQuestion(${qIndex})" style="padding: 4px 10px; font-size: 11.5px; border-radius: 6px; gap: 6px; ${isFlagged ? 'background: rgba(255, 125, 63, 0.2); border-color: var(--accent-orange); color: var(--text-orange);' : 'color: var(--text-muted);'}">
-                    <i class="${isFlagged ? 'fa-solid' : 'fa-regular'} fa-bookmark" style="color: var(--accent-orange);"></i>
-                    <span>${isFlagged ? 'مراجعة 🔖' : 'علامة للمراجعة 🔖'}</span>
-                </button>
-            </div>
+            const card = document.createElement('div');
+            card.className = 'simulator-question-card';
+            card.id = `sim-question-card-${qIndex}`;
+            card.style.display = 'block';
+            card.style.visibility = 'visible';
+            card.style.opacity = '1';
             
-            <h4 style="font-size: 15px; font-weight: 700; line-height: 1.5; color: var(--text-main); margin-bottom: 12px; text-align: right;">${escapeHtml(q.question || '')}</h4>
-            ${q.image ? `
-                <div style="margin-top: 10px; margin-bottom: 12px; text-align: center;">
-                    <img src="${q.image}" style="max-width: 100%; max-height: 180px; border-radius: 6px; border: 1px solid var(--border-color);">
-                </div>
-            ` : ''}
+            const questionOptions = Array.isArray(q.options) ? q.options : ['أ', 'ب', 'ج', 'د'];
             
-            <div class="quiz-options-list" style="grid-template-columns: 1fr 1fr; gap: 8px;">
-                ${questionOptions.map((opt, oIndex) => `
-                    <button type="button" class="quiz-option-btn sim-q-${qIndex}-opt ${selectedOptIndex === oIndex ? 'selected' : ''}" onclick="selectSimulatorQuestionOption(${qIndex}, ${oIndex})">
-                        <span class="option-indicator">${String.fromCharCode(1601 + oIndex)}</span>
-                        <span>${escapeHtml(opt)}</span>
+            let selectedOptIndex = -1;
+            if (activeSimulatorState.answers && activeSimulatorState.answers[sectionIdx] && activeSimulatorState.answers[sectionIdx][qIndex] !== undefined) {
+                selectedOptIndex = activeSimulatorState.answers[sectionIdx][qIndex];
+            }
+                
+            let isFlagged = false;
+            if (activeSimulatorState.flagged && activeSimulatorState.flagged[sectionIdx] && activeSimulatorState.flagged[sectionIdx][qIndex]) {
+                isFlagged = true;
+            }
+                
+            card.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px dashed rgba(255,255,255,0.05); padding-bottom: 8px;">
+                    <div style="font-size: 12px; color: var(--text-orange); font-weight: 800;">السؤال ${qIndex + 1} من ${questions.length}</div>
+                    <button type="button" class="btn btn-secondary sim-flag-btn-${qIndex}" onclick="toggleFlagSimulatorQuestion(${qIndex})" style="padding: 4px 10px; font-size: 11.5px; border-radius: 6px; gap: 6px; ${isFlagged ? 'background: rgba(255, 125, 63, 0.2); border-color: var(--accent-orange); color: var(--text-orange);' : 'color: var(--text-muted);'}">
+                        <i class="${isFlagged ? 'fa-solid' : 'fa-regular'} fa-bookmark" style="color: var(--accent-orange);"></i>
+                        <span>${isFlagged ? 'مراجعة 🔖' : 'علامة للمراجعة 🔖'}</span>
                     </button>
-                `).join('')}
-            </div>
+                </div>
+                
+                <h4 style="font-size: 15px; font-weight: 700; line-height: 1.5; color: var(--text-main); margin-bottom: 12px; text-align: right;">${escapeHtml(q.question || 'سؤال بدون نص')}</h4>
+                ${q.image ? `
+                    <div style="margin-top: 10px; margin-bottom: 12px; text-align: center;">
+                        <img src="${q.image}" style="max-width: 100%; max-height: 180px; border-radius: 6px; border: 1px solid var(--border-color);">
+                    </div>
+                ` : ''}
+                
+                <div class="quiz-options-list" style="grid-template-columns: 1fr 1fr; gap: 8px;">
+                    ${questionOptions.map((opt, oIndex) => `
+                        <button type="button" class="quiz-option-btn sim-q-${qIndex}-opt ${selectedOptIndex === oIndex ? 'selected' : ''}" onclick="selectSimulatorQuestionOption(${qIndex}, ${oIndex})">
+                            <span class="option-indicator">${String.fromCharCode(1601 + oIndex)}</span>
+                            <span>${escapeHtml(opt || '')}</span>
+                        </button>
+                    `).join('')}
+                </div>
 
-            <div style="display: flex; justify-content: space-between; margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px;">
-                <button type="button" class="btn btn-secondary" onclick="scrollToSimulatorQuestion(${qIndex - 1})" ${qIndex === 0 ? 'disabled style="opacity: 0.5; pointer-events: none;"' : ''}>
-                    <i class="fa-solid fa-arrow-right"></i> السؤال السابق
-                </button>
-                <button type="button" class="btn btn-primary" onclick="scrollToSimulatorQuestion(${qIndex + 1})" ${qIndex === questions.length - 1 ? 'disabled style="opacity: 0.5; pointer-events: none;"' : 'style="background: var(--accent-orange); border-color: var(--accent-orange); color: #fff;"'}>
-                    السؤال التالي <i class="fa-solid fa-arrow-left"></i>
-                </button>
-            </div>
-        `;
-        body.appendChild(card);
+                <div style="display: flex; justify-content: space-between; margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px;">
+                    <button type="button" class="btn btn-secondary" onclick="scrollToSimulatorQuestion(${qIndex - 1})" ${qIndex === 0 ? 'disabled style="opacity: 0.5; pointer-events: none;"' : ''}>
+                        <i class="fa-solid fa-arrow-right"></i> السؤال السابق
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="scrollToSimulatorQuestion(${qIndex + 1})" ${qIndex >= questions.length - 1 ? 'disabled style="opacity: 0.5; pointer-events: none;"' : 'style="background: var(--accent-orange); border-color: var(--accent-orange); color: #fff;"'}>
+                        السؤال التالي <i class="fa-solid fa-arrow-left"></i>
+                    </button>
+                </div>
+            `;
+            body.appendChild(card);
+        } catch (err) {
+            console.error("Error rendering question:", err);
+            body.innerHTML = `<div style="padding: 20px; color: red; text-align: center;">حدث خطأ في عرض السؤال. يرجى تحديث الصفحة.</div>`;
+        }
     }
     
     renderMath('simulator-player-body');
