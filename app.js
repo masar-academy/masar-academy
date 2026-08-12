@@ -4012,8 +4012,7 @@ async function handleCreateQuiz(e) {
                     title,
                     questions: cloudQuestions,
                     points,
-                    is_simulator: isSimulator,
-                    created_at: new Date().toISOString()
+                    is_simulator: isSimulator
                 }]);
                 if (error) throw error;
             }
