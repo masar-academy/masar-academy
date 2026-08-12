@@ -643,14 +643,32 @@ async function syncFromCloud() {
         }
 
         if (quizzes.length > 0) {
-            appState.quizzes = quizzes.map(q => ({
-                id: q.id,
-                courseId: q.course_id,
-                title: q.title,
-                questions: safeJsonParse(q.questions, []),
-                points: q.points,
-                isSimulator: q.is_simulator || false
-            }));
+            appState.quizzes = quizzes.map(q => {
+                let parsedQuestions = safeJsonParse(q.questions, []);
+                let qType = q.is_simulator ? 'simulator' : 'normal';
+                let pTarget = 80, pHigh = '', pLow = '';
+                
+                if (parsedQuestions.length > 0 && parsedQuestions[0]._isPlacementMeta) {
+                    const meta = parsedQuestions.shift();
+                    qType = 'placement';
+                    pTarget = meta.placementTarget;
+                    pHigh = meta.placementHighMsg;
+                    pLow = meta.placementLowMsg;
+                }
+                
+                return {
+                    id: q.id,
+                    courseId: q.course_id,
+                    title: q.title,
+                    questions: parsedQuestions,
+                    points: q.points,
+                    isSimulator: q.is_simulator || false,
+                    type: qType,
+                    placementTarget: pTarget,
+                    placementHighMsg: pHigh,
+                    placementLowMsg: pLow
+                };
+            });
         } else {
             const localQuizzes = safeJsonParse(localStorage.getItem('masar_quizzes'), INITIAL_QUIZZES);
             if (localQuizzes && localQuizzes.length > 0) {
@@ -3933,15 +3951,20 @@ async function handleCreateQuiz(e) {
         
         try {
             if (isCloudMode && supabaseClient) {
+                let cloudQuestions = [...questions];
+                if (quizType === 'placement') {
+                    cloudQuestions.unshift({
+                        _isPlacementMeta: true,
+                        placementTarget,
+                        placementHighMsg,
+                        placementLowMsg
+                    });
+                }
                 const { error } = await supabaseClient.from('quizzes').update({
                     title,
-                    questions,
+                    questions: cloudQuestions,
                     points,
-                    is_simulator: isSimulator,
-                    type: quizType,
-                    placement_target: placementTarget,
-                    placement_high_msg: placementHighMsg,
-                    placement_low_msg: placementLowMsg
+                    is_simulator: isSimulator
                 }).eq('id', editId);
                 if (error) throw error;
             }
@@ -3974,17 +3997,22 @@ async function handleCreateQuiz(e) {
 
         try {
             if (isCloudMode && supabaseClient) {
+                let cloudQuestions = [...questions];
+                if (quizType === 'placement') {
+                    cloudQuestions.unshift({
+                        _isPlacementMeta: true,
+                        placementTarget,
+                        placementHighMsg,
+                        placementLowMsg
+                    });
+                }
                 const { data, error } = await supabaseClient.from('quizzes').insert([{
                     id: newQuiz.id,
                     course_id: courseId === 'simulator' ? null : courseId,
                     title,
-                    questions,
+                    questions: cloudQuestions,
                     points,
                     is_simulator: isSimulator,
-                    type: quizType,
-                    placement_target: placementTarget,
-                    placement_high_msg: placementHighMsg,
-                    placement_low_msg: placementLowMsg,
                     created_at: new Date().toISOString()
                 }]);
                 if (error) throw error;
