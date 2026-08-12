@@ -691,6 +691,7 @@ async function syncFromCloud() {
                 renderTeacherDashboard();
             } else if (appState.currentUser.role === 'student') {
                 renderStudentDashboard();
+    checkPendingPlacementTest();
             }
         } else {
             renderLandingPage();
@@ -1471,12 +1472,26 @@ function showCreateSimulatorView() {
     }
     
     const pTitle = document.getElementById('quiz-page-course-title');
-    if (pTitle) pTitle.textContent = "محاكي اختبارات مستقل";
+    if (pTitle) pTitle.textContent = "محاكي / تحديد مستوى";
 
     const sectionsContainer = document.getElementById('quiz-sections-editor-container');
     if (sectionsContainer) {
         sectionsContainer.innerHTML = '';
         addQuizSectionEditorRow();
+    }
+    
+    const questionsContainer = document.getElementById('quiz-questions-editor-container');
+    if (questionsContainer) {
+        questionsContainer.innerHTML = '';
+        addQuizQuestionEditorRow();
+    }
+
+    const typeGroup = document.getElementById('quiz-simulator-type-group');
+    if (typeGroup) {
+        typeGroup.style.display = 'block';
+        const simRadio = document.querySelector('input[name="simulator_type"][value="simulator"]');
+        if (simRadio) simRadio.checked = true;
+        toggleSimulatorTypeEditor();
     }
 
     const page = document.getElementById('create-quiz-page-view');
@@ -3467,6 +3482,11 @@ function openAddQuizModal(courseId, courseTitle) {
     document.getElementById('quiz-is-simulator').checked = false;
     toggleQuizSimulatorEditor(false);
     
+    const typeGroup = document.getElementById('quiz-simulator-type-group');
+    if (typeGroup) typeGroup.style.display = 'none';
+    const placeSettings = document.getElementById('quiz-placement-settings');
+    if (placeSettings) placeSettings.style.display = 'none';
+    
     const container = document.getElementById('quiz-questions-editor-container');
     container.innerHTML = '';
     addQuizQuestionEditorRow();
@@ -3495,7 +3515,7 @@ function openEditQuizModal(quizId) {
     const titleText = document.getElementById('quiz-modal-title-text');
     if (titleText) {
         titleText.innerHTML = quiz.isSimulator 
-            ? `<i class="fa-solid fa-bolt" style="color: var(--success); margin-left: 6px;"></i> تعديل محاكي الاختبارات`
+            ? `<i class="fa-solid fa-bolt" style="color: var(--success); margin-left: 6px;"></i> تعديل محاكي الاختبارات / تحديد المستوى`
             : `<i class="fa-solid fa-clipboard-question" style="color: var(--accent-orange); margin-left: 6px;"></i> تعديل الاختبار التفاعلي`;
     }
 
@@ -3507,7 +3527,24 @@ function openEditQuizModal(quizId) {
     
     const isSim = quiz.isSimulator || false;
     document.getElementById('quiz-is-simulator').checked = isSim;
+    
+    const typeGroup = document.getElementById('quiz-simulator-type-group');
+    if (typeGroup) typeGroup.style.display = isSim ? 'block' : 'none';
+    
+    const isPlacement = isSim && quiz.type === 'placement';
+    if (isSim) {
+        const simRadio = document.querySelector(`input[name="simulator_type"][value="${isPlacement ? 'placement' : 'simulator'}"]`);
+        if (simRadio) simRadio.checked = true;
+    }
+    
     toggleQuizSimulatorEditor(isSim);
+    if (isSim) toggleSimulatorTypeEditor();
+    
+    if (isPlacement) {
+        document.getElementById('placement-target-percent').value = quiz.placementTarget || 80;
+        document.getElementById('placement-high-msg').value = quiz.placementHighMsg || '';
+        document.getElementById('placement-low-msg').value = quiz.placementLowMsg || '';
+    }
     
     const container = document.getElementById('quiz-questions-editor-container');
     if (container) container.innerHTML = '';
@@ -3515,7 +3552,7 @@ function openEditQuizModal(quizId) {
     const sectionsContainer = document.getElementById('quiz-sections-editor-container');
     if (sectionsContainer) sectionsContainer.innerHTML = '';
     
-    if (isSim) {
+    if (isSim && !isPlacement) {
         if (quiz.questions && Array.isArray(quiz.questions)) {
             quiz.questions.forEach(section => {
                 addQuizSectionEditorRow(section);
@@ -3627,21 +3664,53 @@ function addQuizQuestionEditorRow(questionData = null) {
 function toggleQuizSimulatorEditor(checked) {
     const normalEditor = document.getElementById('quiz-normal-editor');
     const simulatorEditor = document.getElementById('quiz-simulator-editor');
+    const typeGroup = document.getElementById('quiz-simulator-type-group');
+    const placeSettings = document.getElementById('quiz-placement-settings');
     const titleInput = document.getElementById('quiz-title');
     
     if (checked) {
-        normalEditor.style.display = 'none';
-        simulatorEditor.style.display = 'block';
+        if (typeGroup) typeGroup.style.display = 'block';
+        toggleSimulatorTypeEditor(); // Call to handle the exact state based on selected radio
         titleInput.placeholder = "مثال: محاكي اختبار القدرات التجريبي الأول";
+    } else {
+        if (typeGroup) typeGroup.style.display = 'none';
+        if (placeSettings) placeSettings.style.display = 'none';
+        if (normalEditor) normalEditor.style.display = 'block';
+        if (simulatorEditor) simulatorEditor.style.display = 'none';
+        titleInput.placeholder = "مثال: اختبار قصير على درس الهندسة";
+    }
+}
+
+function toggleSimulatorTypeEditor() {
+    const simType = document.querySelector('input[name="simulator_type"]:checked');
+    if (!simType) return;
+    
+    const isPlacement = simType.value === 'placement';
+    const normalEditor = document.getElementById('quiz-normal-editor');
+    const simulatorEditor = document.getElementById('quiz-simulator-editor');
+    const placeSettings = document.getElementById('quiz-placement-settings');
+    const titleInput = document.getElementById('quiz-title');
+    
+    if (isPlacement) {
+        if (normalEditor) normalEditor.style.display = 'block';
+        if (simulatorEditor) simulatorEditor.style.display = 'none';
+        if (placeSettings) placeSettings.style.display = 'block';
+        if (titleInput) titleInput.placeholder = "مثال: اختبار تحديد مستوى مسار";
+        
+        const questionsContainer = document.getElementById('quiz-questions-editor-container');
+        if (questionsContainer && questionsContainer.children.length === 0) {
+            addQuizQuestionEditorRow();
+        }
+    } else {
+        if (normalEditor) normalEditor.style.display = 'none';
+        if (simulatorEditor) simulatorEditor.style.display = 'block';
+        if (placeSettings) placeSettings.style.display = 'none';
+        if (titleInput) titleInput.placeholder = "مثال: محاكي اختبار القدرات التجريبي الأول";
         
         const sectionsContainer = document.getElementById('quiz-sections-editor-container');
         if (sectionsContainer && sectionsContainer.children.length === 0) {
             addQuizSectionEditorRow();
         }
-    } else {
-        normalEditor.style.display = 'block';
-        simulatorEditor.style.display = 'none';
-        titleInput.placeholder = "مثال: اختبار قصير على درس الهندسة";
     }
 }
 
@@ -3759,10 +3828,26 @@ async function handleCreateQuiz(e) {
     const title = document.getElementById('quiz-title').value.trim();
     const points = parseInt(document.getElementById('quiz-points').value) || 50;
     const isSimulator = document.getElementById('quiz-is-simulator').checked;
+    
+    let quizType = 'normal';
+    let placementTarget = 80;
+    let placementHighMsg = '';
+    let placementLowMsg = '';
+    
+    if (isSimulator) {
+        const simRadio = document.querySelector('input[name="simulator_type"]:checked');
+        quizType = simRadio ? simRadio.value : 'simulator';
+        
+        if (quizType === 'placement') {
+            placementTarget = parseInt(document.getElementById('placement-target-percent').value) || 80;
+            placementHighMsg = document.getElementById('placement-high-msg').value.trim();
+            placementLowMsg = document.getElementById('placement-low-msg').value.trim();
+        }
+    }
 
     const questions = [];
 
-    if (isSimulator) {
+    if (isSimulator && quizType === 'simulator') {
         const sectionBlocks = document.querySelectorAll('.simulator-section-editor-block');
         if (sectionBlocks.length === 0) {
             showToast("يرجى إضافة قسم واحد على الأقل للمحاكي!", "danger");
@@ -3832,86 +3917,100 @@ async function handleCreateQuiz(e) {
 
     if (editId) {
         // Edit Mode
-        const quiz = appState.quizzes.find(q => q.id === editId);
+        const quiz = appState.quizzes.find(q => String(q.id) === String(editId));
         if (!quiz) return;
-        const oldTitle = quiz.title;
-        const oldQuestions = quiz.questions;
-        const oldPoints = quiz.points;
-        const oldIsSimulator = quiz.isSimulator;
         
         quiz.title = title;
         quiz.questions = questions;
         quiz.points = points;
         quiz.isSimulator = isSimulator;
+        quiz.type = quizType;
+        if (quizType === 'placement') {
+            quiz.placementTarget = placementTarget;
+            quiz.placementHighMsg = placementHighMsg;
+            quiz.placementLowMsg = placementLowMsg;
+        }
         
         try {
             if (isCloudMode && supabaseClient) {
                 const { error } = await supabaseClient.from('quizzes').update({
-                    title: quiz.title,
-                    questions: JSON.stringify(quiz.questions),
-                    points: quiz.points,
-                    is_simulator: quiz.isSimulator
+                    title,
+                    questions,
+                    points,
+                    is_simulator: isSimulator,
+                    type: quizType,
+                    placement_target: placementTarget,
+                    placement_high_msg: placementHighMsg,
+                    placement_low_msg: placementLowMsg
                 }).eq('id', editId);
                 if (error) throw error;
-            } else {
-                localStorage.setItem('masar_quizzes', JSON.stringify(appState.quizzes));
             }
-            closeModal('create-quiz-modal');
-            document.getElementById('create-quiz-form').reset();
-            showToast("تم تعديل الاختبار بنجاح! 🎓", "success");
-            await renderTeacherDashboard();
-            const cmView4 = document.getElementById('teacher-course-manage-page-view');
-            if (cmView4 && cmView4.style.display !== 'none') {
-                openTeacherCourseManageModal(courseId);
-            }
+            
+            localStorage.setItem('masar_quizzes', JSON.stringify(appState.quizzes));
+            showToast("تم تعديل الاختبار بنجاح!", "success");
+            showDashboard();
+            if (courseId !== 'simulator') renderTeacherCourseManage(courseId);
         } catch (err) {
             console.error(err);
-            quiz.title = oldTitle;
-            quiz.questions = oldQuestions;
-            quiz.points = oldPoints;
-            quiz.isSimulator = oldIsSimulator;
-            showToast("فشل تعديل الاختبار في السحابة!", "danger");
+            showToast("حدث خطأ أثناء تعديل الاختبار السحابي", "danger");
         }
     } else {
         // Create Mode
         const newQuiz = {
-            id: 'quiz-' + Date.now(),
+            id: 'quiz_' + Date.now(),
             courseId,
             title,
             questions,
             points,
-            isSimulator
+            isSimulator,
+            type: quizType
         };
+        
+        if (quizType === 'placement') {
+            newQuiz.placementTarget = placementTarget;
+            newQuiz.placementHighMsg = placementHighMsg;
+            newQuiz.placementLowMsg = placementLowMsg;
+        }
 
         try {
             if (isCloudMode && supabaseClient) {
-                const { error } = await supabaseClient.from('quizzes').insert({
+                const { data, error } = await supabaseClient.from('quizzes').insert([{
                     id: newQuiz.id,
-                    course_id: newQuiz.courseId === 'simulator' ? null : newQuiz.courseId,
-                    title: newQuiz.title,
-                    questions: JSON.stringify(newQuiz.questions),
-                    points: newQuiz.points,
-                    is_simulator: newQuiz.isSimulator
-                });
+                    course_id: courseId === 'simulator' ? null : courseId,
+                    title,
+                    questions,
+                    points,
+                    is_simulator: isSimulator,
+                    type: quizType,
+                    placement_target: placementTarget,
+                    placement_high_msg: placementHighMsg,
+                    placement_low_msg: placementLowMsg,
+                    created_at: new Date().toISOString()
+                }]);
                 if (error) throw error;
             }
+            
             appState.quizzes.push(newQuiz);
-            try { localStorage.setItem('masar_quizzes', JSON.stringify(appState.quizzes)); } catch(e) {}
-
-            closeModal('create-quiz-modal');
-            showToast("تم نشر الاختبار / المحاكي التفاعلي الجديد بنجاح! 📝", "success");
-            if (courseId === 'simulator' || isSimulator) {
-                showTeacherSection('t-simulators-tab');
-            } else {
-                await renderTeacherDashboard();
-                const cmView5 = document.getElementById('teacher-course-manage-page-view');
-                if (cmView5 && cmView5.style.display !== 'none') {
-                    openTeacherCourseManageModal(courseId);
+            localStorage.setItem('masar_quizzes', JSON.stringify(appState.quizzes));
+            
+            if (courseId !== 'simulator') {
+                const course = appState.courses.find(c => String(c.id) === String(courseId));
+                if (course) {
+                    if (!course.quizzes) course.quizzes = [];
+                    course.quizzes.push(newQuiz.id);
+                    localStorage.setItem('masar_courses', JSON.stringify(appState.courses));
+                    if (isCloudMode && supabaseClient) {
+                        await supabaseClient.from('courses').update({ quizzes: course.quizzes }).eq('id', courseId);
+                    }
                 }
             }
+            
+            showToast("تم إنشاء الاختبار بنجاح!", "success");
+            showDashboard();
+            if (courseId !== 'simulator') renderTeacherCourseManage(courseId);
         } catch (err) {
             console.error(err);
-            showToast("فشل نشر الاختبار في السحابة!", "danger");
+            showToast("حدث خطأ أثناء حفظ الاختبار السحابي", "danger");
         }
     }
 }
@@ -4394,6 +4493,7 @@ async function renderStudentDashboard() {
     renderStudentMyCourses();
     renderStudentCourses();
     renderStudentSimulators();
+    renderStudentPlacementTests();
 
     // Populate Teachers Select inside Chat Tab
     const teacherSelect = document.getElementById('s-chat-teacher-select');
@@ -5989,14 +6089,37 @@ async function renderSimulatorResults() {
         `;
     });
     
+    let finalTitle = passed ? 'تهانينا! لقد اجتزت محاكي الاختبار بنجاح' : 'حظاً أوفر! تحتاج لمراجعة المادة مجدداً';
+    let finalIcon = passed ? '🏆' : '📚';
+    let customMessageHtml = '';
+    let isPlacement = quiz.type === 'placement';
+    
+    if (isPlacement) {
+        const placementTarget = quiz.placementTarget || 80;
+        passed = percent >= placementTarget;
+        finalIcon = '🎯';
+        finalTitle = passed ? 'نتيجة ممتازة! مستواك متقدم' : 'نتيجة جيدة، لكنك تحتاج للتطوير';
+        
+        const teacherMsg = passed ? (quiz.placementHighMsg || 'أحسنت، مستواك يؤهلك لبدء التدريب المتقدم.') : (quiz.placementLowMsg || 'ننصحك بالبدء من دورات التأسيس لضمان رفع مستواك.');
+        
+        customMessageHtml = `
+            <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid var(--success); border-radius: 12px; padding: 18px; margin: 20px 0; text-align: right;">
+                <h4 style="color: var(--success); font-size: 14px; font-weight: 800; margin-bottom: 8px;"><i class="fa-solid fa-comment-dots"></i> رسالة وتوجيه من المعلم:</h4>
+                <p style="font-size: 13.5px; color: var(--text-main); line-height: 1.7; white-space: pre-wrap;">${escapeHtml(teacherMsg)}</p>
+            </div>
+        `;
+    }
+
     container.innerHTML = `
         <div style="text-align: center; padding: 20px 10px;">
             <div style="font-size: 55px; margin-bottom: 12px;">
-                ${passed ? '🏆' : '📚'}
+                ${finalIcon}
             </div>
-            <h3 style="font-size: 20px; font-weight: 800; color: ${passed ? 'var(--success)' : 'var(--danger)'};">
-                ${passed ? 'تهانينا! لقد اجتزت محاكي الاختبار بنجاح' : 'حظاً أوفر! تحتاج لمراجعة المادة مجدداً'}
+            <h3 style="font-size: 20px; font-weight: 800; color: ${passed ? 'var(--success)' : 'var(--warning)'};">
+                ${finalTitle}
             </h3>
+            
+            ${customMessageHtml}
             
             <div style="background: rgba(0,0,0,0.15); border: 1px solid var(--border-color); border-radius: 12px; padding: 15px; margin: 20px 0;">
                 <div style="font-size: 13.5px; color: var(--text-muted); margin-bottom: 6px;">الدرجة الكلية للمحاكي:</div>
@@ -6182,6 +6305,52 @@ function renderStudentSimulators() {
                     <i class="fa-solid fa-lock"></i> غير مشترك - تواصل للمعلم للتفعيل 🔒
                 </button>
             `}
+        `;
+        list.appendChild(card);
+    });
+}
+
+
+function renderStudentPlacementTests() {
+    const list = document.getElementById('s-placement-list');
+    if (!list) return;
+    list.innerHTML = '';
+    
+    const sId = appState.currentUser ? appState.currentUser.id : '';
+    const student = appState.students.find(s => s.id === sId);
+    
+    const placementQuizzes = appState.quizzes.filter(q => q.isSimulator && q.type === 'placement' && (q.courseId === 'simulator' || !q.courseId));
+    
+    if (placementQuizzes.length === 0) {
+        list.innerHTML = `
+            <div class="empty-state" style="grid-column: 1 / -1;">
+                <i class="fa-solid fa-bullseye" style="font-size: 40px; color: var(--success); margin-bottom: 10px;"></i>
+                <p>لا توجد اختبارات تحديد مستوى متاحة حالياً.</p>
+            </div>`;
+        return;
+    }
+    
+    placementQuizzes.forEach(quiz => {
+        const questionsCount = quiz.questions ? quiz.questions.length : 0;
+        const lastAttempt = student && student.simulator_results && student.simulator_results[quiz.id];
+        
+        const card = document.createElement('div');
+        card.className = 'glass-card course-card';
+        card.innerHTML = `
+            <div>
+                <div class="course-header">
+                    <span class="course-subject subject-qudrat" style="background: rgba(16, 185, 129, 0.15); color: var(--success); border-color: var(--success);">اختبار تحديد مستوى 🎯</span>
+                </div>
+                <h4 style="font-size: 16px; font-weight: 700; margin-bottom: 8px; color: var(--text-main);">${quiz.title}</h4>
+                
+                <div style="display: flex; gap: 15px; font-size: 12px; color: var(--text-muted); margin-bottom: 15px;">
+                    <span><i class="fa-solid fa-circle-question" style="color: var(--success);"></i> الأسئلة: ${questionsCount}</span>
+                </div>
+            </div>
+            
+            <button class="btn btn-primary" style="width: 100%; background: linear-gradient(135deg, var(--success), #059669); border-color: #059669;" onclick="startPlacementTestById('${quiz.id}')">
+                ${lastAttempt ? '<i class="fa-solid fa-rotate-right"></i> إعادة الاختبار' : '<i class="fa-solid fa-bullseye"></i> ابدأ التقييم الآن'}
+            </button>
         `;
         list.appendChild(card);
     });
@@ -6564,4 +6733,68 @@ async function deleteTestimonial(revId) {
 
 function filterTestimonials(val) {
     renderTestimonialsView(val);
+}
+
+
+// ==========================================
+// PLACEMENT TEST LOGIC
+// ==========================================
+
+let activePlacementQuizId = null;
+
+function startPlacementTestHandler() {
+    // This is called from the Landing Page
+    const firstPlacementTest = appState.quizzes.find(q => q.isSimulator && q.type === 'placement');
+    if (!firstPlacementTest) {
+        showToast("لا يوجد اختبار تحديد مستوى متاح حالياً. يرجى مراجعة الإدارة.", "warning");
+        return;
+    }
+    
+    if (appState.currentUser && appState.currentUser.role === 'student') {
+        // Logged in as student, go to the placement tests tab
+        showDashboard();
+        switchTab('student', 's-placement-tab', document.querySelector('.tabs button:nth-child(2)')); // approximate button
+        setTimeout(() => {
+            startPlacementTestById(firstPlacementTest.id);
+        }, 300);
+    } else if (appState.currentUser && appState.currentUser.role === 'teacher') {
+        showToast("هذا الاختبار مخصص للطلاب فقط.", "info");
+    } else {
+        // Not logged in. Redirect to register with a flag
+        sessionStorage.setItem('pendingPlacementTest', firstPlacementTest.id);
+        openModal('student-register-modal');
+        showToast("يرجى إنشاء حساب طالب أولاً لبدء اختبار تحديد المستوى.", "info");
+    }
+}
+
+function checkPendingPlacementTest() {
+    const pendingId = sessionStorage.getItem('pendingPlacementTest');
+    if (pendingId && appState.currentUser && appState.currentUser.role === 'student') {
+        sessionStorage.removeItem('pendingPlacementTest');
+        switchTab('student', 's-placement-tab', null);
+        setTimeout(() => {
+            startPlacementTestById(pendingId);
+        }, 500);
+    }
+}
+
+function startPlacementTestById(quizId) {
+    const quiz = appState.quizzes.find(q => q.id === quizId);
+    if (!quiz) return;
+    
+    const questionsCount = quiz.questions ? quiz.questions.length : 0;
+    const durationMins = questionsCount + 1; // Same logic as simulator
+    
+    document.getElementById('placement-modal-qcount').textContent = questionsCount + " أسئلة";
+    document.getElementById('placement-modal-duration').textContent = durationMins + " دقيقة";
+    
+    activePlacementQuizId = quizId;
+    
+    const startBtn = document.getElementById('placement-modal-start-btn');
+    startBtn.onclick = () => {
+        closeModal('placement-test-modal');
+        startSimulator(quiz); // We re-use the simulator logic since it has a timer and results screen
+    };
+    
+    openModal('placement-test-modal');
 }
