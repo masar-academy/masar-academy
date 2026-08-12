@@ -6180,7 +6180,7 @@ function renderTeacherSimulators() {
     if (!list) return;
     list.innerHTML = '';
     
-    const simulatorQuizzes = appState.quizzes.filter(q => q.isSimulator && (q.courseId === 'simulator' || !q.courseId));
+    const simulatorQuizzes = appState.quizzes.filter(q => q.isSimulator && q.type !== 'placement' && (q.courseId === 'simulator' || !q.courseId));
     
     if (simulatorQuizzes.length === 0) {
         list.innerHTML = `
@@ -6203,9 +6203,9 @@ function renderTeacherSimulators() {
         card.className = 'glass-card course-card';
         card.innerHTML = `
             <div>
-                <div class="course-header">
-                    <span class="course-subject subject-qudrat">محاكاة مستقلة ⚡</span>
-                </div>
+                ${quiz.type === 'placement' 
+                    ? '<div class="course-header"><span class="course-subject subject-qudrat" style="background: rgba(16, 185, 129, 0.15); color: var(--success); border-color: var(--success);">تحديد مستوى 🎯</span></div>'
+                    : '<div class="course-header"><span class="course-subject subject-qudrat">محاكاة مستقلة ⚡</span></div>'}
                 <h4 style="font-size: 16px; font-weight: 700; margin-bottom: 8px; color: var(--text-main);">${quiz.title}</h4>
                 
                 <div style="display: flex; gap: 15px; font-size: 12px; color: var(--text-muted); margin-bottom: 15px; background: rgba(0,0,0,0.1); padding: 8px; border-radius: 6px;">
