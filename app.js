@@ -1974,6 +1974,7 @@ async function renderTeacherDashboard() {
     renderTeacherStudents();
     if (!isSupervisor) renderTeacherCourses();
     if (!isSupervisor) renderTeacherSimulators();
+    if (!isSupervisor) renderTeacherPlacementTests();
     if (!isSupervisor) renderTeacherSimulatorResults();
     renderTeacherAccountSettings();
     
@@ -6173,6 +6174,51 @@ async function renderSimulatorResults() {
 
 function openAddStandaloneSimulatorModal() {
     showCreateSimulatorView();
+}
+
+function renderTeacherPlacementTests() {
+    const list = document.getElementById('t-placements-list');
+    if (!list) return;
+    list.innerHTML = '';
+    
+    const placementQuizzes = appState.quizzes.filter(q => q.isSimulator && q.type === 'placement');
+    
+    if (placementQuizzes.length === 0) {
+        list.innerHTML = `
+            <div class="empty-state" style="grid-column: 1 / -1;">
+                <i class="fa-solid fa-crosshairs" style="font-size: 40px; color: var(--success); margin-bottom: 10px;"></i>
+                <p>لا يوجد اختبارات تحديد مستوى مضافة حالياً.</p>
+            </div>`;
+        return;
+    }
+    
+    placementQuizzes.forEach(quiz => {
+        let questionsCount = quiz.questions ? quiz.questions.length : 0;
+        
+        const card = document.createElement('div');
+        card.className = 'glass-card course-card';
+        card.innerHTML = `
+            <div>
+                <div class="course-header"><span class="course-subject subject-qudrat" style="background: rgba(16, 185, 129, 0.15); color: var(--success); border-color: var(--success);">تحديد مستوى 🎯</span></div>
+                <h4 style="font-size: 16px; font-weight: 700; margin-bottom: 8px; color: var(--text-main);">${quiz.title}</h4>
+                
+                <div style="display: flex; gap: 15px; font-size: 12px; color: var(--text-muted); margin-bottom: 15px; background: rgba(0,0,0,0.1); padding: 8px; border-radius: 6px;">
+                    <span><i class="fa-solid fa-circle-question" style="color: var(--accent-orange);"></i> الأسئلة: ${questionsCount}</span>
+                    <span><i class="fa-solid fa-bolt" style="color: var(--warning);"></i> النقاط: ${quiz.points} XP</span>
+                </div>
+            </div>
+            
+            <div style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px; display: flex; gap: 8px;">
+                <button class="btn btn-secondary" style="flex: 1; padding: 8px; font-size: 12px; border-color: var(--accent-orange); color: var(--text-orange);" onclick="openEditQuizModal('${quiz.id}')">
+                    <i class="fa-regular fa-edit"></i> تعديل
+                </button>
+                <button class="btn btn-danger btn-secondary" style="flex: 1; padding: 8px; font-size: 12px;" onclick="deleteQuiz('${quiz.id}')">
+                    <i class="fa-regular fa-trash-can"></i> حذف
+                </button>
+            </div>
+        `;
+        list.appendChild(card);
+    });
 }
 
 function renderTeacherSimulators() {
