@@ -6180,7 +6180,7 @@ function renderTeacherSimulators() {
     if (!list) return;
     list.innerHTML = '';
     
-    const simulatorQuizzes = appState.quizzes.filter(q => q.isSimulator && q.type !== 'placement' && (q.courseId === 'simulator' || !q.courseId));
+    const simulatorQuizzes = appState.quizzes.filter(q => q.isSimulator && (q.courseId === 'simulator' || !q.courseId));
     
     if (simulatorQuizzes.length === 0) {
         list.innerHTML = `
@@ -6287,7 +6287,7 @@ function renderStudentSimulators() {
     const student = appState.students.find(s => s.id === sId);
     const enrolledList = (student && student.enrolled_courses) ? student.enrolled_courses : [];
     
-    const simulatorQuizzes = appState.quizzes.filter(q => q.isSimulator && (q.courseId === 'simulator' || !q.courseId));
+    const simulatorQuizzes = appState.quizzes.filter(q => q.isSimulator && q.type !== 'placement' && (q.courseId === 'simulator' || !q.courseId));
     
     if (simulatorQuizzes.length === 0) {
         list.innerHTML = `
