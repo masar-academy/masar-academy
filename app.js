@@ -6950,14 +6950,30 @@ function openQuestionReviewModal(sIdx, qIdx) {
     });
     
     const vidContainer = document.getElementById('review-modal-video-container');
+    const ytWrapper = document.getElementById('review-modal-youtube-wrapper');
     const iframe = document.getElementById('review-modal-video-iframe');
-    const yId = extractYouTubeId(q.videoUrl);
+    const html5Wrapper = document.getElementById('review-modal-html5-wrapper');
+    const html5Video = document.getElementById('review-modal-html5-video');
     
-    if (yId) {
-        iframe.src = `https://www.youtube.com/embed/${yId}`;
+    // Check if it's an mp4 direct link or similar
+    const isDirectVideo = q.videoUrl && (q.videoUrl.toLowerCase().endsWith('.mp4') || q.videoUrl.toLowerCase().endsWith('.webm'));
+    const yId = isDirectVideo ? null : extractYouTubeId(q.videoUrl);
+    
+    if (isDirectVideo) {
+        html5Video.src = q.videoUrl;
+        html5Wrapper.style.display = 'block';
+        ytWrapper.style.display = 'none';
+        iframe.src = '';
+        vidContainer.style.display = 'block';
+    } else if (yId) {
+        iframe.src = `https://www.youtube.com/embed/${yId}?rel=0&modestbranding=1&showinfo=0&controls=1`;
+        ytWrapper.style.display = 'block';
+        html5Wrapper.style.display = 'none';
+        html5Video.src = '';
         vidContainer.style.display = 'block';
     } else {
         iframe.src = '';
+        html5Video.src = '';
         vidContainer.style.display = 'none';
     }
     
