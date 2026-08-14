@@ -3656,6 +3656,10 @@ function addQuizQuestionEditorRow(questionData = null) {
             </div>
         </div>
         <div class="form-group" style="margin-top: 4px;">
+            <label style="font-size: 11.5px; color: var(--accent-orange); font-weight: 700;">رابط فيديو لشرح السؤال (يوتيوب اختياري):</label>
+            <input type="text" class="question-video-url" placeholder="الصق رابط يوتيوب هنا..." value="${questionData && questionData.videoUrl ? escapeHtml(questionData.videoUrl) : ''}">
+        </div>
+        <div class="form-group" style="margin-top: 4px;">
             <label style="font-size: 11.5px; color: var(--success); font-weight: 700;">الخيار الصحيح:</label>
             <select class="correct-answer" style="padding: 4px 10px;">
                 <option value="0" ${(questionData && questionData.correct === 0) ? 'selected' : ''}>الخيار الأول (أ)</option>
@@ -3806,6 +3810,10 @@ function addQuizSectionQuestionRow(sectionContainer, questionData = null) {
             </div>
         </div>
         <div class="form-group" style="margin-top: 4px;">
+            <label style="font-size: 11.5px; color: var(--accent-orange); font-weight: 700;">رابط فيديو لشرح السؤال (يوتيوب اختياري):</label>
+            <input type="text" class="question-video-url" placeholder="الصق رابط يوتيوب هنا..." value="${questionData && questionData.videoUrl ? escapeHtml(questionData.videoUrl) : ''}">
+        </div>
+        <div class="form-group" style="margin-top: 4px;">
             <label style="font-size: 11.5px; color: var(--success); font-weight: 700;">الخيار الصحيح:</label>
             <select class="correct-answer" style="padding: 4px 10px;">
                 <option value="0" ${(questionData && questionData.correct === 0) ? 'selected' : ''}>الخيار الأول (أ)</option>
@@ -3889,12 +3897,14 @@ async function handleCreateQuiz(e) {
                 const opt2 = row.querySelector('.opt-2').value.trim() || 'ج';
                 const opt3 = row.querySelector('.opt-3').value.trim() || 'د';
                 const correct = parseInt(row.querySelector('.correct-answer').value);
+                const videoUrl = row.querySelector('.question-video-url') ? row.querySelector('.question-video-url').value.trim() : '';
                 const imageVal = row.querySelector('.question-image-data') ? row.querySelector('.question-image-data').value : '';
 
                 sectionQuestions.push({
                     question: questionText,
                     options: [opt0, opt1, opt2, opt3],
                     correct,
+                    videoUrl,
                     image: imageVal
                 });
             });
@@ -3923,12 +3933,14 @@ async function handleCreateQuiz(e) {
             const opt2 = row.querySelector('.opt-2').value.trim() || 'ج';
             const opt3 = row.querySelector('.opt-3').value.trim() || 'د';
             const correct = parseInt(row.querySelector('.correct-answer').value);
+            const videoUrl = row.querySelector('.question-video-url') ? row.querySelector('.question-video-url').value.trim() : '';
             const imageVal = row.querySelector('.question-image-data') ? row.querySelector('.question-image-data').value : '';
 
             questions.push({
                 question: questionText,
                 options: [opt0, opt1, opt2, opt3],
                 correct,
+                videoUrl,
                 image: imageVal
             });
         });
@@ -6098,11 +6110,15 @@ async function renderSimulatorResults() {
             if (isCorrect) sectCorrect++;
             
             return `
-                <div style="background: rgba(255,255,255,0.01); border: 1px solid ${isCorrect ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.2)'}; border-radius: 8px; padding: 8px; margin-bottom: 8px; font-size: 12px; text-align: right;">
-                    <strong>س ${qIdx + 1}:</strong> ${q.question}
+                <div onclick="openQuestionReviewModal(${sIdx}, ${qIdx})" style="background: rgba(255,255,255,0.01); border: 1px solid ${isCorrect ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.2)'}; border-radius: 8px; padding: 12px; margin-bottom: 8px; font-size: 12px; text-align: right; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='rgba(255,255,255,0.01)'">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                        <strong>س ${qIdx + 1}: ${q.question}</strong>
+                        <span style="font-size: 10px; color: var(--accent-orange); background: rgba(245, 158, 11, 0.1); padding: 2px 6px; border-radius: 4px;"><i class="fa-solid fa-magnifying-glass"></i> اضغط للمراجعة</span>
+                    </div>
                     <div style="margin-top: 4px;">
                         <span style="color: ${isCorrect ? 'var(--success)' : 'var(--danger)'};">إجابتك: ${myAns !== undefined ? q.options[myAns] : 'لم تجب'}</span>
                         ${!isCorrect ? `<div style="color: var(--success); font-size: 11px;">الإجابة الصحيحة: ${q.options[correctAns]}</div>` : ''}
+                        ${q.videoUrl ? `<div style="color: var(--accent-orange); font-size: 11px; margin-top: 4px;"><i class="fa-brands fa-youtube"></i> يوجد فيديو شرح</div>` : ''}
                     </div>
                 </div>
             `;
@@ -6872,4 +6888,78 @@ function startPlacementTestById(quizId) {
     };
     
     openModal('placement-test-modal');
+}
+
+
+function extractYouTubeId(url) {
+    if (!url) return null;
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
+}
+
+function openQuestionReviewModal(sIdx, qIdx) {
+    const sections = activeSimulatorState.sections;
+    if (!sections || !sections[sIdx] || !sections[sIdx].questions || !sections[sIdx].questions[qIdx]) return;
+    
+    const q = sections[sIdx].questions[qIdx];
+    const sectionAnswers = activeSimulatorState.answers[sIdx] || [];
+    const myAns = sectionAnswers[qIdx];
+    const correctAns = parseInt(q.correct);
+    
+    document.getElementById('review-modal-title').innerHTML = `<i class="fa-solid fa-magnifying-glass"></i> مراجعة السؤال ${qIdx + 1}`;
+    document.getElementById('review-modal-question').textContent = q.question;
+    
+    const imgContainer = document.getElementById('review-modal-image-container');
+    const imgEl = document.getElementById('review-modal-image');
+    if (q.image) {
+        imgEl.src = q.image;
+        imgContainer.style.display = 'block';
+    } else {
+        imgContainer.style.display = 'none';
+    }
+    
+    const optsContainer = document.getElementById('review-modal-options');
+    optsContainer.innerHTML = '';
+    
+    q.options.forEach((opt, idx) => {
+        let isMyAns = (myAns === idx);
+        let isCorrect = (correctAns === idx);
+        
+        let bgColor = 'rgba(0,0,0,0.2)';
+        let borderColor = 'rgba(255,255,255,0.1)';
+        let iconHtml = '';
+        
+        if (isCorrect) {
+            bgColor = 'rgba(16, 185, 129, 0.15)';
+            borderColor = 'var(--success)';
+            iconHtml = '<i class="fa-solid fa-check" style="color: var(--success); margin-right: auto;"></i>';
+        } else if (isMyAns && !isCorrect) {
+            bgColor = 'rgba(239, 68, 68, 0.15)';
+            borderColor = 'var(--danger)';
+            iconHtml = '<i class="fa-solid fa-xmark" style="color: var(--danger); margin-right: auto;"></i>';
+        }
+        
+        optsContainer.innerHTML += `
+            <div style="background: ${bgColor}; border: 1px solid ${borderColor}; border-radius: 6px; padding: 10px 15px; display: flex; align-items: center; font-size: 13.5px;">
+                <span style="font-weight: bold; margin-left: 8px; color: var(--text-muted);">${String.fromCharCode(1601 + idx)}:</span>
+                <span style="color: ${(isCorrect || isMyAns) ? 'var(--text-main)' : 'var(--text-muted)'};">${escapeHtml(opt)}</span>
+                ${iconHtml}
+            </div>
+        `;
+    });
+    
+    const vidContainer = document.getElementById('review-modal-video-container');
+    const iframe = document.getElementById('review-modal-video-iframe');
+    const yId = extractYouTubeId(q.videoUrl);
+    
+    if (yId) {
+        iframe.src = `https://www.youtube.com/embed/${yId}`;
+        vidContainer.style.display = 'block';
+    } else {
+        iframe.src = '';
+        vidContainer.style.display = 'none';
+    }
+    
+    openModal('question-review-modal');
 }
