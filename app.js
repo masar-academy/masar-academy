@@ -7007,15 +7007,4 @@ function toggleTheme() {
     
     root.setAttribute('data-theme', newTheme);
     localStorage.setItem('masar_theme', newTheme);
-    
-    const icon = document.getElementById('theme-toggle-icon');
-    if (icon) {
-        if (newTheme === 'light') {
-            icon.classList.remove('fa-sun');
-            icon.classList.add('fa-moon');
-        } else {
-            icon.classList.remove('fa-moon');
-            icon.classList.add('fa-sun');
-        }
-    }
 }
