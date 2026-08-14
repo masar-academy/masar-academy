@@ -1566,11 +1566,15 @@ const MODAL_TO_VIEW_MAP = {
 
 function openModal(id) {
     const targetPageId = MODAL_TO_VIEW_MAP[id] || id;
-    const isOverlayModal = (id === 'hamburger-drawer-modal');
+    const overlayModals = ['hamburger-drawer-modal', 'add-testimonial-modal', 'placement-test-modal', 'question-review-modal'];
+    const isOverlayModal = overlayModals.includes(id);
     
     if (isOverlayModal) {
         const modal = document.getElementById(id);
-        if (modal) modal.classList.add('active');
+        if (modal) {
+            modal.style.display = '';
+            modal.classList.add('active');
+        }
         return;
     }
     
@@ -1583,10 +1587,25 @@ function openModal(id) {
 }
 
 function closeModal(id) {
-    const isOverlayModal = (id === 'hamburger-drawer-modal');
+    const overlayModals = ['hamburger-drawer-modal', 'add-testimonial-modal', 'placement-test-modal', 'question-review-modal'];
+    const isOverlayModal = overlayModals.includes(id);
     if (isOverlayModal) {
         const modal = document.getElementById(id);
-        if (modal) modal.classList.remove('active');
+        if (modal) {
+            modal.classList.remove('active');
+            modal.style.display = '';
+        }
+        
+        if (id === 'question-review-modal') {
+            const iframe = document.getElementById('review-modal-video-iframe');
+            if (iframe) iframe.src = '';
+            
+            const html5Video = document.getElementById('review-modal-html5-video');
+            if (html5Video) {
+                html5Video.pause();
+                html5Video.currentTime = 0;
+            }
+        }
         return;
     }
     
