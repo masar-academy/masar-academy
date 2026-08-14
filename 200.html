@@ -17,7 +17,7 @@
     <script>
         // Automatic Cache-Buster: Forces fresh online build fetch from GitHub
         (function() {
-            const CURRENT_BUILD = "v1786747780123";
+            const CURRENT_BUILD = "v1786747980983";
             const storedBuild = localStorage.getItem('masar_app_build');
             if (storedBuild !== CURRENT_BUILD) {
                 localStorage.setItem('masar_app_build', CURRENT_BUILD);
@@ -53,7 +53,7 @@
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
     <!-- Main Style Sheet -->
-    <link rel="stylesheet" href="style.css?v=v1786747780123">
+    <link rel="stylesheet" href="style.css?v=v1786747980983">
 </head>
 <body>
 
@@ -86,9 +86,8 @@
                 </button>
 
                 
-                <!-- Theme Toggle Button -->
-                <button id="theme-toggle-btn" class="btn btn-secondary" onclick="toggleTheme()" title="تبديل المظهر" style="padding: 8px 12px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 40px; height: 38px;">
-                    <i class="fa-solid fa-sun" id="theme-toggle-icon"></i>
+                <button id="theme-toggle-btn" onclick="toggleTheme()" title="تبديل المظهر" style="background: transparent; border: none; padding: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 20px; color: var(--theme-icon-color); transition: 0.3s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+                    <i class="fa-solid fa-moon" id="theme-toggle-icon"></i>
                 </button>
                 
                 <!-- Hamburger Menu Button (3 lines) -->
@@ -2206,7 +2205,7 @@
     <div class="toast-container" id="toast-container"></div>
 
     <!-- Main JavaScript Logic -->
-    <script src="app.js?v=v1786747780123"></script>
+    <script src="app.js?v=v1786747980983"></script>
     <script>
         // Unregister any legacy cached ServiceWorkers
         if ('serviceWorker' in navigator) {
@@ -2220,11 +2219,7 @@
 
     <script>
         window.addEventListener('DOMContentLoaded', () => {
-            const icon = document.getElementById('theme-toggle-icon');
-            if (icon && document.documentElement.getAttribute('data-theme') === 'light') {
-                icon.classList.remove('fa-sun');
-                icon.classList.add('fa-moon');
-            }
+            // Theme is handled by CSS and the button now
         });
     </script>
 </body>
