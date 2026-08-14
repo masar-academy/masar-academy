@@ -17,7 +17,7 @@
     <script>
         // Automatic Cache-Buster: Forces fresh online build fetch from GitHub
         (function() {
-            const CURRENT_BUILD = "v1786748718288";
+            const CURRENT_BUILD = "v1786749452444";
             const storedBuild = localStorage.getItem('masar_app_build');
             if (storedBuild !== CURRENT_BUILD) {
                 localStorage.setItem('masar_app_build', CURRENT_BUILD);
@@ -53,7 +53,7 @@
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
     <!-- Main Style Sheet -->
-    <link rel="stylesheet" href="style.css?v=v1786748718288">
+    <link rel="stylesheet" href="style.css?v=v1786749452444">
 </head>
 <body>
 
@@ -174,7 +174,7 @@
 
             <!-- Student Reviews / Testimonials Section on Landing Page -->
             <div id="landing-testimonials-section" style="margin-top: 50px; margin-bottom: 30px;">
-                <div class="glass-card" style="padding: 35px 25px; border-radius: 18px; border-color: rgba(255, 125, 63, 0.25); background: linear-gradient(135deg, rgba(20, 24, 33, 0.85), rgba(255, 125, 63, 0.06));">
+                <div class="glass-card" style="padding: 35px 25px; border-radius: 18px; border-color: rgba(255, 125, 63, 0.25);">
                     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 25px;">
                         <div>
                             <span class="hero-badge" style="display: inline-block; background: rgba(244, 114, 182, 0.15); color: #F472B6; padding: 4px 14px; border-radius: 20px; font-size: 12px; font-weight: 800; margin-bottom: 8px;">
@@ -732,7 +732,7 @@
                             
                             <div id="create-assign-students-container" style="display: none; background: rgba(0,0,0,0.15); border: 1px solid var(--border-color); border-radius: 10px; padding: 15px;">
                                 <div style="display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap;">
-                                    <input type="text" id="create-assign-search-input" oninput="filterCreateAssignStudents(this.value)" placeholder="🔍 ابحث عن اسم الطالب أو اسم المستخدم..." style="flex: 1; min-width: 200px; padding: 8px 12px; font-size: 13px; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-main);">
+                                    <input type="text" id="create-assign-search-input" oninput="filterCreateAssignStudents(this.value)" placeholder="🔍 ابحث عن اسم الطالب أو اسم المستخدم..." style="flex: 1; min-width: 200px; padding: 8px 12px; font-size: 13px; background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-main);">
                                     <button type="button" class="btn btn-secondary" onclick="selectAllCreateAssignStudents(true)" style="padding: 6px 12px; font-size: 12px;">
                                         <i class="fa-solid fa-check-double"></i> اختيار الكل
                                     </button>
@@ -937,7 +937,7 @@
                             
                             <div id="edit-assign-students-container" style="display: none; background: rgba(0,0,0,0.15); border: 1px solid var(--border-color); border-radius: 10px; padding: 15px;">
                                 <div style="display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap;">
-                                    <input type="text" id="edit-assign-search-input" oninput="filterEditAssignStudents(this.value)" placeholder="🔍 ابحث عن اسم الطالب أو اسم المستخدم..." style="flex: 1; min-width: 200px; padding: 8px 12px; font-size: 13px; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-main);">
+                                    <input type="text" id="edit-assign-search-input" oninput="filterEditAssignStudents(this.value)" placeholder="🔍 ابحث عن اسم الطالب أو اسم المستخدم..." style="flex: 1; min-width: 200px; padding: 8px 12px; font-size: 13px; background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-main);">
                                     <button type="button" class="btn btn-secondary" onclick="selectAllEditAssignStudents(true)" style="padding: 6px 12px; font-size: 12px;">
                                         <i class="fa-solid fa-check-double"></i> اختيار الكل
                                     </button>
@@ -2204,7 +2204,7 @@
     <div class="toast-container" id="toast-container"></div>
 
     <!-- Main JavaScript Logic -->
-    <script src="app.js?v=v1786748718288"></script>
+    <script src="app.js?v=v1786749452444"></script>
     <script>
         // Unregister any legacy cached ServiceWorkers
         if ('serviceWorker' in navigator) {
