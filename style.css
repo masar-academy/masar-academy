@@ -1,5 +1,25 @@
 @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&display=swap');
 
+
+:root[data-theme="light"] {
+    --bg-dark: #F4F6FC;
+    --bg-card: #FFFFFF;
+    --bg-card-hover: #F8FAFC;
+    --border-color: rgba(0, 0, 0, 0.08);
+    --primary-navy: #FFFFFF;
+    --primary-light-navy: #F1F5F9;
+    --text-main: #0F172A;
+    --text-muted: #64748B;
+    --text-orange: #E65C00;
+    --accent-orange-glow: rgba(255, 125, 63, 0.15);
+    /* For light mode, make shadows visible instead of just borders */
+    --card-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+:root[data-theme="light"] .glass-card {
+    box-shadow: var(--card-shadow);
+}
+
 :root {
     --bg-dark: #070B19;
     --bg-card: rgba(20, 30, 62, 0.75);
