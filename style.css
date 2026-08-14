@@ -13,6 +13,7 @@
     --text-orange: #E65C00;
     --accent-orange-glow: rgba(255, 125, 63, 0.15);
     --theme-icon-color: #475569;
+    --header-bg: rgba(255, 255, 255, 0.85);
     /* For light mode, make shadows visible instead of just borders */
     --card-shadow: 0 4px 12px rgba(0,0,0,0.05);
 }
@@ -42,6 +43,7 @@
     --danger-glow: rgba(239, 68, 68, 0.15);
     --purple-xp: #8B5CF6;
     --theme-icon-color: #FBBF24;
+    --header-bg: rgba(7, 11, 25, 0.8);
     --font-cairo: 'Cairo', sans-serif;
     --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -202,7 +204,7 @@ label {
 
 /* Header & Nav */
 header {
-    background: rgba(7, 11, 25, 0.8);
+    background: var(--header-bg);
     backdrop-filter: blur(10px);
     border-bottom: 1px solid var(--border-color);
     position: sticky;
