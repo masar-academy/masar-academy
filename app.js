@@ -5889,7 +5889,9 @@ function renderSimulatorSection(isNewSection = false) {
     renderSimulatorNavGrid();
     
     // Start Section Timer
-    startSimulatorSectionTimer(questions.length);
+    if (isNewSection) {
+        startSimulatorSectionTimer(questions.length);
+    }
 }
 
 function selectSimulatorQuestionOption(questionIndex, optionIndex) {
@@ -5923,8 +5925,8 @@ function startSimulatorSectionTimer(numQuestions) {
         
         if (activeSimulatorState.secondsRemaining <= 0) {
             clearInterval(activeSimulatorState.timerInterval);
-            showToast("انتهى الوقت! تم إنهاء الاختبار وعرض النتيجة تلقائياً.", "warning");
-            renderSimulatorResults();
+            showToast("انتهى الوقت! تم الانتقال تلقائياً.", "warning");
+            submitSimulatorSection(true);
         }
     }, 1000);
 }
