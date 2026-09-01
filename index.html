@@ -4,6 +4,46 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ظ…ظ†طµط© ظ…ط³ط§ط± ط§ظ„طھط¹ظ„ظٹظ…ظٹط© - ظ„ظˆط­ط© طھط­ظƒظ… ط§ظ„ظ…ط¹ظ„ظ… ظˆط§ظ„ط·ظ„ط§ط¨</title>
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-age=0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <script>
+        // Automatic HTTPS Redirect
+        if (window.location.protocol === 'http:' && !window.location.hostname.includes('localhost') && !window.location.hostname.includes('127.0.0.1')) {
+            window.location.href = window.location.href.replace('http:', 'https:');
+        }
+    </script>
+    <script>
+        // Automatic Cache-Buster: Forces fresh online build fetch from GitHub
+        (function() {
+            const CURRENT_BUILD = "v1786749452444";
+            const storedBuild = localStorage.getItem('masar_app_build');
+            if (storedBuild !== CURRENT_BUILD) {
+                localStorage.setItem('masar_app_build', CURRENT_BUILD);
+                if ('serviceWorker' in navigator) {
+                    navigator.serviceWorker.getRegistrations().then(regs => {
+                        regs.forEach(r => r.unregister());
+                    });
+                }
+                if (window.caches && caches.keys) {
+                    caches.keys().then(keys => {
+                        keys.forEach(key => caches.delete(key));
+                    });
+                }
+            }
+        })();
+    </script>
+    
+    <script>
+        // Theme Initialization
+        (function() {
+            const savedTheme = localStorage.getItem('masar_theme') || 'dark';
+            if (savedTheme === 'light') {
+                document.documentElement.setAttribute('data-theme', 'light');
+            }
+        })();
+    </script>
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Supabase JS Client CDN -->
@@ -13,38 +53,46 @@
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
     <!-- Main Style Sheet -->
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=v1788290426119">
 </head>
 <body>
 
-    <!-- Header Navigation (Hidden on Landing & Login Page initially) -->
-    <header id="app-header" class="fade-in" style="display: none;">
-        <div class="nav-container">
-            <a href="#" class="logo" onclick="event.preventDefault(); showLandingPage();">
+    <!-- Header Navigation (Always visible) -->
+    <header id="app-header" class="fade-in" style="display: flex;">
+        <div class="nav-container" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+            <a href="#" class="logo" onclick="event.preventDefault(); showLandingPage();" style="display: flex; align-items: center; gap: 8px;">
                 <div class="logo-icon"><i class="fa-solid fa-compass"></i></div>
-                <span>ظ…ظژط³ط§ط±</span>
+                <div style="display: flex; flex-direction: column;">
+                    <span style="font-size: 18px; font-weight: 800; line-height: 1.2;">ظ…ظ†طµط© ظ…ظژط³ط§ط±</span>
+                    <span style="font-size: 10px; color: var(--text-orange); font-weight: 700;">ظ„ط§ط®طھط¨ط§ط±ط§طھ ظ‚ظٹط§ط³ ظˆط§ظ„طھط¹ظ„ظ… ط§ظ„ط°ظƒظٹ</span>
+                </div>
             </a>
             
-            <div class="user-profile-nav">
+            <div class="user-profile-nav" style="display: flex; align-items: center; gap: 10px;">
                 <!-- Cloud Status Badge (Hidden by default, visible with ?config=true) -->
                 <div id="cloud-status-badge" class="cloud-badge local" style="display: none;" onclick="openModal('cloud-config-modal')" title="ط§ط¶ط؛ط· ظ„طھظ‡ظٹط¦ط© ط§ظ„ط±ط¨ط· ط§ظ„ط³ط­ط§ط¨ظٹ">
                     <span class="status-dot"></span>
                     <span id="cloud-status-text">ظˆط¶ط¹ ظ…ط­ظ„ظٹ</span>
                 </div>
 
-                <div id="header-user-badge" class="user-badge teacher">
+                <div id="header-user-badge" class="user-badge student" style="display: none;">
                     <span class="role-dot"></span>
-                    <span id="header-user-name">ط§ظ„ظ…ط¹ظ„ظ… ط§ظ„ط®طµظˆطµظٹ</span>
+                    <span id="header-user-name">ط²ط§ط¦ط±</span>
                 </div>
                 
                 <!-- Cloud settings secret button -->
                 <button id="header-cloud-btn" class="btn btn-secondary" style="display: none;" onclick="openModal('cloud-config-modal')" title="ط¥ط¹ط¯ط§ط¯ط§طھ ط§ظ„ط±ط¨ط· ط§ظ„ط³ط­ط§ط¨ظٹ">
                     <i class="fa-solid fa-cloud"></i>
                 </button>
+
+                <button id="theme-toggle-btn" class="btn btn-secondary" onclick="toggleTheme()" title="طھط¨ط¯ظٹظ„ ط§ظ„ظ…ط¸ظ‡ط±" style="padding: 8px 12px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 40px; height: 38px; color: var(--theme-icon-color); transition: 0.3s;">
+                    <i class="fa-solid fa-moon" id="theme-toggle-icon"></i>
+                </button>
                 
-                <button class="btn btn-danger" onclick="logout()">
-                    <i class="fa-solid fa-sign-out-alt"></i>
-                    <span>ط®ط±ظˆط¬</span>
+                <!-- Hamburger Menu Button (3 lines) -->
+                <button id="hamburger-menu-btn" class="btn hamburger-btn" onclick="openDrawerMenu()" style="display: flex; align-items: center; gap: 8px; padding: 8px 16px; font-weight: 700; border-radius: 10px; cursor: pointer;">
+                    <i class="fa-solid fa-bars" style="font-size: 18px;"></i>
+                    <span style="font-size: 13.5px;">ط§ظ„ظ‚ط§ط¦ظ…ط©</span>
                 </button>
             </div>
         </div>
@@ -52,35 +100,144 @@
 
     <main class="container">
         
-        <!-- 0. LANDING PAGE VIEW [NEW] -->
+        <!-- 0. LANDING PAGE VIEW -->
         <section id="landing-view" class="fade-in">
             <!-- Hero Banner -->
-            <div class="glass-card hero-section" style="text-align: center; padding: 50px 30px; margin-bottom: 40px; position: relative; overflow: hidden; border-color: rgba(255, 125, 63, 0.25);">
-                <div class="hero-badge" style="display: inline-block; background: rgba(255, 125, 63, 0.15); color: var(--accent-orange); padding: 6px 14px; border-radius: 30px; font-weight: 700; font-size: 13px; margin-bottom: 20px;">
-                    ًںژ“ ظ…ط±ط­ط¨ط§ظ‹ ط¨ظƒ ظپظٹ ظ…ط³ط§ط± ط§ظ„طھط¹ظ„ظ… ط§ظ„ط°ظƒظٹ
+            <div class="glass-card hero-section" style="text-align: center; padding: 55px 25px; margin-bottom: 35px; position: relative; overflow: hidden; border-color: rgba(255, 125, 63, 0.3);">
+                <div class="hero-badge" style="display: inline-block; background: rgba(255, 125, 63, 0.15); color: var(--accent-orange); padding: 6px 16px; border-radius: 30px; font-weight: 800; font-size: 13px; margin-bottom: 20px; border: 1px solid rgba(255, 125, 63, 0.25);">
+                    âœ¨ ظ…ط±ط­ط¨ط§ظ‹ ط¨ظƒ ظپظٹ ظ…ظ†طµط© ظ…ظژط³ط§ط± ظ„ط§ط®طھط¨ط§ط±ط§طھ ظ‚ظٹط§ط³ ظˆط§ظ„طھط£ط³ظٹط³
                 </div>
-                <h1 style="font-size: clamp(28px, 5vw, 42px); font-weight: 900; margin-bottom: 15px; background: linear-gradient(135deg, #FFF, var(--text-orange)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">ظ…ظ†طµط© ظ…ظژط³ط§ط± ط§ظ„طھط¹ظ„ظٹظ…ظٹط©</h1>
-                <p style="font-size: 16px; color: var(--text-muted); max-width: 600px; margin: 0 auto 30px auto; line-height: 1.6;">
-                    ط§ظ„ظ…ظ†طµط© ط§ظ„ظ…طھظƒط§ظ…ظ„ط© ظ„ظ„ظ…طھط§ط¨ط¹ط© ظˆط§ظ„طھط­ط¶ظٹط± ط§ظ„ظپط¹ط§ظ„ ظپظٹ ط§ظ„ط±ظٹط§ط¶ظٹط§طھطŒ ط§ظ„ظ‚ط¯ط±ط§طھطŒ ظˆط§ظ„طھط­طµظٹظ„ظٹ ظ…ط¹ ط§ظ„ظ…ط¹ظ„ظ… ط§ظ„ط®طµظˆطµظٹ. ظˆط§ط¬ط¨ط§طھ طھظپط§ط¹ظ„ظٹط©طŒ ط´ط±ظˆط­ط§طھ ظپظٹط¯ظٹظˆطŒ ظˆط§ط®طھط¨ط§ط±ط§طھ ظ‚ظٹط§ط³ ظ…ط³طھظˆظ‰.
+                <h1 style="font-size: clamp(28px, 5vw, 44px); font-weight: 900; margin-bottom: 18px; background: linear-gradient(135deg, var(--text-main) 30%, var(--text-orange)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; line-height: 1.3;">
+                    ظ…ظ†طµط© ظ…ظژط³ط§ط± ط§ظ„طھط¹ظ„ظٹظ…ظٹط©
+                </h1>
+                <p style="font-size: 16px; color: var(--text-muted); max-width: 680px; margin: 0 auto 30px auto; line-height: 1.7;">
+                    ط§ظ„ط¨ظٹط¦ط© ط§ظ„ظ…ط¬ظ‡ط²ط© ط¨ط§ظ„ظƒط§ظ…ظ„ ظ„ط¥ط¹ط¯ط§ط¯ ظˆطھط£ط³ظٹط³ ط§ظ„ط·ظ„ط§ط¨ ط¨ط§ط­طھط±ط§ظپظٹط© ظ„ط§ط®طھط¨ط§ط±ط§طھ ظ‚ظگظٹط§ط³ (ط§ظ„ظ‚ط¯ط±ط§طھ ط§ظ„ط¹ط§ظ…ط© ظˆط§ظ„طھط­طµظٹظ„ظٹ) ظˆظ…ط§ط¯ط© ط§ظ„ط±ظٹط§ط¶ظٹط§طھ. ط´ط±ظˆط­ط§طھ ظپظٹط¯ظٹظˆطŒ طھط¬ظ…ظٹط¹ط§طھ ط­ط¯ظٹط«ط©طŒ ظ…ط­ط§ظƒظٹ ط§ط®طھط¨ط§ط±ط§طھ طھظپط§ط¹ظ„ظٹ ظ…ظˆظ‚ظˆطھطŒ ظˆظ…طھط§ط¨ط¹ط© ظپط±ط¯ظٹط© ظ…ط¹ ط§ظ„ظ…ط¹ظ„ظ… ط§ظ„ط®طµظˆطµظٹ.
                 </p>
-                <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
-                    <button class="btn btn-primary" onclick="showLogin()" style="padding: 12px 30px; font-size: 15px; font-weight: 700;">
-                        <i class="fa-solid fa-right-to-bracket"></i> ط¯ط®ظˆظ„ ط§ظ„ط·ظ„ط§ط¨ ظˆط§ظ„ظ…ط¹ظ„ظ…ظٹظ†
+                <div id="landing-hero-actions" style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                    <button class="btn btn-primary" onclick="startPlacementTestHandler()" style="padding: 12px 32px; font-size: 15px; font-weight: 800; border-radius: 10px; background: linear-gradient(135deg, var(--success), #059669); border-color: #059669;">
+                        <i class="fa-solid fa-bullseye"></i> <span id="hero-placement-btn-text">ط§ط®طھط¨ط± ظ…ط³طھظˆط§ظƒ ظ…ط¬ط§ظ†ط§ظ‹!</span>
                     </button>
-                    <button class="btn btn-secondary" onclick="openModal('student-register-modal')" style="padding: 12px 30px; font-size: 15px; font-weight: 700; border-color: var(--accent-orange); color: var(--accent-orange);">
-                        <i class="fa-solid fa-user-plus"></i> ط¥ظ†ط´ط§ط، ط­ط³ط§ط¨ ط·ط§ظ„ط¨ ط¬ط¯ظٹط¯
+                    <button class="btn btn-secondary" onclick="handleHeroPrimaryAction()" style="padding: 12px 32px; font-size: 15px; font-weight: 800; border-radius: 10px;">
+                        <i class="fa-solid fa-right-to-bracket"></i> <span id="hero-primary-btn-text">ط¯ط®ظˆظ„ ط§ظ„ط·ظ„ط§ط¨ ظˆط§ظ„ظ…ط¹ظ„ظ…ظٹظ†</span>
                     </button>
+                    <button class="btn btn-secondary" onclick="openModal('student-register-modal')" style="padding: 12px 28px; font-size: 15px; font-weight: 700; border-color: var(--accent-orange); color: var(--accent-orange); border-radius: 10px;">
+                        <i class="fa-solid fa-user-plus"></i> ط¥ظ†ط´ط§ط، ط­ط³ط§ط¨
+                    </button>
+                </div>
+            </div>
+
+            <!-- Platform Highlights / Why Masar -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 40px;">
+                <div class="glass-card feature-card" style="padding: 22px; text-align: center; border-radius: 14px;">
+                    <div style="width: 50px; height: 50px; border-radius: 12px; background: rgba(255, 125, 63, 0.15); color: var(--accent-orange); display: flex; align-items: center; justify-content: center; font-size: 24px; margin: 0 auto 15px auto;">
+                        <i class="fa-solid fa-graduation-cap"></i>
+                    </div>
+                    <h4 style="font-size: 16px; font-weight: 800; margin-bottom: 8px; color: var(--text-main);">ط¯ظˆط±ط§طھ ظ‚ظٹط§ط³ ط§ظ„ظ…طھط®طµطµط©</h4>
+                    <p style="font-size: 13px; color: var(--text-muted); line-height: 1.6;">طھط£ط³ظٹط³ ظˆطھط¬ظ…ظٹط¹ط§طھ ط´ظ…ظˆظ„ظٹط© ظ„ط§ط®طھط¨ط§ط±ط§طھ ط§ظ„ظ‚ط¯ط±ط§طھ (ط§ظ„ظƒظ…ظٹ ظˆط§ظ„ظ„ظپط¸ظٹ) ظˆط§ظ„طھط­طµظٹظ„ظٹ ظˆط§ظ„ط±ظٹط§ط¶ظٹط§طھ.</p>
+                </div>
+
+                <div class="glass-card feature-card" style="padding: 22px; text-align: center; border-radius: 14px;">
+                    <div style="width: 50px; height: 50px; border-radius: 12px; background: rgba(16, 185, 129, 0.15); color: var(--success); display: flex; align-items: center; justify-content: center; font-size: 24px; margin: 0 auto 15px auto;">
+                        <i class="fa-solid fa-bolt"></i>
+                    </div>
+                    <h4 style="font-size: 16px; font-weight: 800; margin-bottom: 8px; color: var(--text-main);">ظ…ط­ط§ظƒظٹ ط§ط®طھط¨ط§ط±ط§طھ ظ‚ظٹط§ط³</h4>
+                    <p style="font-size: 13px; color: var(--text-muted); line-height: 1.6;">ظ…ط­ط§ظƒط§ط© ط­ظ‚ظٹظ‚ظٹط© ط¨ط§ط®طھط¨ط§ط±ط§طھ ظ…ظ‚ط³ظ…ط© ظˆظ…ط¤ظ‚طھ طھظ†ط§ط²ظ„ظٹ طھظ„ظ‚ط§ط¦ظٹ ظˆطھطµط­ظٹط­ ظپظˆط±ظٹ ظ„ظ„ط¥ط¬ط§ط¨ط§طھ.</p>
+                </div>
+
+                <div class="glass-card feature-card" style="padding: 22px; text-align: center; border-radius: 14px;">
+                    <div style="width: 50px; height: 50px; border-radius: 12px; background: rgba(245, 158, 11, 0.15); color: var(--warning); display: flex; align-items: center; justify-content: center; font-size: 24px; margin: 0 auto 15px auto;">
+                        <i class="fa-solid fa-list-check"></i>
+                    </div>
+                    <h4 style="font-size: 16px; font-weight: 800; margin-bottom: 8px; color: var(--text-main);">ظˆط§ط¬ط¨ط§طھ ظˆطھطµط­ظٹط­ طھظپط§ط¹ظ„ظٹ</h4>
+                    <p style="font-size: 13px; color: var(--text-muted); line-height: 1.6;">طھظ…ط§ط±ظٹظ† ظ…ط¯ط¹ظˆظ…ط© ط¨ط§ظ„ط±ظ…ظˆط² ظˆط§ظ„ط±ط³ظˆظ… ظˆط§ظ„طھطµط­ظٹط­ ط§ظ„ظ…ط¨ط§ط´ط± ظ…ط¹ ط§ظ„طھط؛ط°ظٹط© ط§ظ„ط±ط§ط¬ط¹ط© ظ…ظ† ط§ظ„ظ…ط¹ظ„ظ….</p>
+                </div>
+
+                <div class="glass-card feature-card" style="padding: 22px; text-align: center; border-radius: 14px;">
+                    <div style="width: 50px; height: 50px; border-radius: 12px; background: rgba(139, 92, 246, 0.15); color: var(--purple-xp); display: flex; align-items: center; justify-content: center; font-size: 24px; margin: 0 auto 15px auto;">
+                        <i class="fa-solid fa-comments"></i>
+                    </div>
+                    <h4 style="font-size: 16px; font-weight: 800; margin-bottom: 8px; color: var(--text-main);">طھظˆط§طµظ„ ظˆظ…طھط§ط¨ط¹ط© ظپط±ط¯ظٹط©</h4>
+                    <p style="font-size: 13px; color: var(--text-muted); line-height: 1.6;">ظ†ظ‚ط§ط· XPطŒ ط£ظˆط³ظ…ط© ط¥ظ†ط¬ط§ط²طŒ ظˆظ…ط­ط§ط¯ط«ط© ظ…ط¨ط§ط´ط±ط© ظ…ط¹ ط§ظ„ظ…ط¹ظ„ظ… ط§ظ„ط®طµظˆطµظٹ ظ„ظ„ط¥ط¬ط§ط¨ط© ط¹ظ† ط§ظ„طھط³ط§ط¤ظ„ط§طھ.</p>
                 </div>
             </div>
 
             <!-- Courses Catalog Heading -->
             <div class="section-title" style="margin-bottom: 20px;">
-                <h3>ط§ظ„ظ…ظ‚ط±ط±ط§طھ ظˆط§ظ„ط¯ظˆط±ط§طھ ط§ظ„ظ…ظ†ط´ظˆط±ط©</h3>
+                <h3><i class="fa-solid fa-layer-group" style="color: var(--accent-orange); margin-left: 8px;"></i> ط§ظ„ط¯ظˆط±ط§طھ ظˆط§ظ„ظ…ظ‚ط±ط±ط§طھ ط§ظ„ظ…ظ†ط´ظˆط±ط©</h3>
                 <span id="landing-courses-count" style="font-size: 13px; color: var(--text-muted);">0 ط¯ظˆط±ط§طھ ظ…طھط§ط­ط©</span>
             </div>
 
             <!-- Courses Grid -->
             <div class="students-grid" id="landing-courses-grid" style="margin-bottom: 40px;">
+                <!-- Populated dynamically by JS -->
+            </div>
+
+            <!-- Student Reviews / Testimonials Section on Landing Page -->
+            <div id="landing-testimonials-section" style="margin-top: 50px; margin-bottom: 30px;">
+                <div class="glass-card" style="padding: 35px 25px; border-radius: 18px; border-color: rgba(255, 125, 63, 0.25);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 25px;">
+                        <div>
+                            <span class="hero-badge" style="display: inline-block; background: rgba(244, 114, 182, 0.15); color: #F472B6; padding: 4px 14px; border-radius: 20px; font-size: 12px; font-weight: 800; margin-bottom: 8px;">
+                                â­گ طھط¬ط§ط±ط¨ ظˆظ‚طµطµ ظ†ط¬ط§ط­ ط§ظ„ط·ظ„ط§ط¨
+                            </span>
+                            <h3 style="font-size: 22px; font-weight: 800; color: var(--text-main); margin: 0;">ط¢ط±ط§ط، ظˆطھط¬ظ€ط§ط±ط¨ ط§ظ„ط·ظ„ط§ط¨ ط§ظ„ط°ظٹظ† ط¯ط±ظژط³ظˆط§ ظ…ط¹ظ†ط§</h3>
+                        </div>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <button class="btn btn-primary" onclick="openAddTestimonialModal()" style="padding: 9px 18px; font-size: 13.5px; font-weight: 800; border-radius: 10px;">
+                                <i class="fa-solid fa-pen-to-square"></i> ظƒظگطھط§ط¨ط© ط±ط£ظٹظƒ ط£ظˆ طھط¬ط±ط¨طھظƒ
+                            </button>
+                            <button class="btn btn-secondary" onclick="showTestimonialsView()" style="padding: 9px 18px; font-size: 13.5px; font-weight: 700; border-color: var(--accent-orange); color: var(--accent-orange); border-radius: 10px;">
+                                <i class="fa-solid fa-comments"></i> ط¬ظ…ظٹط¹ ط§ظ„ط¢ط±ط§ط، ظˆط§ظ„طھط¬ظ€ط§ط±ط¨
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Reviews Grid -->
+                    <div id="landing-testimonials-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
+                        <!-- Populated dynamically by JS -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TESTIMONIALS FULL PAGE VIEW -->
+        <section id="testimonials-page-view" class="fade-in" style="display: none;">
+            <div class="glass-card" style="padding: 30px; margin-bottom: 25px; border-color: rgba(255, 125, 63, 0.3);">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 20px;">
+                    <div>
+                        <button class="btn btn-secondary" onclick="showLandingPage()" style="margin-bottom: 12px; padding: 6px 14px; font-size: 13px;">
+                            <i class="fa-solid fa-arrow-right"></i> ط§ظ„ط¹ظˆط¯ط© ظ„ظ„ط±ط¦ظٹط³ظٹط©
+                        </button>
+                        <h2 style="font-size: 24px; font-weight: 900; color: var(--text-main); margin-bottom: 6px;">
+                            <i class="fa-solid fa-comments" style="color: var(--accent-orange); margin-left: 8px;"></i> ط¢ط±ط§ط، ظˆطھط¬ط§ط±ط¨ ط·ظ„ط§ط¨ ظ…ظ†طµط© ظ…ظژط³ط§ط±
+                        </h2>
+                        <p style="font-size: 14px; color: var(--text-muted); margin: 0;">طھظ‚ظٹظٹظ…ط§طھ ظˆط¢ط±ط§ط، ط­ظ‚ظٹظ‚ظٹط© ظ…ظ† ط§ظ„ط·ظ„ط§ط¨ ط§ظ„ط°ظٹظ† ط£ط¹ط¯ظ‘ظˆط§ ظˆطھط£ط³ط³ظˆط§ ظ„ط§ط®طھط¨ط§ط±ط§طھ ظ‚ظٹط§ط³ ظˆط§ظ„ط±ظٹط§ط¶ظٹط§طھ ظ…ط¹ظ†ط§.</p>
+                    </div>
+                    <div>
+                        <button class="btn btn-primary" onclick="openAddTestimonialModal()" style="padding: 11px 22px; font-size: 14px; font-weight: 800; border-radius: 10px;">
+                            <i class="fa-solid fa-plus-circle"></i> ط£ط¶ظپ ط±ط£ظٹظƒ ظˆطھط¬ط±ط¨طھظƒ ط§ظ„ط¢ظ†
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Stats Summary & Search Bar -->
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; background: rgba(255,255,255,0.03); padding: 15px 20px; border-radius: 12px; border: 1px solid var(--border-color);">
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <div style="font-size: 28px; font-weight: 900; color: #FBBF24; display: flex; align-items: center; gap: 6px;">
+                            <span>5.0</span> <i class="fa-solid fa-star" style="font-size: 22px;"></i>
+                        </div>
+                        <div style="font-size: 13px; color: var(--text-muted);">
+                            <span id="testimonials-total-count" style="font-weight: 800; color: var(--text-main);">0</span> طھظ‚ظٹظٹظ…ط§طھ ظ…ط¹طھظ…ط¯ط© ظ…ظ† ط§ظ„ط·ظ„ط§ط¨
+                        </div>
+                    </div>
+                    <div style="min-width: 250px;">
+                        <input type="text" id="testimonials-search-input" class="form-control" placeholder="ًں”چ ط§ط¨ط­ط« ظپظٹ ط¢ط±ط§ط، ط§ظ„ط·ظ„ط§ط¨..." oninput="filterTestimonials(this.value)" style="margin: 0;">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Full Reviews Grid -->
+            <div id="full-testimonials-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 40px;">
                 <!-- Populated dynamically by JS -->
             </div>
         </section>
@@ -114,7 +271,7 @@
                 <div class="role-selector">
                     <div id="role-teacher" class="role-option active" onclick="selectLoginRole('teacher')">
                         <i class="fa-solid fa-chalkboard-user"></i>
-                        <span>ظ…ط¹ظ„ظ… ط®طµظˆطµظٹ</span>
+                        <span>ظ…ط¹ظ„ظ…</span>
                     </div>
                     <div id="role-student" class="role-option" onclick="selectLoginRole('student')">
                         <i class="fa-solid fa-user-graduate"></i>
@@ -209,6 +366,15 @@
                     <button class="tab-btn" onclick="switchTab('teacher', 't-courses-tab', this)">
                         <i class="fa-solid fa-photo-film"></i> ط¥ط¯ط§ط±ط© ط§ظ„ظ…ظ‚ط±ط±ط§طھ ظˆط§ظ„ط¯ظˆط±ط§طھ
                     </button>
+                    <button class="tab-btn" onclick="switchTab('teacher', 't-simulators-tab', this)">
+                        <i class="fa-solid fa-bolt"></i> ط¥ط¯ط§ط±ط© ط§ط®طھط¨ط§ط±ط§طھ ط§ظ„ظ…ط­ط§ظƒط§ط©
+                    </button>
+                    <button class="tab-btn" onclick="switchTab('teacher', 't-placements-tab', this)">
+                        <i class="fa-solid fa-crosshairs" style="color: var(--success);"></i> ط¥ط¯ط§ط±ط© طھط­ط¯ظٹط¯ ط§ظ„ظ…ط³طھظˆظ‰
+                    </button>
+                    <button class="tab-btn" onclick="switchTab('teacher', 't-simulators-results-tab', this)">
+                        <i class="fa-solid fa-chart-bar" style="color: #10B981;"></i> ظ†طھط§ط¦ط¬ ط§ظ„ظ…ط­ط§ظƒط§ط©
+                    </button>
                     <button class="tab-btn" onclick="switchTab('teacher', 't-account-tab', this)">
                         <i class="fa-solid fa-user-lock"></i> ط¥ط¯ط§ط±ط© ط§ظ„ط­ط³ط§ط¨ ظˆط§ظ„ظ…ط¹ظ„ظ…ظٹظ†
                     </button>
@@ -223,9 +389,14 @@
                         
                         <!-- Tab 1: Teacher Assignments -->
                         <div id="t-assignments-tab" class="tab-content active">
-                            <div class="section-title">
+                            <div class="section-title" style="flex-wrap: wrap; gap: 10px;">
                                 <h3>ط§ظ„ظˆط§ط¬ط¨ط§طھ ط§ظ„ط­ط§ظ„ظٹط©</h3>
-                                <span id="t-assignments-count">0 ظˆط§ط¬ط¨ط§طھ</span>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <span id="t-assignments-count">0 ظˆط§ط¬ط¨ط§طھ</span>
+                                    <button class="btn btn-primary" style="padding: 8px 16px; font-size: 13px;" onclick="showCreateAssignmentView()">
+                                        <i class="fa-solid fa-plus"></i> ط¥ط¶ط§ظپط© ظˆط§ط¬ط¨ ط¬ط¯ظٹط¯ â‍•
+                                    </button>
+                                </div>
                             </div>
                             <div class="list-container" id="t-assignments-list">
                                 <!-- Populated by JavaScript -->
@@ -244,8 +415,11 @@
                         
                         <!-- Tab 3: Students Progress and Reports -->
                         <div id="t-students-tab" class="tab-content">
-                            <div class="section-title">
+                            <div class="section-title" style="flex-wrap: wrap; gap: 10px;">
                                 <h3>ظ…ظ„ظپط§طھ ط§ظ„ط·ظ„ط§ط¨ ط§ظ„ظ…ط³ط¬ظ„ظٹظ† ظˆطµظ„ط§ط­ظٹط§طھ ط§ظ„طھط­ظƒظ…</h3>
+                                <button type="button" class="btn btn-secondary" onclick="resetAllStudentsXP()" style="padding: 8px 16px; font-size: 12.5px; border-color: rgba(239, 68, 68, 0.4); color: var(--danger); font-weight: 800;" title="طھطµظپظٹط± ظ†ظ‚ط§ط· XP ظ„ط¬ظ…ظٹط¹ ط§ظ„ط·ظ„ط§ط¨ ظ„ط¨ط¯ط، ط§ظ„ظ…ط³ط§ط¨ظ‚ط© ظˆط§ظ„ظپط¹ط§ظ„ظٹط© ط§ظ„ط´ظ‡ط±ظٹط© ط§ظ„ط¬ط¯ظٹط¯ط©">
+                                    <i class="fa-solid fa-rotate-left"></i> طھطµظپظٹط± ظ†ظ‚ط§ط· (XP) ط§ظ„ط·ظ„ط§ط¨ ط§ظ„ط´ظ‡ط±ظٹ ًں”„
+                                </button>
                             </div>
                             <div class="students-grid" id="t-students-list">
                                 <!-- Populated by JavaScript -->
@@ -254,14 +428,67 @@
 
                         <!-- Tab 4: Courses & Content -->
                         <div id="t-courses-tab" class="tab-content">
-                            <div class="section-title">
+                            <div class="section-title" style="flex-wrap: wrap; gap: 10px;">
                                 <h3>ط¥ط¯ط§ط±ط© ط§ظ„ظ…ظ‚ط±ط±ط§طھ ظˆط¯ظˆط±ط§طھ ط§ظ„ظپظٹط¯ظٹظˆ ط§ظ„طھط¹ظ„ظٹظ…ظٹط©</h3>
-                                <button class="btn btn-primary" style="padding: 8px 16px; font-size: 13px;" onclick="openModal('create-course-modal')">
-                                    <i class="fa-solid fa-folder-plus"></i> ط¥ظ†ط´ط§ط، ط¯ظˆط±ط© ط¬ط¯ظٹط¯ط©
+                                <button class="btn btn-primary" style="padding: 8px 16px; font-size: 13px;" onclick="showCreateCourseView()">
+                                    <i class="fa-solid fa-folder-plus"></i> ط¥ظ†ط´ط§ط، ط¯ظˆط±ط© ط¬ط¯ظٹط¯ط© â‍•
                                 </button>
                             </div>
                             <div class="students-grid" id="t-courses-list" style="margin-top: 15px;">
                                 <!-- Populated by JavaScript -->
+                            </div>
+                        </div>
+
+                        <!-- Tab 4.5: Simulators Management -->
+                        <div id="t-simulators-tab" class="tab-content">
+                            <div class="section-title" style="flex-wrap: wrap; gap: 10px;">
+                                <h3>ط¥ط¯ط§ط±ط© ط§ط®طھط¨ط§ط±ط§طھ ظ…ط­ط§ظƒظٹ ط§ظ„ظ‚ط¯ط±ط§طھ ظˆط§ظ„طھط­طµظٹظ„ظٹ</h3>
+                                <button class="btn btn-primary" style="padding: 8px 16px; font-size: 13px;" onclick="showCreateSimulatorView()">
+                                    <i class="fa-solid fa-plus"></i> ط¥ط¶ط§ظپط© ظ…ط­ط§ظƒظٹ ط¬ط¯ظٹط¯ â‍•
+                                </button>
+                            </div>
+                            <div class="students-grid" id="t-simulators-list" style="margin-top: 15px;">
+                                <!-- Populated by JavaScript -->
+                            </div>
+                        </div>
+
+                        <!-- Tab 4.5.1: Placement Tests Management -->
+                        <div id="t-placements-tab" class="tab-content">
+                            <div class="section-title" style="flex-wrap: wrap; gap: 10px;">
+                                <h3><i class="fa-solid fa-crosshairs" style="color: var(--success); margin-left: 8px;"></i>ط¥ط¯ط§ط±ط© ط§ط®طھط¨ط§ط±ط§طھ طھط­ط¯ظٹط¯ ط§ظ„ظ…ط³طھظˆظ‰</h3>
+                                <button class="btn btn-primary" style="padding: 8px 16px; font-size: 13px; background: linear-gradient(135deg, var(--success), #059669); border-color: #059669;" onclick="showCreateSimulatorView()">
+                                    <i class="fa-solid fa-plus"></i> ط¥ط¶ط§ظپط© ط§ط®طھط¨ط§ط± طھط­ط¯ظٹط¯ ظ…ط³طھظˆظ‰ ًںژ¯
+                                </button>
+                            </div>
+                            <div class="students-grid" id="t-placements-list" style="margin-top: 15px;">
+                                <!-- Populated by JavaScript -->
+                            </div>
+                        </div>
+
+                        <!-- Tab 4.6: Simulators Results -->
+                        <div id="t-simulators-results-tab" class="tab-content">
+                            <div class="section-title" style="flex-wrap: wrap; gap: 10px;">
+                                <h3><i class="fa-solid fa-chart-bar" style="color: #10B981; margin-left: 8px;"></i>ظ†طھط§ط¦ط¬ ط§ط®طھط¨ط§ط±ط§طھ ط§ظ„ظ…ط­ط§ظƒط§ط© (ط§ظ„ط³ط±ظٹط©)</h3>
+                            </div>
+                            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">
+                                ظ‡ط°ظ‡ ط§ظ„ظ†طھط§ط¦ط¬ طھط³ط¬ظ„ ط¨طµظ…طھ ظ„ظٹطھظ…ظƒظ† ط§ظ„ظ…ط¹ظ„ظ… ظ…ظ† ظ…طھط§ط¨ط¹ط© ظ…ط³طھظˆظٹط§طھ ط§ظ„ط·ظ„ط§ط¨ ظ‚ط¨ظ„ ط§ظ„ط§ط®طھط¨ط§ط±ط§طھ ط§ظ„ظپط¹ظ„ظٹط©. (طھظڈط¹ط±ط¶ ط£ط¹ظ„ظ‰ ط¯ط±ط¬ط© طھظ… ط§ظ„ط­طµظˆظ„ ط¹ظ„ظٹظ‡ط§)
+                            </p>
+                            
+                            <div style="background: rgba(0,0,0,0.15); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden;">
+                                <table style="width: 100%; text-align: right; border-collapse: collapse; min-width: 600px;">
+                                    <thead style="background: rgba(255,255,255,0.05);">
+                                        <tr>
+                                            <th style="padding: 15px; border-bottom: 1px solid var(--border-color); color: var(--text-muted); font-size: 13px;">ط§ط³ظ… ط§ظ„ط·ط§ظ„ط¨</th>
+                                            <th style="padding: 15px; border-bottom: 1px solid var(--border-color); color: var(--text-muted); font-size: 13px;">ط§ط³ظ… ط§ظ„ظ…ط­ط§ظƒظٹ</th>
+                                            <th style="padding: 15px; border-bottom: 1px solid var(--border-color); color: var(--text-muted); font-size: 13px;">ط§ظ„ظ†طھظٹط¬ط© (%)</th>
+                                            <th style="padding: 15px; border-bottom: 1px solid var(--border-color); color: var(--text-muted); font-size: 13px;">ط§ظ„ظ†ظ‚ط§ط· (XP)</th>
+                                            <th style="padding: 15px; border-bottom: 1px solid var(--border-color); color: var(--text-muted); font-size: 13px;">طھط§ط±ظٹط® ط¢ط®ط± ظ…ط­ط§ظˆظ„ط©</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="t-simulators-results-table-body">
+                                        <!-- Populated by JavaScript -->
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
 
@@ -288,10 +515,10 @@
                                 </div>
                                 
                                 <div>
-                                    <h4 style="margin-bottom: 15px; display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-user-shield" style="color: var(--accent-orange);"></i> طھط³ط¬ظٹظ„ ظ…ط¹ظ„ظ… ط´ط±ظٹظƒ ط¬ط¯ظٹط¯</h4>
+                                    <h4 style="margin-bottom: 15px; display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-user-shield" style="color: var(--accent-orange);"></i> طھط³ط¬ظٹظ„ ظ…ط¹ظ„ظ… ط£ظˆ ظ…ط´ط±ظپ ط¬ط¯ظٹط¯</h4>
                                     <form id="create-teacher-form" onsubmit="handleCreateTeacher(event)" style="margin-bottom: 20px;">
                                         <div class="form-group">
-                                            <label for="teacher-new-name">ط§ظ„ط§ط³ظ… ط§ظ„ظƒط§ظ…ظ„ ظ„ظ„ظ…ط¹ظ„ظ…:</label>
+                                            <label for="teacher-new-name">ط§ظ„ط§ط³ظ… ط§ظ„ظƒط§ظ…ظ„:</label>
                                             <input type="text" id="teacher-new-name" required placeholder="ظ…ط«ط§ظ„: ط£. ط£ط­ظ…ط¯ ط§ظ„ط؛ط§ظ…ط¯ظٹ">
                                         </div>
                                         <div class="form-group">
@@ -302,7 +529,14 @@
                                             <label for="teacher-new-pwd">ظƒظ„ظ…ط© ط§ظ„ظ…ط±ظˆط±:</label>
                                             <input type="text" id="teacher-new-pwd" required placeholder="ظ…ط«ط§ظ„: pwd7766">
                                         </div>
-                                        <button type="submit" class="btn btn-secondary" style="width: 100%; border-color: var(--accent-orange); color: var(--accent-orange);">ط¥ظ†ط´ط§ط، ط­ط³ط§ط¨ ط§ظ„ظ…ط¹ظ„ظ…</button>
+                                        <div class="form-group">
+                                            <label for="teacher-new-role">ط§ظ„طµظ„ط§ط­ظٹط© ظˆط§ظ„ط±طھط¨ط© ط§ظ„ط¥ط¯ط§ط±ظٹط©:</label>
+                                            <select id="teacher-new-role" style="padding: 10px; border-radius: 8px;">
+                                                <option value="teacher">ظ…ط¹ظ„ظ… (ظƒط§ظ…ظ„ ط§ظ„طµظ„ط§ط­ظٹط§طھ)</option>
+                                                <option value="supervisor">ظ…ط´ط±ظپ (ط¥ط¶ط§ظپط© ظˆطھطµط­ظٹط­ ظˆط§ط¬ط¨ط§طھ ظˆط¥ط¯ط§ط±ط© ط·ظ„ط§ط¨ ظپظ‚ط·)</option>
+                                            </select>
+                                        </div>
+                                        <button type="submit" class="btn btn-secondary" style="width: 100%; border-color: var(--accent-orange); color: var(--accent-orange);">ط¥ظ†ط´ط§ط، ط­ط³ط§ط¨ (ظ…ط¹ظ„ظ… / ظ…ط´ط±ظپ)</button>
                                     </form>
 
                                     <h4 style="font-size: 14px; margin-bottom: 10px; color: var(--text-muted);"><i class="fa-solid fa-users"></i> ظ‚ط§ط¦ظ…ط© ط§ظ„ظ…ط¹ظ„ظ…ظٹظ† ط§ظ„ظ…ط´طھط±ظƒظٹظ† ط¨ط§ظ„ظ…ظ†طµط©:</h4>
@@ -341,90 +575,6 @@
                     
                     <!-- Sidebar Area: Forms & Helpers -->
                     <div class="list-container">
-                        
-                        <!-- Form 1: Add New Assignment -->
-                        <div class="glass-card">
-                            <h3 style="margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; display: flex; align-items: center; gap: 8px;">
-                                <i class="fa-solid fa-circle-plus" style="color: var(--accent-orange);"></i>
-                                ط¥ط¶ط§ظپط© ظˆط§ط¬ط¨ ط¬ط¯ظٹط¯
-                            </h3>
-                            
-                            <form id="create-assignment-form" onsubmit="handleCreateAssignment(event)">
-                                <div class="form-group">
-                                    <label for="assign-title">ط¹ظ†ظˆط§ظ† ط§ظ„ظˆط§ط¬ط¨:</label>
-                                    <input type="text" id="assign-title" required placeholder="ظ…ط«ط§ظ„: ظˆط§ط¬ط¨ ط§ظ„ظ…طھطھط§ط¨ط¹ط§طھ ط§ظ„ط­ط³ط§ط¨ظٹط©">
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="assign-desc">طھظپط§طµظٹظ„ ط§ظ„ط£ط³ط¦ظ„ط© ظˆط§ظ„طھط¹ظ„ظٹظ…ط§طھ (ظٹط¯ط¹ظ… $ ظ„ظ„ط±ظ…ظˆط²):</label>
-                                    <textarea id="assign-desc" rows="4" required placeholder="ظ…ط«ط§ظ„: ط£ظˆط¬ط¯ ط­ظ„ ط§ظ„ظ…ط¹ط§ط¯ظ„ط© $ط³^2 = 9$"></textarea>
-                                </div>
-                                
-                                <div class="form-group" style="background: rgba(255, 152, 0, 0.1); padding: 10px; border-radius: 8px; border: 1px dashed var(--primary-color);">
-                                    <label for="assign-image-file" style="color: var(--primary-color);">ط¥ط±ظپط§ظ‚ طµظˆط±ط© ظ„ظ„ط³ط¤ط§ظ„ (ط§ط®طھظٹط§ط±ظٹ - ط³ظٹطھظ… ط¶ط؛ط·ظ‡ط§ طھظ„ظ‚ط§ط¦ظٹط§ظ‹ ًںھ„):</label>
-                                    <input type="file" id="assign-image-file" accept="image/*" onchange="handleImageSelection(event)">
-                                    <small id="image-compress-status" style="color: var(--success-color); display:none; font-weight: bold; margin-top: 5px;"></small>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="assign-subject">ط§ظ„ظ…ط§ط¯ط©:</label>
-                                    <select id="assign-subject">
-                                        <option value="math">ط±ظٹط§ط¶ظٹط§طھ</option>
-                                        <option value="qudrat">ظ‚ط¯ط±ط§طھ</option>
-                                        <option value="tahsili">طھط­طµظٹظ„ظٹ</option>
-                                    </select>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="assign-type">ظ†ظˆط¹ ط§ظ„ظˆط§ط¬ط¨:</label>
-                                    <select id="assign-type" onchange="toggleAssignmentOptions(this.value)">
-                                        <option value="text">ظˆط§ط¬ط¨ ظƒطھط§ط¨ظٹ / ظ…ظ‚ط§ظ„ظٹ</option>
-                                        <option value="mcq">ظˆط§ط¬ط¨ ط®ظٹط§ط±ط§طھ ظ…طھط¹ط¯ط¯ط©</option>
-                                    </select>
-                                </div>
-
-                                <!-- MCQ options (hidden by default) -->
-                                <div id="assign-mcq-options-container" style="display: none; border: 1px dashed var(--border-color); padding: 12px; border-radius: 8px; margin-bottom: 15px; background: rgba(255,255,255,0.01);">
-                                    <h4 style="font-size: 13px; color: var(--text-orange); margin-bottom: 8px;"><i class="fa-solid fa-list-ul"></i> ط®ظٹط§ط±ط§طھ ط§ظ„ط³ط¤ط§ظ„ (طھط¯ط¹ظ… ط§ظ„ط±ظ…ظˆط² ط¨ظٹظ† $):</h4>
-                                    <div class="form-group"><input type="text" id="assign-opt-0" placeholder="ط§ظ„ط®ظٹط§ط± ط§ظ„ط£ظˆظ„ (ط£)"></div>
-                                    <div class="form-group"><input type="text" id="assign-opt-1" placeholder="ط§ظ„ط®ظٹط§ط± ط§ظ„ط«ط§ظ†ظٹ (ط¨)"></div>
-                                    <div class="form-group"><input type="text" id="assign-opt-2" placeholder="ط§ظ„ط®ظٹط§ط± ط§ظ„ط«ط§ظ„ط« (ط¬)"></div>
-                                    <div class="form-group"><input type="text" id="assign-opt-3" placeholder="ط§ظ„ط®ظٹط§ط± ط§ظ„ط±ط§ط¨ط¹ (ط¯)"></div>
-                                    <div class="form-group">
-                                        <label for="assign-correct">ط§ظ„ط®ظٹط§ط± ط§ظ„طµط­ظٹط­:</label>
-                                        <select id="assign-correct" style="padding: 4px 8px;">
-                                            <option value="0">ط§ظ„ط®ظٹط§ط± ط§ظ„ط£ظˆظ„ (ط£)</option>
-                                            <option value="1">ط§ظ„ط®ظٹط§ط± ط§ظ„ط«ط§ظ†ظٹ (ط¨)</option>
-                                            <option value="2">ط§ظ„ط®ظٹط§ط± ط§ظ„ط«ط§ظ„ط« (ط¬)</option>
-                                            <option value="3">ط§ظ„ط®ظٹط§ط± ط§ظ„ط±ط§ط¨ط¹ (ط¯)</option>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <div class="form-group">
-                                    <label for="assign-student">ط§ظ„ط·ط§ظ„ط¨ ط§ظ„ظ…ط³طھظ‡ط¯ظپ:</label>
-                                    <select id="assign-student">
-                                        <!-- Dynamic Options from JS -->
-                                    </select>
-                                </div>
-                                
-                                <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                                    <div>
-                                        <label for="assign-points">ط§ظ„ظ†ظ‚ط§ط· (XP):</label>
-                                        <input type="number" id="assign-points" value="100" min="10" max="1000" step="10">
-                                    </div>
-                                    <div>
-                                        <label for="assign-duedate">طھط§ط±ظٹط® ط§ظ„طھط³ظ„ظٹظ…:</label>
-                                        <input type="date" id="assign-duedate" required>
-                                    </div>
-                                </div>
-                                
-                                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">
-                                    <i class="fa-solid fa-paper-plane"></i>
-                                    <span>ظ†ط´ط± ط§ظ„ظˆط§ط¬ط¨ ظ„ظ„ط·ظ„ط§ط¨</span>
-                                </button>
-                            </form>
-                        </div>
 
                         <!-- Form 2: Register New Student -->
                         <div class="glass-card">
@@ -490,6 +640,516 @@
             </div>
         </section>
 
+        <!-- 2.5 DEDICATED CREATE VIEWS FOR EASY TABLET/MOBILE/LAPTOP USE -->
+
+        <!-- PAGE A: CREATE ASSIGNMENT PAGE -->
+        <section id="create-assignment-page-view" class="fade-in" style="display: none;">
+            <div class="container" style="max-width: 800px; padding: 25px 15px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; flex-wrap: wrap; gap: 15px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div class="logo-icon" style="width: 44px; height: 44px; font-size: 22px; background: linear-gradient(135deg, var(--accent-orange), #FF5500);"><i class="fa-solid fa-file-pen"></i></div>
+                        <div>
+                            <h2 style="font-size: 20px; font-weight: 800; color: var(--text-main);">ط¥ظ†ط´ط§ط، ظˆظ†ط´ط± ظˆط§ط¬ط¨ ط¬ط¯ظٹط¯</h2>
+                            <p style="font-size: 13px; color: var(--text-muted); margin-top: 2px;">ط£ط¯ط®ظ„ ط¨ظٹط§ظ†ط§طھ ط§ظ„ظˆط§ط¬ط¨ ظˆط­ط¯ط¯ ط§ظ„ط·ظ„ط§ط¨ ط§ظ„ظ…ط³طھظ‡ط¯ظپظٹظ† ظ„ظ„ط­ظ„</p>
+                        </div>
+                    </div>
+                    <button class="btn btn-secondary" style="padding: 8px 16px; font-size: 13px;" onclick="showTeacherSection('t-assignments-tab')">
+                        <i class="fa-solid fa-arrow-right"></i> ط§ظ„ط¹ظˆط¯ط© ظ„ظ„ظˆط§ط¬ط¨ط§طھ
+                    </button>
+                </div>
+
+                <div class="glass-card" style="padding: 25px;">
+                    <form id="create-assignment-form" onsubmit="handleCreateAssignment(event)">
+                        <div class="form-group">
+                            <label for="assign-title" style="font-weight: 700;">ط¹ظ†ظˆط§ظ† ط§ظ„ظˆط§ط¬ط¨:</label>
+                            <input type="text" id="assign-title" required placeholder="ظ…ط«ط§ظ„: ظˆط§ط¬ط¨ ط§ظ„ظ…طھطھط§ط¨ط¹ط§طھ ط§ظ„ط­ط³ط§ط¨ظٹط© ظˆط§ظ„ظ‚ط¯ط±ط§طھ" style="padding: 12px; font-size: 14px;">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="assign-desc" style="font-weight: 700;">طھظپط§طµظٹظ„ ط§ظ„ط£ط³ط¦ظ„ط© ظˆط§ظ„طھط¹ظ„ظٹظ…ط§طھ (ظٹط¯ط¹ظ… $ ظ„ظ„ط±ظ…ظˆط² ظˆط§ظ„ط±ظٹط§ط¶ظٹط§طھ):</label>
+                            <textarea id="assign-desc" rows="5" required placeholder="ط§ظƒطھط¨ ط£ط³ط¦ظ„ط© ط§ظ„ظˆط§ط¬ط¨ ظ‡ظ†ط§طŒ ظ…ط«ط§ظ„: ط£ظˆط¬ط¯ ظ‚ظٹظ…ط© $ط³$ ط¥ط°ط§ ظƒط§ظ† $ظ¢ط³ + ظ¤ = ظ،ظ $" style="padding: 12px; font-size: 14px; line-height: 1.6;"></textarea>
+                        </div>
+                        
+                        <div class="form-group" style="background: rgba(255, 152, 0, 0.1); padding: 10px; border-radius: 8px; border: 1px dashed var(--primary-color);">
+                            <label for="assign-image-file" style="color: var(--primary-color);">ط¥ط±ظپط§ظ‚ طµظˆط±ط© ظ„ظ„ط³ط¤ط§ظ„ (ط§ط®طھظٹط§ط±ظٹ - ط³ظٹطھظ… ط¶ط؛ط·ظ‡ط§ طھظ„ظ‚ط§ط¦ظٹط§ظ‹ ًںھ„):</label>
+                            <input type="file" id="assign-image-file" accept="image/*" onchange="handleImageSelection(event)">
+                            <small id="image-compress-status" style="color: var(--success-color); display:none; font-weight: bold; margin-top: 5px;"></small>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                            <div class="form-group">
+                                <label for="assign-subject" style="font-weight: 700;">ط§ظ„ظ…ط§ط¯ط© ظˆط§ظ„طھط®طµطµ:</label>
+                                <select id="assign-subject" style="padding: 12px; font-size: 14px;">
+                                    <option value="math">ط±ظٹط§ط¶ظٹط§طھ</option>
+                                    <option value="qudrat">ظ‚ط¯ط±ط§طھ ظƒظ…ظٹ ظˆظ„ظپط¸ظٹ</option>
+                                    <option value="tahsili">طھط­طµظٹظ„ظٹ ط¹ظ„ظ…ظٹ</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="assign-points" style="font-weight: 700;">ط§ظ„ظ†ظ‚ط§ط· ط§ظ„ظ…ظƒط§ظپط¦ط© (XP):</label>
+                                <input type="number" id="assign-points" required value="50" min="1" style="padding: 12px; font-size: 14px;">
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                            <div class="form-group">
+                                <label for="assign-duedate" style="font-weight: 700;">ط¢ط®ط± ظ…ظˆط¹ط¯ ظ„ظ„طھط³ظ„ظٹظ…:</label>
+                                <input type="date" id="assign-duedate" required style="padding: 12px; font-size: 14px;">
+                            </div>
+                            <div class="form-group">
+                                <label for="assign-type" style="font-weight: 700;">ظ†ظˆط¹ ط§ظ„ظˆط§ط¬ط¨ ظˆط·ط±ظٹظ‚ط© ط§ظ„ط¥ط¬ط§ط¨ط©:</label>
+                                <select id="assign-type" onchange="toggleAssignmentOptions(this.value)" style="padding: 12px; font-size: 14px;">
+                                    <option value="text">ظˆط§ط¬ط¨ ظƒطھط§ط¨ظٹ / ظ…ظ‚ط§ظ„ظٹ (ظٹط±ظپظ‚ ط·ط§ظ„ط¨ طµظˆط±ط© ط£ظˆ ظƒطھط§ط¨ط©)</option>
+                                    <option value="mcq">ظˆط§ط¬ط¨ ط®ظٹط§ط±ط§طھ ظ…طھط¹ط¯ط¯ط© (طھطµط­ظٹط­ ط¢ظ„ظٹ ظپظˆط±ظٹ)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- MCQ options (hidden by default) -->
+                        <div id="assign-mcq-options-container" style="display: none; border: 1px dashed var(--border-color); padding: 15px; border-radius: 12px; margin-bottom: 20px; background: rgba(255,255,255,0.02);">
+                            <h4 style="font-size: 14px; color: var(--text-orange); margin-bottom: 12px;"><i class="fa-solid fa-list-ul"></i> ط®ظٹط§ط±ط§طھ ط§ظ„ط³ط¤ط§ظ„ (طھط¯ط¹ظ… ط§ظ„ط±ظ…ظˆط² ط¨ظٹظ† $طŒ ظˆطھظƒظˆظ† طھظ„ظ‚ط§ط¦ظٹط§ظ‹ ط£طŒ ط¨طŒ ط¬طŒ ط¯ ط¹ظ†ط¯ طھط±ظƒظ‡ط§ ظپط§ط±ط؛ط©):</h4>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                                <div class="form-group"><input type="text" id="assign-opt-0" placeholder="ط§ظ„ط®ظٹط§ط± ط§ظ„ط£ظˆظ„ (طھظ„ظ‚ط§ط¦ظٹط§ظ‹: ط£)" style="padding: 10px;"></div>
+                                <div class="form-group"><input type="text" id="assign-opt-1" placeholder="ط§ظ„ط®ظٹط§ط± ط§ظ„ط«ط§ظ†ظٹ (طھظ„ظ‚ط§ط¦ظٹط§ظ‹: ط¨)" style="padding: 10px;"></div>
+                                <div class="form-group"><input type="text" id="assign-opt-2" placeholder="ط§ظ„ط®ظٹط§ط± ط§ظ„ط«ط§ظ„ط« (طھظ„ظ‚ط§ط¦ظٹط§ظ‹: ط¬)" style="padding: 10px;"></div>
+                                <div class="form-group"><input type="text" id="assign-opt-3" placeholder="ط§ظ„ط®ظٹط§ط± ط§ظ„ط±ط§ط¨ط¹ (طھظ„ظ‚ط§ط¦ظٹط§ظ‹: ط¯)" style="padding: 10px;"></div>
+                            </div>
+                            <div class="form-group" style="margin-top: 8px;">
+                                <label for="assign-correct" style="font-weight: 700;">ط­ط¯ط¯ ط§ظ„ط¥ط¬ط§ط¨ط© ط§ظ„طµط­ظٹط­ط© ظ„ظ„طھطµط­ظٹط­ ط§ظ„ط¢ظ„ظٹ:</label>
+                                <select id="assign-correct" style="padding: 10px;">
+                                    <option value="0">ط§ظ„ط®ظٹط§ط± ط§ظ„ط£ظˆظ„ (ط£)</option>
+                                    <option value="1">ط§ظ„ط®ظٹط§ط± ط§ظ„ط«ط§ظ†ظٹ (ط¨)</option>
+                                    <option value="2">ط§ظ„ط®ظٹط§ط± ط§ظ„ط«ط§ظ„ط« (ط¬)</option>
+                                    <option value="3">ط§ظ„ط®ظٹط§ط± ط§ظ„ط±ط§ط¨ط¹ (ط¯)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div style="border-top: 1px solid var(--border-color); padding-top: 20px; margin-top: 20px;">
+                            <label style="font-weight: 700; font-size: 14px; color: var(--text-main); display: block; margin-bottom: 10px;">
+                                <i class="fa-solid fa-users-line" style="color: var(--accent-orange);"></i> طھط­ط¯ظٹط¯ ط§ظ„ط·ظ„ط§ط¨ ط§ظ„ظ…ط³طھظ‡ط¯ظپظٹظ† ط¨ط§ظ„ظˆط§ط¬ط¨:
+                            </label>
+                            <div class="form-group">
+                                <select id="assign-target-type" onchange="toggleCreateAssignStudentsList(this.value)" style="padding: 12px; font-size: 14px;">
+                                    <option value="all">ط¬ظ…ظٹط¹ ط§ظ„ط·ظ„ط§ط¨ ط§ظ„ظ…ط´طھط±ظƒظٹظ†</option>
+                                    <option value="custom">ط§ط®طھظٹط§ط± ظˆطھط­ط¯ظٹط¯ ط·ظ„ط§ط¨ ظ…ط¹ظٹظ†ظٹظ† (ط£ظˆ ظ…ط¬ظ…ظˆط¹ط© ط·ظ„ط§ط¨)</option>
+                                </select>
+                            </div>
+                            
+                            <div id="create-assign-students-container" style="display: none; background: rgba(0,0,0,0.15); border: 1px solid var(--border-color); border-radius: 10px; padding: 15px;">
+                                <div style="display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap;">
+                                    <input type="text" id="create-assign-search-input" oninput="filterCreateAssignStudents(this.value)" placeholder="ًں”چ ط§ط¨ط­ط« ط¹ظ† ط§ط³ظ… ط§ظ„ط·ط§ظ„ط¨ ط£ظˆ ط§ط³ظ… ط§ظ„ظ…ط³طھط®ط¯ظ…..." style="flex: 1; min-width: 200px; padding: 8px 12px; font-size: 13px; background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-main);">
+                                    <button type="button" class="btn btn-secondary" onclick="selectAllCreateAssignStudents(true)" style="padding: 6px 12px; font-size: 12px;">
+                                        <i class="fa-solid fa-check-double"></i> ط§ط®طھظٹط§ط± ط§ظ„ظƒظ„
+                                    </button>
+                                    <button type="button" class="btn btn-secondary" onclick="selectAllCreateAssignStudents(false)" style="padding: 6px 12px; font-size: 12px;">
+                                        <i class="fa-solid fa-square-xmark"></i> ط¥ظ„ط؛ط§ط، ط§ظ„طھط­ط¯ظٹط¯
+                                    </button>
+                                </div>
+                                <div id="create-assign-students-grid" style="display: flex; flex-direction: column; gap: 8px; max-height: 220px; overflow-y: auto; padding-left: 4px;">
+                                    <!-- Student Checkboxes -->
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="assign-image" style="font-weight: 700;"><i class="fa-regular fa-image" style="color: var(--accent-orange); margin-left: 6px;"></i> ط¥ط±ظپط§ظ‚ طµظˆط±ط© ظ…ط¹ ط§ظ„ظˆط§ط¬ط¨ (ط§ط®طھظٹط§ط±ظٹ):</label>
+                            <input type="file" id="assign-image" accept="image/*" style="padding: 10px; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 8px; width: 100%;">
+                        </div>
+                        
+                        <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 30px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+                            <button type="button" class="btn btn-secondary" onclick="showTeacherSection('t-assignments-tab')" style="padding: 10px 20px; font-size: 14px;">ط¥ظ„ط؛ط§ط،</button>
+                            <button type="submit" class="btn btn-primary" style="padding: 10px 24px; font-size: 14px;">
+                                <i class="fa-solid fa-paper-plane"></i>
+                                <span>ظ†ط´ط± ط§ظ„ظˆط§ط¬ط¨ ظ„ظ„ط·ظ„ط§ط¨</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE B: CREATE / EDIT COURSE PAGE -->
+        <section id="create-course-page-view" class="fade-in" style="display: none;">
+            <div class="container" style="max-width: 800px; padding: 25px 15px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; flex-wrap: wrap; gap: 15px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div class="logo-icon" style="width: 44px; height: 44px; font-size: 22px; background: linear-gradient(135deg, var(--warning), #FF5500);"><i class="fa-solid fa-folder-plus"></i></div>
+                        <div>
+                            <h2 style="font-size: 20px; font-weight: 800; color: var(--text-main);" id="course-modal-title-text">ط¥ظ†ط´ط§ط، ط¯ظˆط±ط© طھط¹ظ„ظٹظ…ظٹط© ط¬ط¯ظٹط¯ط©</h2>
+                            <p style="font-size: 13px; color: var(--text-muted); margin-top: 2px;">ظ‚ظ… ط¨ط¥ط¶ط§ظپط© ظˆطھط¹ط¯ظٹظ„ ط¹ظ†ظˆط§ظ† ط§ظ„ط¯ظˆط±ط© ظˆط§ظ„ظ…ط§ط¯ط© ظˆط§ظ„ظˆطµظپ ظ„ظ„ط¨ط¯ط، ط¨ط±ظپط¹ ط§ظ„ط¯ط±ظˆط³ ظˆط§ظ„ط§ط®طھط¨ط§ط±ط§طھ</p>
+                        </div>
+                    </div>
+                    <button class="btn btn-secondary" style="padding: 8px 16px; font-size: 13px;" onclick="showTeacherSection('t-courses-tab')">
+                        <i class="fa-solid fa-arrow-right"></i> ط§ظ„ط¹ظˆط¯ط© ظ„ظ„ظ…ظ‚ط±ط±ط§طھ
+                    </button>
+                </div>
+
+                <div class="glass-card" style="padding: 25px;">
+                    <form id="create-course-page-form" onsubmit="handleCreateCourse(event)">
+                        <input type="hidden" id="course-edit-id">
+
+                        <div class="form-group">
+                            <label for="page-course-title" style="font-weight: 700;">ط¹ظ†ظˆط§ظ† ط§ظ„ط¯ظˆط±ط© ط§ظ„طھط¹ظ„ظٹظ…ظٹط©:</label>
+                            <input type="text" id="page-course-title" required placeholder="ظ…ط«ط§ظ„: ط¯ظˆط±ط© ط§ظ„طھط£ط³ظٹط³ ط§ظ„ط´ط§ظ…ظ„ط© ظپظٹ ط§ظ„ظ‚ط¯ط±ط§طھ ط§ظ„ظƒظ…ظٹ" style="padding: 12px; font-size: 14px;">
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                            <div class="form-group">
+                                <label for="page-course-subject" style="font-weight: 700;">ط§ظ„ظ…ط§ط¯ط© ظˆط§ظ„طھطµظ†ظٹظپ:</label>
+                                <select id="page-course-subject" style="padding: 12px; font-size: 14px;">
+                                    <option value="math">ط±ظٹط§ط¶ظٹط§طھ</option>
+                                    <option value="qudrat">ظ‚ط¯ط±ط§طھ ط§ظ„ط¹ط§ظ…ط© (ظƒظ…ظٹ ظˆظ„ظپط¸ظٹ)</option>
+                                    <option value="tahsili">ط§ظ„طھط­طµظٹظ„ظٹ ط§ظ„ط¹ظ„ظ…ظٹ</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="page-course-price-type" style="font-weight: 700;">ظ†ظˆط¹ ط§ظ„ط¯ظˆط±ط© ظˆط³ط¹ط± ط§ظ„ط§ط´طھط±ط§ظƒ:</label>
+                                <select id="page-course-price-type" onchange="toggleCoursePriceInput(this.value)" style="padding: 12px; font-size: 14px;">
+                                    <option value="free">ًںژپ ط¯ظˆط±ط© ظ…ط¬ط§ظ†ظٹط© ط¨ط§ظ„ظƒط§ظ…ظ„</option>
+                                    <option value="paid">ًں’° ط¯ظˆط±ط© ظ…ط¯ظپظˆط¹ط© (ط­ط¯ط¯ ط§ظ„ط³ط¹ط±)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group" id="page-course-price-group" style="display: none;">
+                            <label for="page-course-price" style="font-weight: 700; color: var(--warning);"><i class="fa-solid fa-tag"></i> ط³ط¹ط± ط§ظ„ط§ط´طھط±ط§ظƒ ط¨ط§ظ„ط¯ظˆط±ط© (ط¨ط§ظ„ط±ظٹط§ظ„ ط§ظ„ط³ط¹ظˆط¯ظٹ):</label>
+                            <input type="number" id="page-course-price" min="0" step="5" placeholder="ظ…ط«ط§ظ„: 150 (ط£ظˆ ط§طھط±ظƒظ‡ 0 ظ„ظ„ظ…ط¬ط§ظ†ظٹط©)" style="padding: 12px; font-size: 14px;">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="page-course-desc" style="font-weight: 700;">ظˆطµظپ ظˆطھظپط§طµظٹظ„ ط§ظ„ط¯ظˆط±ط© ظˆظ…ط§ طھط´ظ…ظ„ظ‡ ظ„ظ„ط§ط´طھط±ط§ظƒ:</label>
+                            <textarea id="page-course-desc" rows="6" required placeholder="ط§ظƒطھط¨ طھظپط§طµظٹظ„ ظˆظ…ظ…ظٹط²ط§طھ ط§ظ„ط¯ظˆط±ط© ظ‡ظ†ط§طŒ ظ…ط«ظ„ط§ظ‹:
+- ظ…ط§ط°ط§ ظٹط³طھظپظٹط¯ ط§ظ„ط·ط§ظ„ط¨ ظ…ظ† ظ‡ط°ظ‡ ط§ظ„ط¯ظˆط±ط©طں
+- ظ…ط­ط§ظˆط± ط§ظ„طھط£ط³ظٹط³ ظˆط´ط±ظˆط­ط§طھ ط§ظ„ظپظٹط¯ظٹظˆ ط§ظ„ظ…طھط§ط­ط©.
+- ط§ظ„ط§ط®طھط¨ط§ط±ط§طھ ط§ظ„طھظپط§ط¹ظ„ظٹط© ظˆطھط¬ظ…ظٹط¹ط§طھ ظ‚ظٹط§ط³ ط§ظ„ظ…ط´ظ…ظˆظ„ط©..." style="padding: 12px; font-size: 14px; line-height: 1.6;"></textarea>
+                        </div>
+                        
+                        <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 30px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+                            <button type="button" class="btn btn-secondary" onclick="showTeacherSection('t-courses-tab')" style="padding: 10px 20px; font-size: 14px;">ط¥ظ„ط؛ط§ط،</button>
+                            <button type="submit" class="btn btn-primary" style="padding: 10px 24px; font-size: 14px;">
+                                <i class="fa-solid fa-circle-check"></i>
+                                <span id="course-submit-btn-text">ط¥ظ†ط´ط§ط، ط§ظ„ط¯ظˆط±ط© ط§ظ„ط¢ظ†</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+
+
+        <!-- PAGE D: EDIT ASSIGNMENT PAGE -->
+        <section id="edit-assignment-page-view" class="fade-in" style="display: none;">
+            <div class="container" style="max-width: 800px; padding: 25px 15px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; flex-wrap: wrap; gap: 15px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div class="logo-icon" style="width: 44px; height: 44px; font-size: 22px; background: linear-gradient(135deg, var(--accent-orange), #FF5500);"><i class="fa-solid fa-pen-to-square"></i></div>
+                        <div>
+                            <h2 style="font-size: 20px; font-weight: 800; color: var(--text-main);">طھط¹ط¯ظٹظ„ ط¨ظٹط§ظ†ط§طھ ظˆط¥ط³ظ†ط§ط¯ ط§ظ„ظˆط§ط¬ط¨</h2>
+                            <p style="font-size: 13px; color: var(--text-muted); margin-top: 2px;">طھط¹ط¯ظٹظ„ ط£ط³ط¦ظ„ط© ط§ظ„ظˆط§ط¬ط¨ ظˆط§ظ„ط±ظ…ظˆط² ظˆطھط­ط¯ظٹط¯ ط£ظˆ ظ…ط³ط­ ط§ظ„ط·ظ„ط§ط¨ ط§ظ„ظ…ط³طھظ‡ط¯ظپظٹظ†</p>
+                        </div>
+                    </div>
+                    <button class="btn btn-secondary" style="padding: 8px 16px; font-size: 13px;" onclick="showTeacherSection('t-assignments-tab')">
+                        <i class="fa-solid fa-arrow-right"></i> ط§ظ„ط¹ظˆط¯ط© ظ„ظ„ظˆط§ط¬ط¨ط§طھ
+                    </button>
+                </div>
+
+                <div class="glass-card" style="padding: 25px;">
+                    <form id="edit-assignment-form" onsubmit="handleSaveEditAssignment(event)">
+                        <input type="hidden" id="edit-assign-id">
+                        
+                        <div class="form-group">
+                            <label for="edit-assign-title" style="font-weight: 700;">ط¹ظ†ظˆط§ظ† ط§ظ„ظˆط§ط¬ط¨:</label>
+                            <input type="text" id="edit-assign-title" required placeholder="ط£ط¯ط®ظ„ ط¹ظ†ظˆط§ظ† ط§ظ„ظˆط§ط¬ط¨" style="padding: 12px; font-size: 14px;">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="edit-assign-desc" style="font-weight: 700;">طھظپط§طµظٹظ„ ط§ظ„ط£ط³ط¦ظ„ط© ظˆط§ظ„طھط¹ظ„ظٹظ…ط§طھ (ظٹط¯ط¹ظ… $ ظ„ظ„ط±ظ…ظˆط²):</label>
+                            <textarea id="edit-assign-desc" rows="5" required placeholder="ط£ط¯ط®ظ„ ط§ظ„ط£ط³ط¦ظ„ط© ظˆط§ظ„طھط¹ظ„ظٹظ…ط§طھ" style="padding: 12px; font-size: 14px; line-height: 1.6;"></textarea>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                            <div class="form-group">
+                                <label for="edit-assign-subject" style="font-weight: 700;">ط§ظ„ظ…ط§ط¯ط©:</label>
+                                <select id="edit-assign-subject" style="padding: 12px; font-size: 14px;">
+                                    <option value="math">ط±ظٹط§ط¶ظٹط§طھ</option>
+                                    <option value="qudrat">ظ‚ط¯ط±ط§طھ</option>
+                                    <option value="tahsili">طھط­طµظٹظ„ظٹ</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="edit-assign-points" style="font-weight: 700;">ط§ظ„ظ†ظ‚ط§ط· ط§ظ„ظ…ظƒط§ظپط¦ط© (XP):</label>
+                                <input type="number" id="edit-assign-points" required min="1" placeholder="ظ…ط«ط§ظ„: 50" style="padding: 12px; font-size: 14px;">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="edit-assign-duedate" style="font-weight: 700;">ط¢ط®ط± ظ…ظˆط¹ط¯ ظ„ظ„طھط³ظ„ظٹظ…:</label>
+                            <input type="date" id="edit-assign-duedate" required style="padding: 12px; font-size: 14px;">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="edit-assign-image" style="font-weight: 700;"><i class="fa-regular fa-image" style="color: var(--accent-orange); margin-left: 6px;"></i> ط§ط®طھظٹط§ط± ظˆطھط¹ط¯ظٹظ„ طµظˆط±ط© ط§ظ„ظˆط§ط¬ط¨ (ط±ظپط¹ ظ…ظ„ظپ طµظˆط±ط© ط¬ط¯ظٹط¯ ظ…ظ† ط¬ظ‡ط§ط²ظƒ):</label>
+                            <input type="file" id="edit-assign-image" accept="image/*" style="padding: 10px; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 8px; width: 100%;">
+                            <div id="edit-assign-image-preview-container" style="margin-top: 10px; display: none; background: rgba(255,255,255,0.02); padding: 10px; border-radius: 8px; border: 1px dashed var(--border-color);">
+                                <span style="font-size: 12.5px; color: var(--text-muted); display: block; margin-bottom: 8px; font-weight: 700;">ًں–¼ï¸ڈ ط§ظ„طµظˆط±ط© ط§ظ„ظ…ط±ظپظ‚ط© ط¨ط§ظ„ظˆط§ط¬ط¨ ط­ط§ظ„ظٹط§ظ‹:</span>
+                                <div style="position: relative; display: inline-block;">
+                                    <img id="edit-assign-image-preview" src="" alt="ظ…ط¹ط§ظٹظ†ط© ط§ظ„طµظˆط±ط©" style="max-height: 140px; border-radius: 8px; border: 1px solid var(--border-color); object-fit: contain;">
+                                    <button type="button" class="btn btn-danger" onclick="removeEditAssignImage()" style="position: absolute; top: 6px; left: 6px; padding: 4px 10px; font-size: 11px; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.4);">
+                                        <i class="fa-solid fa-trash"></i> ط¥ط²ط§ظ„ط© ط§ظ„طµظˆط±ط©
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="edit-assign-link" style="font-weight: 700;"><i class="fa-solid fa-link" style="color: var(--success); margin-left: 6px;"></i> ط±ط§ط¨ط· ظ…ط±ط¬ط¹ظٹ ط£ظˆ ظپظٹط¯ظٹظˆ (ط§ط®طھظٹط§ط±ظٹ):</label>
+                            <input type="url" id="edit-assign-link" placeholder="ظ…ط«ط§ظ„: https://youtube.com/..." style="padding: 12px; font-size: 14px;">
+                        </div>
+
+                        <!-- MCQ fields for edit -->
+                        <div id="edit-assign-mcq-container" style="display: none; border: 1px dashed var(--border-color); padding: 15px; border-radius: 12px; margin-bottom: 20px; background: rgba(255,255,255,0.02);">
+                            <h4 style="font-size: 14px; color: var(--text-orange); margin-bottom: 12px;"><i class="fa-solid fa-list-ul"></i> ط®ظٹط§ط±ط§طھ ط§ظ„ط³ط¤ط§ظ„ ط§ظ„ظ…طھط¹ط¯ط¯ (طھظƒظˆظ† طھظ„ظ‚ط§ط¦ظٹط§ظ‹ ط£طŒ ط¨طŒ ط¬طŒ ط¯ ط¹ظ†ط¯ طھط±ظƒظ‡ط§ ظپط§ط±ط؛ط©):</h4>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                                <div class="form-group"><input type="text" id="edit-assign-opt-0" placeholder="ط§ظ„ط®ظٹط§ط± ط§ظ„ط£ظˆظ„ (طھظ„ظ‚ط§ط¦ظٹط§ظ‹: ط£)" style="padding: 10px;"></div>
+                                <div class="form-group"><input type="text" id="edit-assign-opt-1" placeholder="ط§ظ„ط®ظٹط§ط± ط§ظ„ط«ط§ظ†ظٹ (طھظ„ظ‚ط§ط¦ظٹط§ظ‹: ط¨)" style="padding: 10px;"></div>
+                                <div class="form-group"><input type="text" id="edit-assign-opt-2" placeholder="ط§ظ„ط®ظٹط§ط± ط§ظ„ط«ط§ظ„ط« (طھظ„ظ‚ط§ط¦ظٹط§ظ‹: ط¬)" style="padding: 10px;"></div>
+                                <div class="form-group"><input type="text" id="edit-assign-opt-3" placeholder="ط§ظ„ط®ظٹط§ط± ط§ظ„ط±ط§ط¨ط¹ (طھظ„ظ‚ط§ط¦ظٹط§ظ‹: ط¯)" style="padding: 10px;"></div>
+                            </div>
+                            <div class="form-group" style="margin-top: 8px;">
+                                <label for="edit-assign-correct" style="font-weight: 700;">ط§ظ„ط®ظٹط§ط± ط§ظ„طµط­ظٹط­:</label>
+                                <select id="edit-assign-correct" style="padding: 10px;">
+                                    <option value="0">ط§ظ„ط®ظٹط§ط± ط§ظ„ط£ظˆظ„ (ط£)</option>
+                                    <option value="1">ط§ظ„ط®ظٹط§ط± ط§ظ„ط«ط§ظ†ظٹ (ط¨)</option>
+                                    <option value="2">ط§ظ„ط®ظٹط§ط± ط§ظ„ط«ط§ظ„ط« (ط¬)</option>
+                                    <option value="3">ط§ظ„ط®ظٹط§ط± ط§ظ„ط±ط§ط¨ط¹ (ط¯)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Students targeting section -->
+                        <div style="border-top: 1px solid var(--border-color); padding-top: 20px; margin-top: 20px;">
+                            <label style="font-weight: 700; font-size: 14px; color: var(--text-main); display: block; margin-bottom: 10px;">
+                                <i class="fa-solid fa-users-line" style="color: var(--accent-orange);"></i> طھط­ط¯ظٹط¯ ط§ظ„ط·ظ„ط§ط¨ ط§ظ„ظ…ط³طھظ‡ط¯ظپظٹظ† ط¨ط§ظ„ظˆط§ط¬ط¨ (ط¥ط¶ط§ظپط© ط·ط§ظ„ط¨ ط£ظˆ ظ…ط³ط­ظ‡):
+                            </label>
+                            <div class="form-group">
+                                <select id="edit-assign-target-type" onchange="toggleEditAssignStudentsList(this.value)" style="padding: 12px; font-size: 14px;">
+                                    <option value="all">ط¬ظ…ظٹط¹ ط§ظ„ط·ظ„ط§ط¨ ط§ظ„ظ…ط´طھط±ظƒظٹظ†</option>
+                                    <option value="custom">ط§ط®طھظٹط§ط± ظˆطھط­ط¯ظٹط¯ ط·ظ„ط§ط¨ ظ…ط¹ظٹظ†ظٹظ† (ط¥ط¶ط§ظپط© / ظ…ط³ط­ ط·ط§ظ„ط¨)</option>
+                                </select>
+                            </div>
+                            
+                            <div id="edit-assign-students-container" style="display: none; background: rgba(0,0,0,0.15); border: 1px solid var(--border-color); border-radius: 10px; padding: 15px;">
+                                <div style="display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap;">
+                                    <input type="text" id="edit-assign-search-input" oninput="filterEditAssignStudents(this.value)" placeholder="ًں”چ ط§ط¨ط­ط« ط¹ظ† ط§ط³ظ… ط§ظ„ط·ط§ظ„ط¨ ط£ظˆ ط§ط³ظ… ط§ظ„ظ…ط³طھط®ط¯ظ…..." style="flex: 1; min-width: 200px; padding: 8px 12px; font-size: 13px; background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-main);">
+                                    <button type="button" class="btn btn-secondary" onclick="selectAllEditAssignStudents(true)" style="padding: 6px 12px; font-size: 12px;">
+                                        <i class="fa-solid fa-check-double"></i> ط§ط®طھظٹط§ط± ط§ظ„ظƒظ„
+                                    </button>
+                                    <button type="button" class="btn btn-secondary" onclick="selectAllEditAssignStudents(false)" style="padding: 6px 12px; font-size: 12px;">
+                                        <i class="fa-solid fa-square-xmark"></i> ط¥ظ„ط؛ط§ط، ط§ظ„طھط­ط¯ظٹط¯
+                                    </button>
+                                </div>
+                                <div id="edit-assign-students-grid" style="display: flex; flex-direction: column; gap: 8px; max-height: 220px; overflow-y: auto; padding-left: 4px;">
+                                    <!-- Student Checkboxes -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 30px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+                            <button type="button" class="btn btn-secondary" onclick="showTeacherSection('t-assignments-tab')" style="padding: 10px 20px; font-size: 14px;">ط¥ظ„ط؛ط§ط،</button>
+                            <button type="submit" class="btn btn-primary" style="padding: 10px 24px; font-size: 14px;">
+                                <i class="fa-solid fa-save"></i>
+                                <span>ط­ظپط¸ طھط¹ط¯ظٹظ„ط§طھ ط§ظ„ظˆط§ط¬ط¨</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE E: ADD / EDIT LESSON PAGE -->
+        <section id="add-lesson-page-view" class="fade-in" style="display: none;">
+            <div class="container" style="max-width: 800px; padding: 25px 15px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; flex-wrap: wrap; gap: 15px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div class="logo-icon" style="width: 44px; height: 44px; font-size: 22px; background: linear-gradient(135deg, var(--warning), #FF5500);"><i class="fa-solid fa-video"></i></div>
+                        <div>
+                            <h2 style="font-size: 20px; font-weight: 800; color: var(--text-main);">ط¥ط¶ط§ظپط© / طھط¹ط¯ظٹظ„ ط¯ط±ط³ ظپظٹط¯ظٹظˆ ط¨ط§ظ„ط¯ظˆط±ط©</h2>
+                            <p style="font-size: 13px; color: var(--text-muted); margin-top: 2px;">ط§ظ„ظ…ظ‚ط±ط± ط§ظ„ط¯ط±ط§ط³ظٹ: <strong id="lesson-page-course-title" style="color: var(--accent-orange);">...</strong></p>
+                        </div>
+                    </div>
+                    <button class="btn btn-secondary" style="padding: 8px 16px; font-size: 13px;" onclick="showTeacherSection('t-courses-tab')">
+                        <i class="fa-solid fa-arrow-right"></i> ط§ظ„ط¹ظˆط¯ط© ظ„ظ„ظ…ظ‚ط±ط±ط§طھ
+                    </button>
+                </div>
+
+                <div class="glass-card" style="padding: 25px;">
+                    <form id="create-lesson-form" onsubmit="handleCreateLesson(event)">
+                        <input type="hidden" id="lesson-edit-id">
+                        <input type="hidden" id="lesson-course-id">
+                        
+                        <div class="form-group">
+                            <label for="lesson-title" style="font-weight: 700;">ط¹ظ†ظˆط§ظ† ط§ظ„ط¯ط±ط³ ط§ظ„طھط¹ظ„ظٹظ…ظٹ:</label>
+                            <input type="text" id="lesson-title" required placeholder="ظ…ط«ط§ظ„: ط§ظ„ط¯ط±ط³ ط§ظ„ط£ظˆظ„ - ط§ط³طھط±ط§طھظٹط¬ظٹط§طھ ط§ظ„ط­ظ„ ط§ظ„ط³ط±ظٹط¹" style="padding: 12px; font-size: 14px;">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="lesson-duration" style="font-weight: 700;">ظ…ط¯ط© ط§ظ„ظپظٹط¯ظٹظˆ ط§ظ„ظ…طھظˆظ‚ط¹ط© (ط¯ظ‚ط§ط¦ظ‚/ط«ظˆط§ظ†ظٹ):</label>
+                            <input type="text" id="lesson-duration" required placeholder="ظ…ط«ط§ظ„: 15:30" style="padding: 12px; font-size: 14px;">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="lesson-video-type" style="font-weight: 700;">ظ…طµط¯ط± ط£ظˆ ط·ط±ظٹظ‚ط© ط±ظپط¹ ط§ظ„ظپظٹط¯ظٹظˆ:</label>
+                            <select id="lesson-video-type" onchange="toggleVideoSourceInput(this.value)" style="padding: 12px; font-size: 14px;">
+                                <option value="url">ط±ط§ط¨ط· ظپظٹط¯ظٹظˆ ظ…ط¨ط§ط´ط± ط£ظˆ ظٹظˆطھظٹظˆط¨ (ظ…ط³طھط­ط³ظ†)</option>
+                                <option value="local">ط±ظپط¹ ظ…ظ„ظپ ظپظٹط¯ظٹظˆ ظ…ظ† ط§ظ„ط¬ظ‡ط§ط² (MP4/WebM)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group" id="lesson-video-url-group">
+                            <label for="lesson-video-url" style="font-weight: 700;"><i class="fa-solid fa-link" style="color: var(--accent-orange); margin-left: 6px;"></i> ط±ط§ط¨ط· ط§ظ„ظپظٹط¯ظٹظˆ (YouTube/Vimeo/Direct MP4):</label>
+                            <input type="url" id="lesson-video-url" placeholder="ظ…ط«ط§ظ„: https://www.youtube.com/watch?v=..." style="padding: 12px; font-size: 14px;">
+                        </div>
+
+                        <div class="form-group" id="lesson-video-file-group" style="display: none;">
+                            <label for="lesson-video-file" style="font-weight: 700;"><i class="fa-solid fa-file-video" style="color: var(--success); margin-left: 6px;"></i> ط§ط®طھط± ظ…ظ„ظپ ط§ظ„ظپظٹط¯ظٹظˆ ظ…ظ† ط¬ظ‡ط§ط²ظƒ:</label>
+                            <input type="file" id="lesson-video-file" accept="video/*" style="padding: 10px; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 8px; width: 100%;">
+                        </div>
+                        
+                        <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 30px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+                            <button type="button" class="btn btn-secondary" onclick="showTeacherSection('t-courses-tab')" style="padding: 10px 20px; font-size: 14px;">ط¥ظ„ط؛ط§ط،</button>
+                            <button type="submit" class="btn btn-primary" style="padding: 10px 24px; font-size: 14px;">
+                                <i class="fa-solid fa-video"></i>
+                                <span>ط­ظپط¸ ظˆظ†ط´ط± ط§ظ„ط¯ط±ط³</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE F: CREATE / EDIT COURSE QUIZ OR SIMULATOR PAGE -->
+        <section id="create-quiz-page-view" class="fade-in" style="display: none;">
+            <div class="container" style="max-width: 900px; padding: 25px 15px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; flex-wrap: wrap; gap: 15px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div class="logo-icon" style="width: 44px; height: 44px; font-size: 22px; background: linear-gradient(135deg, var(--purple-xp), #8B5CF6);"><i class="fa-solid fa-graduation-cap"></i></div>
+                        <div>
+                            <h2 style="font-size: 20px; font-weight: 800; color: var(--text-main);" id="quiz-modal-title-text">ط¥ط¶ط§ظپط© / طھط¹ط¯ظٹظ„ ط§ط®طھط¨ط§ط± طھظپط§ط¹ظ„ظٹ ط£ظˆ ظ…ط­ط§ظƒظٹ</h2>
+                            <p style="font-size: 13px; color: var(--text-muted); margin-top: 2px;">ط§ظ„ظ…ظ‚ط±ط± ط§ظ„ط¯ط±ط§ط³ظٹ: <strong id="quiz-page-course-title" style="color: var(--text-orange);">...</strong></p>
+                        </div>
+                    </div>
+                    <button class="btn btn-secondary" style="padding: 8px 16px; font-size: 13px;" onclick="showDashboard()">
+                        <i class="fa-solid fa-arrow-right"></i> ط§ظ„ط¹ظˆط¯ط© ظ„ظ„ظˆط­ط© ط§ظ„طھط­ظƒظ…
+                    </button>
+                </div>
+
+                <div class="glass-card" style="padding: 25px;">
+                    <form id="create-quiz-page-form" novalidate onsubmit="handleCreateQuiz(event)">
+                        <input type="hidden" id="quiz-edit-id">
+                        <input type="hidden" id="quiz-course-id">
+                        <input type="checkbox" id="quiz-is-simulator" style="display:none;">
+
+                        <div class="form-group">
+                            <label for="quiz-title" style="font-weight: 700;">ط¹ظ†ظˆط§ظ† ط§ظ„ط§ط®طھط¨ط§ط± ط§ظ„طھظپط§ط¹ظ„ظٹ / ط§ظ„ظ…ط­ط§ظƒظٹ / طھط­ط¯ظٹط¯ ط§ظ„ظ…ط³طھظˆظ‰:</label>
+                            <input type="text" id="quiz-title" required placeholder="ظ…ط«ط§ظ„: ط§ط®طھط¨ط§ط± ظ†ظ‡ط§ظٹط© ط§ظ„ظˆط­ط¯ط© ط§ظ„ط£ظˆظ„ظ‰" style="padding: 12px; font-size: 14px;">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="quiz-points" style="font-weight: 700;">ط§ظ„ظ†ظ‚ط§ط· ط§ظ„ظ…ظƒط§ظپط¦ط© ظ„ط¥ط¬طھظٹط§ط² ط§ظ„ط§ط®طھط¨ط§ط± (XP):</label>
+                            <input type="number" id="quiz-points" required value="100" min="1" style="padding: 12px; font-size: 14px;">
+                        </div>
+
+                        <!-- Type selector for Simulators -->
+                        <div class="form-group" id="quiz-simulator-type-group" style="display: none; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color);">
+                            <label style="font-weight: 700; margin-bottom: 10px; display: block; color: var(--success);">ظ†ظˆط¹ ط§ظ„ط§ط®طھط¨ط§ط± ط§ظ„ظ…ط³طھظ‚ظ„:</label>
+                            <div style="display: flex; gap: 20px;">
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="radio" name="simulator_type" value="simulator" checked onchange="toggleSimulatorTypeEditor()">
+                                    <span>ظ…ط­ط§ظƒظٹ ظ‚ظٹط§ط³ (ظ…ظ‚ط³ظ… ط¥ظ„ظ‰ ط£ظ‚ط³ط§ظ…)</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="radio" name="simulator_type" value="placement" onchange="toggleSimulatorTypeEditor()">
+                                    <span>ط§ط®طھط¨ط§ط± طھط­ط¯ظٹط¯ ظ…ط³طھظˆظ‰ (ط£ط³ط¦ظ„ط© ظ…ط¨ط§ط´ط±ط© ط¨ط¯ظˆظ† ط£ظ‚ط³ط§ظ…)</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Placement Test specific settings -->
+                        <div id="quiz-placement-settings" style="display: none; background: rgba(16, 185, 129, 0.05); padding: 15px; border-radius: 8px; border: 1px solid rgba(16, 185, 129, 0.2); margin-bottom: 20px;">
+                            <h4 style="font-size: 14px; font-weight: 700; margin-bottom: 15px; color: var(--success);"><i class="fa-solid fa-gear"></i> ط¥ط¹ط¯ط§ط¯ط§طھ طھظ‚ظٹظٹظ… طھط­ط¯ظٹط¯ ط§ظ„ظ…ط³طھظˆظ‰</h4>
+                            
+                            <div class="form-group">
+                                <label for="placement-target-percent" style="font-size: 13px;">ظ†ط³ط¨ط© ط§ظ„طھظ…ظٹط² ط§ظ„ظ…ط³طھظ‡ط¯ظپط© (ظ…ط«ط§ظ„: 80 ظ„ط§ط®طھط¨ط§ط± ظ…ظ† 100):</label>
+                                <select id="placement-target-percent" style="padding: 10px; font-size: 14px;">
+                                    <option value="50">50%</option>
+                                    <option value="60">60%</option>
+                                    <option value="70">70%</option>
+                                    <option value="80" selected>80%</option>
+                                    <option value="90">90%</option>
+                                    <option value="100">100%</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="placement-high-msg" style="font-size: 13px;">ط§ظ„ط±ط³ط§ظ„ط© ظˆط§ظ„طھظˆط¬ظٹظ‡ ظ„ظ…ظ† ظٹط­ظ‚ظ‚ ظ‡ط°ظ‡ ط§ظ„ظ†ط³ط¨ط© ط£ظˆ ط£ط¹ظ„ظ‰ (ط§ظ„طھظ…ظٹط²):</label>
+                                <textarea id="placement-high-msg" rows="3" placeholder="ظ…ط«ط§ظ„: ظ…ط³طھظˆط§ظƒ ط±ط§ط¦ط¹! ط£ظ†طµط­ظƒ ط¨ط§ظ„ط§ظ†ط¶ظ…ط§ظ… ظ„ط¯ظˆط±ط© ط§ظ„ظ…ط±ط§ط¬ط¹ط© ط§ظ„ظ†ظ‡ط§ط¦ظٹط© ظ„ط¶ظ…ط§ظ† +90..." style="padding: 10px; font-size: 13px;"></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="placement-low-msg" style="font-size: 13px;">ط§ظ„ط±ط³ط§ظ„ط© ظˆط§ظ„طھظˆط¬ظٹظ‡ ظ„ظ…ظ† ظٹط­ظ‚ظ‚ ط£ظ‚ظ„ ظ…ظ† ظ‡ط°ظ‡ ط§ظ„ظ†ط³ط¨ط© (ظٹط­طھط§ط¬ طھط­ط³ظٹظ†):</label>
+                                <textarea id="placement-low-msg" rows="3" placeholder="ظ…ط«ط§ظ„: طھط­طھط§ط¬ ط¥ظ„ظ‰ طھط£ط³ظٹط³ ظ‚ظˆظٹطŒ ط£ظ†طµط­ظƒ ط¨ط§ظ„ط§ظ†ط¶ظ…ط§ظ… ظ„ط¯ظˆط±ط© ط§ظ„طھط£ط³ظٹط³ ط§ظ„ط´ط§ظ…ظ„ط©..." style="padding: 10px; font-size: 13px;"></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Normal Quiz Editor (Single Section) -->
+                        <div id="quiz-normal-editor" style="border: 1px solid var(--border-color); padding: 18px; border-radius: 12px; margin-bottom: 25px; background: rgba(0,0,0,0.15);">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                                <div>
+                                    <h4 style="font-size: 15px; font-weight: 800; color: var(--purple-xp);"><i class="fa-solid fa-list-check"></i> ط£ط³ط¦ظ„ط© ط§ظ„ط§ط®طھط¨ط§ط± ظˆط§ظ„ط®ظٹط§ط±ط§طھ ط§ظ„ظ…طھط¹ط¯ط¯ط©:</h4>
+                                    <p style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">ظٹظ…ظƒظ†ظƒ ط¥ط¶ط§ظپط© طµظˆط± ظ„ظ„ط£ط³ط¦ظ„ط© ط£ظˆ ط±ظ…ظˆط² ط±ظٹط§ط¶ظٹط© ط¨ظٹظ† ط¹ظ„ط§ظ…ط§طھ $</p>
+                                </div>
+                                <button type="button" class="btn btn-secondary" style="padding: 6px 14px; font-size: 12.5px; border-color: var(--purple-xp); color: var(--purple-xp);" onclick="addQuizQuestionEditorRow()">
+                                    <i class="fa-solid fa-plus"></i> ط¥ط¶ط§ظپط© ط³ط¤ط§ظ„ ط¬ط¯ظٹط¯
+                                </button>
+                            </div>
+
+                            <div id="quiz-questions-editor-container" style="display: flex; flex-direction: column; gap: 15px;">
+                                <!-- Question Rows Generated by JS -->
+                            </div>
+                        </div>
+
+                        <!-- Simulator Quiz Editor (Multi Section) -->
+                        <div id="quiz-simulator-editor" style="display: none; border: 1px solid var(--border-color); padding: 18px; border-radius: 12px; margin-bottom: 25px; background: rgba(0,0,0,0.15);">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                                <div>
+                                    <h4 style="font-size: 15px; font-weight: 800; color: var(--success);"><i class="fa-solid fa-layer-group"></i> ط£ظ‚ط³ط§ظ… ظˆط±ط£ط³ظٹط§طھ ظ…ط­ط§ظƒظٹ ظ‚ظٹط§ط³:</h4>
+                                    <p style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">ظ‚ط³ظ‘ظ… ط§ط®طھط¨ط§ط± ط§ظ„ظ…ط­ط§ظƒط§ط© ط¥ظ„ظ‰ ط£ظ‚ط³ط§ظ… (ظ…ط«ظ„: ط§ظ„ظ‚ط³ظ… ط§ظ„ظƒظ…ظٹ ط§ظ„ط£ظˆظ„طŒ ط§ظ„ظ‚ط³ظ… ط§ظ„ظ„ظپط¸ظٹ...)طŒ ظˆط£ط¶ظپ ط£ط³ط¦ظ„ط© ظ„ظƒظ„ ظ‚ط³ظ….</p>
+                                </div>
+                                <button type="button" class="btn btn-secondary" style="padding: 6px 14px; font-size: 12.5px; border-color: var(--success); color: var(--success);" onclick="addQuizSectionEditorRow()">
+                                    <i class="fa-solid fa-plus"></i> ط¥ط¶ط§ظپط© ظ‚ط³ظ… ط¬ط¯ظٹط¯ ظ„ظ„ظ…ط­ط§ظƒظٹ
+                                </button>
+                            </div>
+
+                            <div id="quiz-sections-editor-container" style="display: flex; flex-direction: column; gap: 20px;">
+                                <!-- Section Blocks Generated by JS -->
+                            </div>
+                        </div>
+
+                        <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 30px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+                            <button type="button" class="btn btn-secondary" onclick="showDashboard()" style="padding: 10px 20px; font-size: 14px;">ط¥ظ„ط؛ط§ط،</button>
+                            <button type="submit" class="btn btn-primary" style="padding: 10px 24px; font-size: 14px;">
+                                <i class="fa-solid fa-cloud-arrow-up"></i>
+                                <span id="quiz-submit-btn-text">ط­ظپط¸ ظˆظ†ط´ط± ط§ظ„ط§ط®طھط¨ط§ط± / ط§ظ„ظ…ط­ط§ظƒظٹ</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+
         <!-- 3. STUDENT DASHBOARD VIEW -->
         <section id="student-view" class="fade-in" style="display: none;">
             <div class="stats-row">
@@ -521,8 +1181,17 @@
                     <button class="tab-btn active" onclick="switchTab('student', 's-active-tab', this)">
                         <i class="fa-solid fa-hourglass-half"></i> ط§ظ„ظˆط§ط¬ط¨ط§طھ ط§ظ„ظ…ط·ظ„ظˆط¨ط©
                     </button>
+                    <button class="tab-btn" onclick="switchTab('student', 's-my-courses-tab', this)">
+                        <i class="fa-solid fa-book-open-reader"></i> ط¯ظˆط±ط§طھظٹ ط§ظ„ظ…ط´طھط±ظƒ ط¨ظ‡ط§
+                    </button>
                     <button class="tab-btn" onclick="switchTab('student', 's-courses-tab', this)">
                         <i class="fa-solid fa-graduation-cap"></i> ط§ظ„ط¯ظˆط±ط§طھ ط§ظ„طھط¹ظ„ظٹظ…ظٹط©
+                    </button>
+                    <button class="tab-btn" onclick="switchTab('student', 's-simulators-tab', this)">
+                        <i class="fa-solid fa-bolt"></i> ط§ط®طھط¨ط§ط±ط§طھ ط§ظ„ظ…ط­ط§ظƒظٹ
+                    </button>
+                    <button class="tab-btn" onclick="switchTab('student', 's-placement-tab', this)">
+                        <i class="fa-solid fa-bullseye"></i> ط§ط®طھط¨ط§ط±ط§طھ طھط­ط¯ظٹط¯ ط§ظ„ظ…ط³طھظˆظ‰
                     </button>
                     <button class="tab-btn" onclick="switchTab('student', 's-history-tab', this)">
                         <i class="fa-solid fa-clock-rotate-left"></i> ط§ظ„ط³ط¬ظ„ ظˆط§ظ„طھطµط­ظٹط­
@@ -547,12 +1216,42 @@
                             </div>
                         </div>
 
+                        <!-- Tab 1.5: Student Subscribed Courses -->
+                        <div id="s-my-courses-tab" class="tab-content">
+                            <div class="section-title">
+                                <h3>ط¯ظˆط±ط§طھظٹ ط§ظ„ظ…ط´طھط±ظƒ ط¨ظ‡ط§ ظˆظ…طھط§ط¨ط¹ط© ط§ظ„ط¥ظ†ط¬ط§ط²</h3>
+                            </div>
+                            <div class="students-grid" id="s-my-courses-list" style="margin-top: 15px;">
+                                <!-- Populated by JavaScript -->
+                            </div>
+                        </div>
+
                         <!-- Tab 2: Student Educational Courses -->
                         <div id="s-courses-tab" class="tab-content">
                             <div class="section-title">
                                 <h3>ظ…ظ‚ط±ط±ط§طھ ظˆط¯ظˆط±ط§طھ ط§ظ„ظپظٹط¯ظٹظˆ ط§ظ„ظ…طھط§ط­ط©</h3>
                             </div>
                             <div class="students-grid" id="s-courses-list" style="margin-top: 15px;">
+                                <!-- Populated by JavaScript -->
+                            </div>
+                        </div>
+
+                        <!-- Tab 2.5: Student Exam Simulators -->
+                        <div id="s-simulators-tab" class="tab-content">
+                            <div class="section-title">
+                                <h3>ظ…ط­ط§ظƒظٹ ط§ظ„ط§ط®طھط¨ط§ط±ط§طھ ظˆط§ظ„طھظ‚ظٹظٹظ…ط§طھ</h3>
+                            </div>
+                            <div class="students-grid" id="s-simulators-list" style="margin-top: 15px;">
+                                <!-- Populated by JavaScript -->
+                            </div>
+                        </div>
+
+                        <!-- Tab 2.6: Student Placement Tests -->
+                        <div id="s-placement-tab" class="tab-content">
+                            <div class="section-title">
+                                <h3>ط§ط®طھط¨ط§ط±ط§طھ طھط­ط¯ظٹط¯ ط§ظ„ظ…ط³طھظˆظ‰</h3>
+                            </div>
+                            <div class="students-grid" id="s-placement-list" style="margin-top: 15px;">
                                 <!-- Populated by JavaScript -->
                             </div>
                         </div>
@@ -570,10 +1269,7 @@
                         <!-- Tab 4: Student Chat with Teacher -->
                         <div id="s-chat-tab" class="tab-content">
                             <div class="section-title">
-                                <h3>ط§ط³ط£ظ„ ظ…ط¹ظ„ظ…ظƒ ط§ظ„ط®طµظˆطµظٹ ًں’¬</h3>
-                            </div>
-                            
-                            <div class="form-group" style="margin-bottom: 15px;">
+                        <div class="form-group" style="margin-bottom: 15px;">
                                 <label for="s-chat-teacher-select">ط§ط®طھط± ط§ظ„ظ…ط¹ظ„ظ… ط§ظ„ط°ظٹ طھظˆط¯ ط§ظ„طھظˆط§طµظ„ ظ…ط¹ظ‡:</label>
                                 <select id="s-chat-teacher-select" onchange="renderStudentChatHistory()" style="padding: 10px; border-radius: 8px;">
                                     <!-- Populated dynamically with teachers list -->
@@ -638,477 +1334,875 @@
             </div>
         </section>
         
-    </main>
-
-    <!-- FOOTER -->
-    <footer>
-        طھط·ط¨ظٹظ‚ <span>ظ…ظژط³ط§ط± (Masar)</span> ظ„ظ„طھط¹ظ„ظٹظ… ط§ظ„ط°ظƒظٹ آ© 2026 - طھظ… طھطµظ…ظٹظ…ظ‡ ط¨ظƒظ„ ط´ط؛ظپ ظ„ظ…ط³ط§ط¹ط¯ط© ط§ظ„ظ…ط¹ظ„ظ… ط§ظ„ط®طµظˆطµظٹ ظˆط·ظ„ط§ط¨ظ‡.
-    </footer>
-
-    <!-- MODAL 1: SUBMIT ASSIGNMENT (Student) -->
-    <div id="submit-modal" class="modal-overlay">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title" id="submit-modal-title">طھط³ظ„ظٹظ… ط§ظ„ظˆط§ط¬ط¨</h3>
-                <button class="modal-close" onclick="closeModal('submit-modal')">&times;</button>
-            </div>
-            
-            <div style="margin-bottom: 15px; background: rgba(255,255,255,0.02); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
-                <h4 style="font-size: 14px; margin-bottom: 5px; color: var(--text-orange);"><i class="fa-solid fa-circle-question"></i> ط§ظ„ط³ط¤ط§ظ„ ط§ظ„ظ…ط·ظ„ظˆط¨:</h4>
-                <p id="submit-modal-question" style="font-size: 14px; white-space: pre-line; line-height: 1.6;"></p>
-            </div>
-            
-            <form id="submit-assignment-form" onsubmit="handleSubmitAssignment(event)">
-                <input type="hidden" id="submit-assignment-id">
+        <!-- PAGE VIEW 1: SOLVE ASSIGNMENT (Full Page) -->
+        <section id="solve-assignment-page-view" class="fade-in" style="display: none;">
+            <div class="glass-card" style="max-width: 850px; margin: 0 auto; padding: 30px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; flex-wrap: wrap; gap: 12px;">
+                    <h2 style="font-size: 22px; font-weight: 800; color: var(--text-main);" id="submit-modal-title">
+                        <i class="fa-solid fa-pen-to-square" style="color: var(--accent-orange); margin-left: 8px;"></i>
+                        طµظپط­ط© ط­ظ„ ظˆطھط³ظ„ظٹظ… ط§ظ„ظˆط§ط¬ط¨
+                    </h2>
+                    <button class="btn btn-secondary" onclick="showDashboard()">
+                        <i class="fa-solid fa-arrow-right"></i> ط§ظ„ط¹ظˆط¯ط© ظ„ظ„ظˆط­ط© ط§ظ„طھط­ظƒظ…
+                    </button>
+                </div>
                 
-                <!-- MCQ option buttons container -->
-                <div id="submit-mcq-container" style="display: none; margin-bottom: 20px; border-bottom: 1px dashed var(--border-color); padding-bottom: 15px;">
-                    <label style="font-weight: 700; color: var(--text-orange); display: block; margin-bottom: 8px;"><i class="fa-solid fa-list-check"></i> ط§ط®طھط± ط§ظ„ط¥ط¬ط§ط¨ط© ط§ظ„طµط­ظٹط­ط©:</label>
-                    <div class="quiz-options-list" id="submit-mcq-options-list" style="grid-template-columns: 1fr 1fr; gap: 8px;">
+                <div style="margin-bottom: 20px; background: rgba(255,255,255,0.02); padding: 18px; border-radius: 12px; border: 1px solid var(--border-color);">
+                    <h4 style="font-size: 15px; margin-bottom: 8px; color: var(--text-orange); font-weight: 800;"><i class="fa-solid fa-circle-question"></i> ط§ظ„ط³ط¤ط§ظ„ ط§ظ„ظ…ط·ظ„ظˆط¨:</h4>
+                    <p id="submit-modal-question" style="font-size: 15px; white-space: pre-line; line-height: 1.7; color: var(--text-main);"></p>
+                </div>
+                
+                <div id="submit-modal-image-container" style="display: none; margin-bottom: 20px; text-align: center; background: rgba(255,255,255,0.02); padding: 18px; border-radius: 12px; border: 1px solid var(--border-color);">
+                    <h4 style="font-size: 15px; margin-bottom: 12px; color: var(--text-orange); text-align: right; font-weight: 800;"><i class="fa-regular fa-image"></i> ط§ظ„طµظˆط±ط© ط§ظ„ظ…ط±ظپظ‚ط© ظ…ط¹ ط§ظ„ط³ط¤ط§ظ„:</h4>
+                    <img id="submit-modal-image" src="" alt="طµظˆط±ط© ط§ظ„ظˆط§ط¬ط¨" style="max-width: 100%; max-height: 380px; border-radius: 10px; border: 1px solid var(--border-color); object-fit: contain;">
+                </div>
+                
+                <form id="submit-assignment-form" onsubmit="handleSubmitAssignment(event)">
+                    <input type="hidden" id="submit-assignment-id">
+                    
+                    <div id="submit-mcq-container" style="display: none; margin-bottom: 25px; border-bottom: 1px dashed var(--border-color); padding-bottom: 20px;">
+                        <label style="font-weight: 800; font-size: 15px; color: var(--text-orange); display: block; margin-bottom: 12px;"><i class="fa-solid fa-list-check"></i> ط§ط®طھط± ط§ظ„ط¥ط¬ط§ط¨ط© ط§ظ„طµط­ظٹط­ط©:</label>
+                        <div class="quiz-options-list" id="submit-mcq-options-list" style="grid-template-columns: 1fr 1fr; gap: 12px;">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label id="submit-answer-label" for="submit-answer" style="font-weight: 700; margin-bottom: 8px;">ط¥ط¬ط§ط¨طھظƒ (طھط¯ط¹ظ… ط§ظ„ط±ظ…ظˆط² ظˆط§ظ„ظ…ط¹ط§ط¯ظ„ط§طھ ط¨ظٹظ† ط¹ظ„ط§ظ…ط© $):</label>
+                        <textarea id="submit-answer" rows="7" required placeholder="ظ…ط«ط§ظ„: ظ‚ظٹظ…ط© $ط³ = ظ¥$" style="font-size: 15px; line-height: 1.6;"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="submit-link" style="font-weight: 700; margin-bottom: 8px;"><i class="fa-solid fa-link"></i> ط±ط§ط¨ط· ط¥ط¶ط§ظپظٹ (ط§ط®طھظٹط§ط±ظٹ - ظ…ط«ظ„ط§ظ‹ ظ…ط³طھظ†ط¯ Google Drive ط£ظˆ طµظˆط±ط© ظ„ط­ظ„ظ‘ظƒ):</label>
+                        <input type="url" id="submit-link" placeholder="https://example.com/your-work">
+                    </div>
+                    
+                    <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 30px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+                        <button type="button" class="btn btn-secondary" onclick="showDashboard()">ط¥ظ„ط؛ط§ط،</button>
+                        <button type="submit" class="btn btn-primary" style="padding: 12px 30px; font-size: 15px; font-weight: 800;">
+                            <i class="fa-solid fa-paper-plane"></i>
+                            <span>ط¥ط±ط³ط§ظ„ ط§ظ„ط­ظ„ ظ„ظ„ظ…ط¹ظ„ظ…</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- PAGE VIEW 2: GRADE ASSIGNMENT (Full Page) -->
+        <section id="grade-assignment-page-view" class="fade-in" style="display: none;">
+            <div class="glass-card" style="max-width: 850px; margin: 0 auto; padding: 30px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; flex-wrap: wrap; gap: 12px;">
+                    <h2 style="font-size: 22px; font-weight: 800; color: var(--text-main);">
+                        <i class="fa-solid fa-clipboard-check" style="color: var(--success); margin-left: 8px;"></i>
+                        طھطµط­ظٹط­ ظˆط§ط¬ط¨ ط§ظ„ط·ط§ظ„ط¨
+                    </h2>
+                    <button class="btn btn-secondary" onclick="showDashboard()">
+                        <i class="fa-solid fa-arrow-right"></i> ط§ظ„ط¹ظˆط¯ط© ظ„ظ„ظˆط­ط© ط§ظ„طھط­ظƒظ…
+                    </button>
+                </div>
+                
+                <div style="margin-bottom: 20px; background: rgba(255,255,255,0.02); padding: 18px; border-radius: 12px; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 10px;">
+                    <div>
+                        <strong style="color: var(--text-muted); font-size: 13px;">ط§ظ„ط·ط§ظ„ط¨:</strong> 
+                        <span id="grade-modal-student" style="font-weight: 800; font-size: 16px;">--</span>
+                    </div>
+                    <div>
+                        <strong style="color: var(--text-muted); font-size: 13px;">ط§ظ„ظˆط§ط¬ط¨:</strong> 
+                        <span id="grade-modal-assignment-title" style="font-weight: 800; font-size: 16px;">--</span>
+                    </div>
+                    
+                    <div id="grade-modal-mcq-info" style="display: none; background: rgba(0,0,0,0.15); padding: 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05); margin-top: 6px; display: flex; flex-direction: column; gap: 8px;">
+                        <div>
+                            <strong style="color: var(--text-muted); font-size: 13px;">ط§ط®طھظٹط§ط± ط§ظ„ط·ط§ظ„ط¨:</strong> 
+                            <span id="grade-modal-student-option" style="font-weight: 800;">--</span> 
+                            <span id="grade-modal-mcq-badge" style="font-size: 12px; padding: 3px 8px; border-radius: 6px; margin-right: 8px; font-weight: bold;"></span>
+                        </div>
+                        <div>
+                            <strong style="color: var(--text-muted); font-size: 13px;">ط§ظ„ط®ظٹط§ط± ط§ظ„طµط­ظٹط­ ط§ظ„ظ…ط¹ظٹظ†:</strong> 
+                            <span id="grade-modal-correct-option" style="font-weight: 800; color: var(--success);">--</span>
+                        </div>
+                    </div>
+
+                    <div style="border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 12px; margin-top: 6px;">
+                        <strong id="grade-modal-answer-label" style="color: var(--text-orange); font-size: 14px; display: block; margin-bottom: 6px; font-weight: 800;"><i class="fa-solid fa-comment-dots"></i> ط¥ط¬ط§ط¨ط© ط§ظ„ط·ط§ظ„ط¨:</strong>
+                        <p id="grade-modal-answer" style="white-space: pre-line; background: rgba(0,0,0,0.25); padding: 14px; border-radius: 8px; font-size: 15px; border-right: 4px solid var(--accent-orange); line-height: 1.6;"></p>
+                    </div>
+                    <div id="grade-modal-link-container" style="display: none;">
+                        <strong style="color: var(--text-muted); font-size: 13px;">ط§ظ„ط±ط§ط¨ط· ط§ظ„ظ…ط±ظپظ‚:</strong> 
+                        <a id="grade-modal-link" href="#" target="_blank" style="color: #60A5FA; text-decoration: underline; font-size: 14px; font-weight: 700;">طھطµظپط­ ط§ظ„ط±ط§ط¨ط· ط§ظ„ظ…ط±ظپظ‚</a>
+                    </div>
+                    
+                    <div id="grade-modal-image-container" style="display: none; border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 12px; margin-top: 6px; text-align: center;">
+                        <strong style="color: var(--text-muted); font-size: 13px; display: block; text-align: right; margin-bottom: 6px;"><i class="fa-regular fa-image"></i> ط§ظ„طµظˆط±ط© ط§ظ„ظ…ط±ظپظ‚ط© ط¨ط§ظ„ظˆط§ط¬ط¨:</strong>
+                        <img id="grade-modal-image" src="" alt="طµظˆط±ط© ط§ظ„ظˆط§ط¬ط¨" style="max-width: 100%; max-height: 300px; border-radius: 10px; border: 1px solid var(--border-color); object-fit: contain;">
+                    </div>
+                </div>
+                
+                <form id="grade-assignment-form" onsubmit="handleGradeAssignment(event)">
+                    <input type="hidden" id="grade-submission-id">
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div class="form-group">
+                            <label for="grade-value" style="font-weight: 700;">ط§ظ„ط¯ط±ط¬ط© ط§ظ„ظ…ظ…ظ†ظˆط­ط©:</label>
+                            <select id="grade-value">
+                                <option value="10">10 / 10 (ظ…ظ…طھط§ط² ط¬ط¯ط§ظ‹)</option>
+                                <option value="9">9 / 10 (ط±ط§ط¦ط¹)</option>
+                                <option value="8">8 / 10 (ط¬ظٹط¯ ط¬ط¯ط§ظ‹)</option>
+                                <option value="7">7 / 10 (ط¬ظٹط¯)</option>
+                                <option value="6">6 / 10 (ظ…ظ‚ط¨ظˆظ„)</option>
+                                <option value="5">5 / 10 (ظٹط­طھط§ط¬ ظ…ط±ط§ط¬ط¹ط©)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="grade-bonus-xp" style="font-weight: 700;">ظ†ظ‚ط§ط· XP ط¥ط¶ط§ظپظٹط© طھط´ط¬ظٹط¹ظٹط©:</label>
+                            <select id="grade-bonus-xp">
+                                <option value="0">ط¨ط¯ظˆظ† ظ†ظ‚ط§ط· ط¥ط¶ط§ظپظٹط©</option>
+                                <option value="10">+10 XP</option>
+                                <option value="20">+20 XP</option>
+                                <option value="50">+50 XP (ظ…ظ…ظٹط²! ًںŒں)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="grade-feedback" style="font-weight: 700;">ظ…ظ„ط§ط­ط¸ط§طھ ط§ظ„ظ…ط¹ظ„ظ… ظˆطھظ‚ظٹظٹظ…ظ‡ ظ„ظ„ط­ظ„:</label>
+                        <textarea id="grade-feedback" rows="5" placeholder="ظ…ط«ط§ظ„: ط£ط­ط³ظ†طھ ظٹط§ ط¨ط·ظ„! ط­ظ„ظƒ ط±ط§ط¦ط¹ ظˆظ…ظ†ط¸ظ…طŒ ط§ط³طھظ…ط± ط¹ظ„ظ‰ ظ‡ط°ط§ ط§ظ„ط£ط¯ط§ط، ط§ظ„ظ…ظ…ظٹط²."></textarea>
+                    </div>
+                    
+                    <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 25px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+                        <button type="button" class="btn btn-secondary" onclick="showDashboard()">ط¥ظ„ط؛ط§ط،</button>
+                        <button type="submit" class="btn btn-primary" style="background: var(--success); padding: 12px 28px; font-weight: 800;">
+                            <i class="fa-solid fa-clipboard-check"></i>
+                            <span>ط§ط¹طھظ…ط§ط¯ ط§ظ„ط¯ط±ط¬ط© ظˆط§ظ„طھطµط­ظٹط­</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- PAGE VIEW 3: ADJUST XP (Full Page) -->
+        <section id="adjust-xp-page-view" class="fade-in" style="display: none;">
+            <div class="glass-card" style="max-width: 700px; margin: 0 auto; padding: 30px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px;">
+                    <h2 style="font-size: 22px; font-weight: 800; color: var(--text-main);">
+                        <i class="fa-solid fa-sliders" style="color: var(--accent-orange); margin-left: 8px;"></i>
+                        طھط¹ط¯ظٹظ„ ط§ظ„ظ†ظ‚ط§ط· (XP) ظˆط§ظ„ط£ظˆط³ظ…ط©
+                    </h2>
+                    <button class="btn btn-secondary" onclick="showDashboard()">
+                        <i class="fa-solid fa-arrow-right"></i> ط§ظ„ط¹ظˆط¯ط©
+                    </button>
+                </div>
+                
+                <form id="adjust-xp-form" onsubmit="handleAdjustXP(event)">
+                    <input type="hidden" id="adjust-xp-student-id">
+                    
+                    <div style="margin-bottom: 20px; background: rgba(255,255,255,0.02); padding: 15px; border-radius: 10px; border: 1px solid var(--border-color);">
+                        <strong style="color: var(--text-muted); font-size: 14px;">ط§ط³ظ… ط§ظ„ط·ط§ظ„ط¨:</strong> 
+                        <span id="adjust-xp-student-name" style="font-weight: 800; font-size: 17px; color: var(--text-main); margin-right: 8px;">--</span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="adjust-xp-amount" style="font-weight: 700;">طھط¹ط¯ظٹظ„ ط§ظ„ظ†ظ‚ط§ط· (ط§ظƒطھط¨ ط±ظ‚ظ…ط§ظ‹ ظ…ظˆط¬ط¨ط§ظ‹ ظ„ظ„ط²ظٹط§ط¯ط©طŒ ط£ظˆ ط³ط§ظ„ط¨ط§ظ‹ ظ„ظ„ط®طµظ…):</label>
+                        <input type="number" id="adjust-xp-amount" placeholder="ظ…ط«ط§ظ„: 50 ط£ظˆ -30 (ط§طھط±ظƒظ‡ ظپط§ط±ط؛ط§ظ‹ ظ„ط¹ط¯ظ… طھط¹ط¯ظٹظ„ ط§ظ„ظ†ظ‚ط§ط·)">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="adjust-xp-reason" style="font-weight: 700;">ط§ظ„ط³ط¨ط¨ ط£ظˆ ط§ظ„ظ†ط´ط§ط· ط§ظ„ظ…ظƒط§ظپط¦ (ط§ط®طھظٹط§ط±ظٹ):</label>
+                        <input type="text" id="adjust-xp-reason" placeholder="ظ…ط«ط§ظ„: طھظ…ظٹط² ظˆظ…ط´ط§ط±ظƒط© ظپظٹ ط§ظ„ط­طµط© / ط¨ط·ظ„ ط§ط®طھط¨ط§ط±ط§طھ ظ‚ظٹط§ط³">
+                    </div>
+
+                    <div style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 15px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                            <label style="font-size: 14px; font-weight: 800; color: var(--text-main);">طھط­ط¯ظٹط¯ ظˆظ…ظ†ط­ ط§ظ„ط£ظˆط³ظ…ط© ظ„ظ„ط·ط§ظ„ط¨:</label>
+                            <button type="button" class="btn btn-secondary" style="padding: 6px 14px; font-size: 12px; border-color: var(--accent-orange); color: var(--text-orange);" onclick="showBadgeManagerView()">
+                                <i class="fa-solid fa-award"></i> ط¥ط¯ط§ط±ط© ظˆظ…ظƒطھط¨ط© ط§ظ„ط£ظˆط³ظ…ط© ًںژ–ï¸ڈ
+                            </button>
+                        </div>
+                        <div id="adjust-xp-student-badges-list" style="max-height: 200px; overflow-y: auto; display: flex; flex-wrap: wrap; gap: 10px; padding: 12px; background: rgba(0,0,0,0.15); border: 1px solid var(--border-color); border-radius: 10px;">
+                            <!-- Badge checkboxes -->
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 30px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+                        <button type="button" class="btn btn-secondary" onclick="showDashboard()">ط¥ظ„ط؛ط§ط،</button>
+                        <button type="submit" class="btn btn-primary" style="padding: 12px 28px; font-weight: 800;">
+                            <i class="fa-solid fa-save"></i>
+                            <span>ط­ظپط¸ ط§ظ„طھط¹ط¯ظٹظ„ط§طھ ظˆط§ظ„ط£ظˆط³ظ…ط©</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- PAGE VIEW 4: CLOUD CONFIG (Full Page) -->
+        <section id="cloud-config-page-view" class="fade-in" style="display: none;">
+            <div class="glass-card" style="max-width: 750px; margin: 0 auto; padding: 30px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px;">
+                    <h2 style="font-size: 22px; font-weight: 800; color: var(--text-main);">
+                        <i class="fa-solid fa-cloud-bolt" style="color: var(--accent-orange); margin-left: 8px;"></i>
+                        ط¥ط¹ط¯ط§ط¯ط§طھ ط§ظ„ط±ط¨ط· ط§ظ„ط³ط­ط§ط¨ظٹ (Supabase)
+                    </h2>
+                    <button class="btn btn-secondary" onclick="showDashboard()">
+                        <i class="fa-solid fa-arrow-right"></i> ط§ظ„ط¹ظˆط¯ط©
+                    </button>
+                </div>
+                
+                <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 20px; line-height: 1.6;">
+                    ط§ط±ط¨ط· ظ…ظ†طµط© "ظ…ط³ط§ط±" ط¨ظ‚ط§ط¹ط¯ط© ط¨ظٹط§ظ†ط§طھ ط³ط­ط§ط¨ظٹط© ظ…ط¬ط§ظ†ظٹط© ظ„طھظ…ظƒظٹظ† ط§ظ„ظ…ط²ط§ظ…ظ†ط© ط§ظ„ظ„ط­ط¸ظٹط© ظ„ظ„ظˆط§ط¬ط¨ط§طھ ظˆط§ظ„طھط³ظ„ظٹظ…ط§طھ ظˆط§ظ„طھط±طھظٹط¨ ط¨ظٹظ† ط¬ظ…ظٹط¹ ط§ظ„ط£ط¬ظ‡ط²ط©.
+                </p>
+                
+                <form id="cloud-config-form" onsubmit="handleSaveCloudConfig(event)">
+                    <div class="form-group">
+                        <label for="cloud-url" style="font-weight: 700;">ط±ط§ط¨ط· ظ…ط´ط±ظˆط¹ ط³ظˆط¨ط§ط¨ظٹط³ (Supabase URL):</label>
+                        <input type="url" id="cloud-url" placeholder="https://your-project.supabase.co" dir="ltr" style="direction: ltr; text-align: left; font-family: monospace;">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="cloud-key" style="font-weight: 700;">ظ…ظپطھط§ط­ ط§ظ„ط§طھطµط§ظ„ ط§ظ„ط¹ط§ظ… (Supabase Anon Key):</label>
+                        <textarea id="cloud-key" rows="4" placeholder="ط£ط¯ط®ظ„ ظ…ظپطھط§ط­ ط§ظ„ط§طھطµط§ظ„ (Anon API Key) ظ‡ظ†ط§..." dir="ltr" style="direction: ltr; text-align: left; font-family: monospace; font-size: 12px; line-height: 1.4;"></textarea>
+                    </div>
+                    
+                    <div id="cloud-config-feedback" style="display: none; padding: 12px; border-radius: 8px; font-size: 14px; margin-bottom: 20px; font-weight: 700;"></div>
+                    
+                    <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 25px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+                        <button type="button" class="btn btn-secondary" onclick="clearCloudConfig()" style="background: rgba(239, 68, 68, 0.1); color: #FFA3A3; border-color: rgba(239, 68, 68, 0.2);">
+                            <i class="fa-solid fa-unlink"></i> ظ‚ط·ط¹ ط§ظ„ط§طھطµط§ظ„ (ط§ظ„ظˆط¶ط¹ ط§ظ„ظ…ط­ظ„ظٹ)
+                        </button>
+                        <button type="submit" class="btn btn-primary" style="padding: 12px 28px; font-weight: 800;">
+                            <i class="fa-solid fa-plug"></i> ط­ظپط¸ ظˆط§ط®طھط¨ط§ط± ط§ظ„ط§طھطµط§ظ„
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- PAGE VIEW 5: TEACHER COURSE MANAGE (Full Page) -->
+        <section id="teacher-course-manage-page-view" class="fade-in" style="display: none;">
+            <div class="glass-card" style="max-width: 1000px; margin: 0 auto; padding: 30px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; flex-wrap: wrap; gap: 12px;">
+                    <h2 style="font-size: 22px; font-weight: 800; color: var(--text-main);" id="t-course-manage-modal-title">
+                        <i class="fa-solid fa-layer-group" style="color: var(--accent-orange); margin-left: 8px;"></i>
+                        ط¥ط¯ط§ط±ط© ظ…ط­طھظˆظٹط§طھ ط§ظ„ظ…ظ‚ط±ط± ظˆط§ظ„ط¯ط±ظˆط³
+                    </h2>
+                    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                        <button type="button" class="btn btn-secondary" style="border-color: var(--accent-orange); color: var(--text-orange);" id="t-course-manage-edit-btn">
+                            <i class="fa-regular fa-edit"></i> طھط¹ط¯ظٹظ„ ط¨ظٹط§ظ†ط§طھ ظ‡ط°ط§ ط§ظ„ظ…ظ‚ط±ط±
+                        </button>
+                        <button class="btn btn-secondary" onclick="showTeacherSection('t-courses-tab')">
+                            <i class="fa-solid fa-arrow-right"></i> ط§ظ„ط¹ظˆط¯ط© ظ„ظ„ظ…ظ‚ط±ط±ط§طھ
+                        </button>
+                    </div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 25px; margin-bottom: 20px;">
+                    <!-- Lessons Column -->
+                    <div style="display: flex; flex-direction: column; gap: 15px; background: rgba(0,0,0,0.15); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color);">
+                        <h4 style="font-size: 16px; color: var(--text-orange); margin-bottom: 10px; border-bottom: 1px dashed var(--border-color); padding-bottom: 8px; font-weight: 800;">
+                            <i class="fa-solid fa-play"></i> ط¯ط±ظˆط³ ط§ظ„ط´ط±ط­ ظˆط§ظ„ظپظٹط¯ظٹظˆ ط§ظ„ط­ط§ظ„ظٹط©
+                        </h4>
+                        <div class="list-container" id="t-course-lessons-list" style="gap: 12px;">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Quizzes Column -->
+                    <div style="display: flex; flex-direction: column; gap: 15px; background: rgba(0,0,0,0.15); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color);">
+                        <h4 style="font-size: 16px; color: var(--success); margin-bottom: 10px; border-bottom: 1px dashed var(--border-color); padding-bottom: 8px; font-weight: 800;">
+                            <i class="fa-solid fa-clipboard-question"></i> ط§ظ„ط§ط®طھط¨ط§ط±ط§طھ ط§ظ„ظ‚طµظٹط±ط© ط§ظ„ط­ط§ظ„ظٹط©
+                        </h4>
+                        <div class="list-container" id="t-course-quizzes-list" style="gap: 12px;">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 25px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+                    <button type="button" class="btn btn-secondary" onclick="showDashboard()">ط§ظ„ط¹ظˆط¯ط© ظ„ظ„ظˆط­ط© ط§ظ„طھط­ظƒظ…</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE VIEW 6: STUDENT COURSE VIEWER (Full Page) -->
+        <section id="student-course-page-view" class="fade-in" style="display: none;">
+            <div class="glass-card" style="max-width: 1100px; margin: 0 auto; padding: 25px;">
+                
+                <!-- Course Header & Price Tag -->
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 18px; flex-wrap: wrap; gap: 15px;">
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                            <span id="s-course-subject-badge" class="course-subject subject-math">ط±ظٹط§ط¶ظٹط§طھ</span>
+                            <span id="s-course-price-badge" style="background: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.3); padding: 4px 12px; border-radius: 20px; font-weight: 800; font-size: 12px;">ظ…ط¬ط§ظ†ظٹط©</span>
+                        </div>
+                        <h2 style="font-size: 22px; font-weight: 800; color: var(--text-main);" id="s-course-modal-title">طھظپط§طµظٹظ„ ظˆطھطµظپط­ ط§ظ„ط¯ظˆط±ط©</h2>
+                    </div>
+                    <button class="btn btn-secondary" onclick="showDashboard()">
+                        <i class="fa-solid fa-arrow-right"></i> ط§ظ„ط¹ظˆط¯ط© ظ„ظ„ط¯ظˆط±ط§طھ
+                    </button>
+                </div>
+
+                <!-- Quick Stats Row (ط¹ط¯ط¯ ط§ظ„ط¯ط±ظˆط³ ظˆط§ظ„ط§ط®طھط¨ط§ط±ط§طھ ظˆط§ظ„ط³ط¹ط±) -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 22px;">
+                    <div style="background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); padding: 14px; border-radius: 12px; display: flex; align-items: center; gap: 12px;">
+                        <div style="width: 42px; height: 42px; border-radius: 10px; background: rgba(255,125,63,0.15); color: var(--accent-orange); display: flex; align-items: center; justify-content: center; font-size: 20px;"><i class="fa-solid fa-video"></i></div>
+                        <div>
+                            <div style="font-size: 12px; color: var(--text-muted);">ظ…ط¬ظ…ظˆط¹ ط§ظ„ط¯ط±ظˆط³ ظˆط§ظ„ظ†ط¯ظˆط§طھ</div>
+                            <div style="font-size: 16px; font-weight: 800; color: var(--text-main);" id="s-course-stat-lessons">0 ط¯ط±ظˆط³</div>
+                        </div>
+                    </div>
+                    
+                    <div style="background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); padding: 14px; border-radius: 12px; display: flex; align-items: center; gap: 12px;">
+                        <div style="width: 42px; height: 42px; border-radius: 10px; background: rgba(16,185,129,0.15); color: var(--success); display: flex; align-items: center; justify-content: center; font-size: 20px;"><i class="fa-solid fa-clipboard-question"></i></div>
+                        <div>
+                            <div style="font-size: 12px; color: var(--text-muted);">ط§ظ„ط§ط®طھط¨ط§ط±ط§طھ ظˆط§ظ„طھظ‚ظٹظٹظ…ط§طھ</div>
+                            <div style="font-size: 16px; font-weight: 800; color: var(--text-main);" id="s-course-stat-quizzes">0 ط§ط®طھط¨ط§ط±ط§طھ</div>
+                        </div>
+                    </div>
+
+                    <div style="background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); padding: 14px; border-radius: 12px; display: flex; align-items: center; gap: 12px;">
+                        <div style="width: 42px; height: 42px; border-radius: 10px; background: rgba(245,158,11,0.15); color: var(--warning); display: flex; align-items: center; justify-content: center; font-size: 20px;"><i class="fa-solid fa-tag"></i></div>
+                        <div>
+                            <div style="font-size: 12px; color: var(--text-muted);">طھظƒظ„ظپط© ط§ظ„ط¯ظˆط±ط©</div>
+                            <div style="font-size: 16px; font-weight: 800; color: var(--warning);" id="s-course-stat-price">ظ…ط¬ط§ظ†ظٹط©</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Course Detailed Description & Included Features Box -->
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; margin-bottom: 25px;">
+                    <h4 style="font-size: 15px; font-weight: 800; color: var(--text-orange); margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+                        <i class="fa-solid fa-circle-info"></i> طھظپط§طµظٹظ„ ظˆظ…ظ…ظٹط²ط§طھ ط§ظ„ط¯ظˆط±ط© ظˆظ…ط§ طھط´ظ…ظ„ظ‡:
+                    </h4>
+                    <p id="s-course-description-text" style="font-size: 14.5px; color: var(--text-main); line-height: 1.7; white-space: pre-line; margin: 0;"></p>
+                </div>
+                
+                <!-- NEW: Subscription View -->
+                <div id="s-course-subscription-view" style="display: none; text-align: center; padding: 40px; background: rgba(0,0,0,0.2); border-radius: 14px; border: 1px solid var(--border-color); margin-bottom: 25px;">
+                    <i class="fa-solid fa-lock" style="font-size: 40px; color: var(--text-muted); margin-bottom: 15px;"></i>
+                    <h3 style="font-size: 20px; font-weight: 800; margin-bottom: 10px;">ط¹ط°ط±ط§ظ‹طŒ ط£ظ†طھ ط؛ظٹط± ظ…ط´طھط±ظƒ ظپظٹ ظ‡ط°ظ‡ ط§ظ„ط¯ظˆط±ط©!</h3>
+                    <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 25px;">ظ„ظ„ط§ط³طھظ…طھط§ط¹ ط¨ظ…ط´ط§ظ‡ط¯ط© ط§ظ„ط¯ط±ظˆط³ ظˆط­ظ„ ط§ظ„ط§ط®طھط¨ط§ط±ط§طھطŒ ظٹط±ط¬ظ‰ ط§ظ„ط§ط´طھط±ط§ظƒ ظپظٹ ط§ظ„ط¯ظˆط±ط©.</p>
+                    <button id="s-course-subscribe-btn" class="btn btn-primary" style="padding: 14px 30px; font-size: 16px; font-weight: 800; border-radius: 10px;">
+                        <i class="fa-solid fa-cart-plus"></i> ط£ط´طھط±ظƒ ظپظٹ ط§ظ„ط¯ظˆط±ط© ط§ظ„ط¢ظ†
+                    </button>
+                </div>
+
+                <!-- Video Player & Syllabus Container -->
+                <div id="s-course-content-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 25px; margin-bottom: 15px;">
+                    <!-- Video Player Container -->
+                    <div style="display: flex; flex-direction: column; justify-content: center; min-height: 380px; background: rgba(0,0,0,0.5); border-radius: 14px; border: 1px solid var(--border-color); position: relative; overflow: hidden; padding: 10px;">
+                        
+                        <div id="s-course-media-placeholder" class="empty-state" style="padding: 30px;">
+                            <i class="fa-solid fa-circle-play" style="font-size: 60px; color: var(--accent-orange); margin-bottom: 15px;"></i>
+                            <p style="font-size: 16px; font-weight: 800;">ط§ط®طھط± ط¯ط±ط³ط§ظ‹ ظ…ظ† ط§ظ„ظ‚ط§ط¦ظ…ط© ظ„ط¨ط¯ط، ط§ظ„ط´ط±ط­</p>
+                            <p style="font-size: 13.5px; color: var(--text-muted); margin-top: 6px;">ط£ظˆ ط§ط¨ط¯ط£ ط¨ط­ظ„ ط§ظ„ط§ط®طھط¨ط§ط±ط§طھ ظ„ظ‚ظٹط§ط³ ظ…ط³طھظˆظ‰ ظپظ‡ظ…ظƒ!</p>
+                        </div>
+
+                        <!-- Native Video Player -->
+                        <video id="s-course-video-player" controls style="display: none; width: 100%; height: 100%; max-height: 480px; border-radius: 8px; object-fit: contain;"></video>
+                        
+                        <!-- Iframe Video Player -->
+                        <iframe id="s-course-iframe-player" style="display: none; width: 100%; height: 420px; border: none; border-radius: 8px;" allowfullscreen></iframe>
+                    </div>
+
+                    <!-- Syllabus List -->
+                    <div style="display: flex; flex-direction: column; gap: 20px; max-height: 520px; overflow-y: auto; background: rgba(0,0,0,0.15); padding: 18px; border-radius: 14px; border: 1px solid var(--border-color);">
+                        <div>
+                            <h4 style="font-size: 15px; color: var(--text-orange); margin-bottom: 10px; border-bottom: 1px dashed var(--border-color); padding-bottom: 6px; font-weight: 800;">
+                                <i class="fa-solid fa-play"></i> ط¯ط±ظˆط³ ط§ظ„ط´ط±ط­ ظˆط§ظ„ظپظٹط¯ظٹظˆ:
+                            </h4>
+                            <div class="list-container" id="s-course-lessons-list" style="gap: 10px;">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 10px;">
+                            <h4 style="font-size: 15px; color: var(--success); margin-bottom: 10px; border-bottom: 1px dashed var(--border-color); padding-bottom: 6px; font-weight: 800;">
+                                <i class="fa-solid fa-clipboard-question"></i> ط§ظ„ط§ط®طھط¨ط§ط±ط§طھ ط§ظ„طھظپط§ط¹ظ„ظٹط©:
+                            </h4>
+                            <div class="list-container" id="s-course-quizzes-list" style="gap: 10px;">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE VIEW 7: STUDENT INTERACTIVE QUIZ PLAYER (Full Page) -->
+        <section id="student-quiz-page-view" class="fade-in" style="display: none;">
+            <div class="glass-card" style="max-width: 750px; margin: 0 auto; padding: 30px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; flex-wrap: wrap; gap: 12px;">
+                    <h2 style="font-size: 22px; font-weight: 800; color: var(--text-main);" id="student-quiz-title">
+                        <i class="fa-solid fa-clipboard-question" style="color: var(--success); margin-left: 8px;"></i>
+                        ط­ظ„ ط§ظ„ط§ط®طھط¨ط§ط±
+                    </h2>
+                    <button class="btn btn-secondary" onclick="showDashboard()">
+                        <i class="fa-solid fa-arrow-right"></i> ط§ظ„ط¹ظˆط¯ط©
+                    </button>
+                </div>
+                <div id="quiz-player-body">
+                    <!-- Dynamic Quiz Content -->
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE VIEW 8: EXAM SIMULATOR PLAYER (Full Page) -->
+        <section id="student-simulator-page-view" class="fade-in" style="display: none;">
+            <div class="glass-card" style="max-width: 1150px; margin: 0 auto; padding: 25px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; flex-wrap: wrap; gap: 12px;">
+                    <div>
+                        <h2 style="font-size: 22px; font-weight: 800; color: var(--text-main);" id="simulator-player-title">ظ…ط­ط§ظƒظٹ ط§ط®طھط¨ط§ط±ط§طھ ظ‚ظٹط§ط³</h2>
+                        <div id="simulator-player-section-title" style="font-size: 14px; color: var(--text-orange); margin-top: 6px; font-weight: 800;">ط§ظ„ظ‚ط³ظ… ط§ظ„ط­ط§ظ„ظٹ: --</div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px; background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.25); padding: 8px 18px; border-radius: 10px; color: var(--danger); font-weight: 800; font-size: 17px;">
+                        <i class="fa-regular fa-clock" id="simulator-timer-icon"></i>
+                        <span id="simulator-timer-display" style="font-family: monospace; letter-spacing: 1px;">00:00</span>
+                    </div>
+                </div>
+                
+                <div class="simulator-layout-grid" id="simulator-layout-grid" style="display: grid; grid-template-columns: 270px 1fr; gap: 20px; align-items: start;">
+                    
+                    <!-- RIGHT SIDEBAR: Question Navigation & Legend -->
+                    <div class="simulator-nav-sidebar" id="simulator-nav-sidebar" style="background: rgba(0,0,0,0.25); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; position: sticky; top: 80px; max-height: calc(100vh - 120px); overflow-y: auto;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; border-bottom: 1px dashed var(--border-color); padding-bottom: 8px;">
+                            <span style="font-size: 13.5px; font-weight: 800; color: var(--text-main);">
+                                <i class="fa-solid fa-list-ol" style="color: var(--accent-orange); margin-left: 6px;"></i> ط£ط³ط¦ظ„ط© ظ‡ط°ط§ ط§ظ„ظ‚ط³ظ…
+                            </span>
+                            <span id="simulator-nav-counter-badge" style="font-size: 11px; background: rgba(255,255,255,0.08); padding: 2px 8px; border-radius: 10px; color: var(--text-muted); font-weight: bold;">0 / 0</span>
+                        </div>
+
+                        <!-- Legend Indicators -->
+                        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; font-size: 11px; color: var(--text-muted); background: rgba(0,0,0,0.15); padding: 8px; border-radius: 8px;">
+                            <div style="display: flex; align-items: center; gap: 4px;">
+                                <span style="width: 10px; height: 10px; border-radius: 50%; background: var(--success); display: inline-block;"></span> ظ…ط¬ط§ط¨ âœ“
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 4px;">
+                                <span style="width: 10px; height: 10px; border-radius: 50%; background: var(--accent-orange); display: inline-block;"></span> ظ…ط±ط§ط¬ط¹ط© ًں”–
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 4px;">
+                                <span style="width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,0.2); display: inline-block;"></span> ظ„ظ… ظٹظڈط­ظ„
+                            </div>
+                        </div>
+
+                        <!-- Questions Grid Buttons -->
+                        <div id="simulator-questions-nav-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;">
+                            <!-- Populated dynamically by JS -->
+                        </div>
+                    </div>
+
+                    <!-- LEFT MAIN CONTENT: Questions List -->
+                    <div style="min-width: 0;">
+                        <div id="simulator-player-body" style="min-height: 300px;">
+                            <!-- Section Questions will render here -->
+                        </div>
+                        
+                        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 20px; margin-top: 20px; flex-wrap: wrap; gap: 12px;">
+                            <div style="font-size: 13.5px; color: var(--text-muted); font-weight: 700;" id="simulator-progress-text">ط§ظ„ظ‚ط³ظ… 1 ظ…ظ† 1</div>
+                            <button type="button" class="btn btn-primary" id="simulator-submit-section-btn" onclick="submitSimulatorSection(false)" style="padding: 12px 28px; font-size: 14px; font-weight: 800;">
+                                <span id="simulator-btn-text">طھط³ظ„ظٹظ… ط§ظ„ظ‚ط³ظ… ظˆط§ظ„ط§ظ†طھظ‚ط§ظ„ ظ„ظ„ظ‚ط³ظ… ط§ظ„طھط§ظ„ظٹ</span>
+                                <i class="fa-solid fa-arrow-left"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE VIEW 9: STUDENT REGISTER (Full Page) -->
+        <section id="student-register-page-view" class="fade-in" style="display: none;">
+            <div class="glass-card" style="max-width: 520px; margin: 0 auto; padding: 30px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px;">
+                    <h2 style="font-size: 20px; font-weight: 800; color: var(--text-main);">
+                        <i class="fa-solid fa-user-plus" style="color: var(--accent-orange); margin-left: 8px;"></i>
+                        ط¥ظ†ط´ط§ط، ط­ط³ط§ط¨ ط·ط§ظ„ط¨ ط¬ط¯ظٹط¯
+                    </h2>
+                    <button class="btn btn-secondary" onclick="showLandingPage()">
+                        <i class="fa-solid fa-arrow-right"></i> ط§ظ„ط±ط¦ظٹط³ظٹط©
+                    </button>
+                </div>
+                
+                <form id="student-register-form" onsubmit="handleStudentRegister(event)">
+                    <div class="form-group">
+                        <label for="reg-name" style="font-weight: 700;">ط§ظ„ط§ط³ظ… ط§ظ„ظƒط§ظ…ظ„ ظ„ظ„ط·ط§ظ„ط¨:</label>
+                        <input type="text" id="reg-name" required placeholder="ظ…ط«ط§ظ„: ظٹظˆط³ظپ ط§ظ„ط­ط±ط¨ظٹ">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="reg-username" style="font-weight: 700;">ط§ط³ظ… ط§ظ„ظ…ط³طھط®ط¯ظ… (ط¨ط§ظ„ط¥ظ†ط¬ظ„ظٹط²ظٹ ظ„ظ„ط¯ط®ظˆظ„):</label>
+                        <input type="text" id="reg-username" required placeholder="ظ…ط«ط§ظ„: yousef" dir="ltr" style="direction: ltr; text-align: left;">
+                        <span style="font-size: 12px; color: var(--text-muted); display: block; margin-top: 4px;">ط³طھط³طھط®ط¯ظ… ظ‡ط°ط§ ط§ظ„ط§ط³ظ… ظ„طھط³ط¬ظٹظ„ ط§ظ„ط¯ط®ظˆظ„ ظ„ط§ط­ظ‚ط§ظ‹.</span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="reg-pwd" style="font-weight: 700;">ظƒظ„ظ…ط© ط§ظ„ظ…ط±ظˆط±:</label>
+                        <input type="password" id="reg-pwd" required placeholder="ط§ظƒطھط¨ ظƒظ„ظ…ط© ظ…ط±ظˆط± ظ‚ظˆظٹط©">
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 20px; padding: 12px; font-weight: 800;">
+                        <i class="fa-solid fa-user-check"></i>
+                        <span>ط¥ظ†ط´ط§ط، ط§ظ„ط­ط³ط§ط¨ ظˆط¯ط®ظˆظ„ ط§ظ„ظ…ظ†طµط©</span>
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <!-- PAGE VIEW 10: STUDENT ENROLLMENT (Full Page) -->
+        <section id="student-enrollment-page-view" class="fade-in" style="display: none;">
+            <div class="glass-card" style="max-width: 600px; margin: 0 auto; padding: 30px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px;">
+                    <h2 style="font-size: 20px; font-weight: 800; color: var(--text-main);">
+                        <i class="fa-solid fa-graduation-cap" style="color: var(--accent-orange); margin-left: 8px;"></i>
+                        ط¥ط¯ط§ط±ط© ط§ط´طھط±ط§ظƒط§طھ ط§ظ„ط·ط§ظ„ط¨ ظپظٹ ط§ظ„ط¯ظˆط±ط§طھ
+                    </h2>
+                    <button class="btn btn-secondary" onclick="showDashboard()">
+                        <i class="fa-solid fa-arrow-right"></i> ط§ظ„ط¹ظˆط¯ط©
+                    </button>
+                </div>
+                
+                <form id="student-enrollment-form" onsubmit="handleSaveEnrollment(event)">
+                    <input type="hidden" id="enrollment-student-id">
+                    
+                    <div style="margin-bottom: 20px; background: rgba(255,255,255,0.02); padding: 15px; border-radius: 10px; border: 1px solid var(--border-color);">
+                        <strong>ط§ظ„ط·ط§ظ„ط¨:</strong> <span id="enrollment-student-name" style="font-weight: 800; color: var(--text-main); font-size: 16px;">--</span>
+                    </div>
+                    
+                    <h4 style="font-size: 14.5px; color: var(--text-muted); margin-bottom: 12px; font-weight: 700;">ط§ط®طھط± ط§ظ„ظ…ظ‚ط±ط±ط§طھ ط§ظ„ظ…ط¯ظپظˆط¹ط© ط§ظ„طھظٹ ط§ط´طھط±ظƒ ظپظٹظ‡ط§ ط§ظ„ط·ط§ظ„ط¨:</h4>
+                    
+                    <div class="list-container" id="enrollment-courses-list" style="gap: 12px; max-height: 320px; overflow-y: auto; padding: 8px;">
+                        <!-- Populated dynamically by JS -->
+                    </div>
+                    
+                    <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 30px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+                        <button type="button" class="btn btn-secondary" onclick="showDashboard()">ط¥ظ„ط؛ط§ط،</button>
+                        <button type="submit" class="btn btn-primary" style="padding: 12px 28px; font-weight: 800;">
+                            <i class="fa-solid fa-save"></i>
+                            <span>ط­ظپط¸ ط§ظ„ط§ط´طھط±ط§ظƒط§طھ</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- PAGE VIEW 11: UNPAID COURSE ALERT (Full Page) -->
+        <section id="unpaid-course-page-view" class="fade-in" style="display: none;">
+            <div class="glass-card" style="max-width: 550px; margin: 0 auto; text-align: center; padding: 40px 25px;">
+                <div style="font-size: 65px; color: var(--accent-orange); margin-bottom: 18px;">ًں”’</div>
+                <h3 id="unpaid-modal-title" style="font-size: 22px; font-weight: 900; color: var(--text-main); margin-bottom: 12px;">ط¹ط°ط±ط§ظ‹! ظ‡ط°ط§ ط§ظ„ظ…ظ‚ط±ط± ظ…ظ‚ظپظ„</h3>
+                <p id="unpaid-modal-desc" style="font-size: 15px; color: var(--text-muted); line-height: 1.7; margin-bottom: 30px;">
+                    ظ‡ط°ظ‡ ط§ظ„ط¯ظˆط±ط© ظ…ط¯ظپظˆط¹ط© ظˆظ…ط®طµطµط© ظ„ظ„ط·ظ„ط§ط¨ ط§ظ„ظ…ط´طھط±ظƒظٹظ† ظپظ‚ط·. ظ„طھظپط¹ظٹظ„ ط§ط´طھط±ط§ظƒظƒ ظˆط§ظ„ظˆطµظˆظ„ ظ„ط´ط±ظˆط­ط§طھ ط§ظ„ظپظٹط¯ظٹظˆ ظˆط§ظ„ط§ط®طھط¨ط§ط±ط§طھ ط§ظ„طھظپط§ط¹ظ„ظٹط©طŒ ظٹط±ط¬ظ‰ ط§ظ„طھظˆط§طµظ„ ظ…ط¹ ط§ظ„ظ…ط¹ظ„ظ… ط§ظ„ط®طµظˆطµظٹ ط¹ط¨ط± ط§ظ„ظˆط§طھط³ط§ط¨ ط¹ظ„ظ‰ ط§ظ„ط±ظ‚ظ… **0501976467** ط£ظˆ ط¨ط§ظ„ط¶ط؛ط· ظ…ط¨ط§ط´ط±ط© ط¹ظ„ظ‰ ط§ظ„ط²ط± ط§ظ„ط£ط®ط¶ط± ط£ط¯ظ†ط§ظ‡.
+                </p>
+                
+                <a id="unpaid-modal-whatsapp-link" href="https://wa.me/966501976467?text=ظ…ط±ط­ط¨ط§ظ‹%20ط£ط³طھط§ط°%20ط£ط±ط؛ط¨%20ظپظٹ%20ط§ظ„ط§ط´طھط±ط§ظƒ%20ظˆطھظپط¹ظٹظ„%20ط¯ظˆط±ط©%20ظ…ط³ط§ط±%20ط§ظ„طھط¹ظ„ظٹظ…ظٹط©" 
+                   target="_blank" 
+                   class="btn" 
+                   style="background-color: #25D366; color: white; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 18px; font-weight: 800; font-size: 16px; text-decoration: none; border: none; padding: 14px 24px; border-radius: 10px; transition: 0.2s;">
+                    <i class="fa-brands fa-whatsapp" style="font-size: 22px;"></i>
+                    <span>طھظˆط§طµظ„ ط¹ط¨ط± ط§ظ„ظˆط§طھط³ط§ط¨ ظ„ظ„طھظپط¹ظٹظ„ ط§ظ„ظ…ط¨ط§ط´ط±</span>
+                </a>
+                
+                <button class="btn btn-secondary" onclick="showDashboard()" style="width: 100%; border-color: rgba(255,255,255,0.1); color: var(--text-muted);">ط§ظ„ط¹ظˆط¯ط© ظ„ظ„ظˆط­ط© ط§ظ„طھط­ظƒظ…</button>
+            </div>
+        </section>
+
+        <!-- PAGE VIEW 12: STUDENT DASHBOARD (Full Page) -->
+        <section id="student-dashboard-page-view" class="fade-in" style="display: none;">
+            <div class="glass-card" style="max-width: 850px; margin: 0 auto; padding: 30px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; flex-wrap: wrap; gap: 12px;">
+                    <h2 style="font-size: 22px; font-weight: 800; color: var(--text-main);">
+                        <i class="fa-solid fa-chart-line" style="color: var(--accent-orange); margin-left: 8px;"></i>
+                        ظ„ظˆط­ط© طھط­ظƒظ… ط§ظ„ط·ط§ظ„ط¨ ظˆط§ظ„طھظ‚ط¯ظ… ط§ظ„ط¯ط±ط§ط³ظٹ
+                    </h2>
+                    <button class="btn btn-secondary" onclick="showDashboard()">
+                        <i class="fa-solid fa-arrow-right"></i> ط§ظ„ط¹ظˆط¯ط©
+                    </button>
+                </div>
+                
+                <!-- Student Header Profile Summary -->
+                <div style="background: rgba(0, 0, 0, 0.25); border: 1px solid var(--border-color); border-radius: 14px; padding: 20px; margin-bottom: 25px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 18px;">
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <div id="s-modal-profile-avatar" class="student-avatar" style="width: 55px; height: 55px; font-size: 22px;">ط·</div>
+                        <div>
+                            <h4 id="s-modal-profile-name" style="font-size: 18px; font-weight: 800; color: var(--text-main);">ط·ط§ظ„ط¨ ظ…ط³ط§ط±</h4>
+                            <span id="s-modal-profile-level" style="font-size: 13px; color: var(--text-orange); font-weight: 800;">ظ…ط³طھظˆظ‰ 1</span>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; gap: 15px;">
+                        <div style="text-align: center; background: rgba(255,255,255,0.03); padding: 10px 18px; border-radius: 10px; border: 1px solid var(--border-color);">
+                            <span style="font-size: 12px; color: var(--text-muted); display: block;">ط§ظ„طھط±طھظٹط¨</span>
+                            <strong id="s-modal-stat-rank" style="font-size: 16px; color: gold;">--</strong>
+                        </div>
+                        <div style="text-align: center; background: rgba(255,255,255,0.03); padding: 10px 18px; border-radius: 10px; border: 1px solid var(--border-color);">
+                            <span style="font-size: 12px; color: var(--text-muted); display: block;">ظ†ظ‚ط§ط· ط§ظ„ط®ط¨ط±ط©</span>
+                            <strong id="s-modal-stat-xp" style="font-size: 16px; color: var(--purple-xp);">0 XP</strong>
+                        </div>
+                        <div style="text-align: center; background: rgba(255,255,255,0.03); padding: 10px 18px; border-radius: 10px; border: 1px solid var(--border-color);">
+                            <span style="font-size: 12px; color: var(--text-muted); display: block;">ظˆط§ط¬ط¨ط§طھ ظ…ظ†ط¬ط²ط©</span>
+                            <strong id="s-modal-stat-completed" style="font-size: 16px; color: var(--success);">0</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Badges Bar -->
+                <div style="margin-bottom: 25px;">
+                    <span style="font-size: 13.5px; color: var(--text-muted); display: block; margin-bottom: 8px; font-weight: 800;">ط§ظ„ط£ظˆط³ظ…ط© ظˆط§ظ„ط¥ظ†ط¬ط§ط²ط§طھ ط§ظ„ظ…ظƒطھط³ط¨ط©:</span>
+                    <div class="badges-container" id="s-modal-profile-badges">
                         <!-- Populated dynamically -->
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <label id="submit-answer-label" for="submit-answer">ط¥ط¬ط§ط¨طھظƒ (طھط¯ط¹ظ… ط§ظ„ط±ظ…ظˆط² ط¨ظٹظ† ط¹ظ„ط§ظ…ط© $):</label>
-                    <textarea id="submit-answer" rows="6" required placeholder="ظ…ط«ط§ظ„: ظ‚ظٹظ…ط© $ط³ = ظ¥$"></textarea>
-                </div>
-                
-                <div class="form-group">
-                    <label for="submit-link"><i class="fa-solid fa-link"></i> ط±ط§ط¨ط· ط¥ط¶ط§ظپظٹ (ط§ط®طھظٹط§ط±ظٹ - ظ…ط«ظ„ط§ظ‹ ظ…ط³طھظ†ط¯ Google Drive ط£ظˆ طµظˆط±ط© ظ„ط­ظ„ظ‘ظƒ):</label>
-                    <input type="url" id="submit-link" placeholder="https://example.com/your-work">
-                </div>
-                
-                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
-                    <button type="button" class="btn btn-secondary" onclick="closeModal('submit-modal')">ط¥ظ„ط؛ط§ط،</button>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fa-solid fa-check"></i>
-                        <span>ط¥ط±ط³ط§ظ„ ط§ظ„ظˆط§ط¬ط¨ ظ„ظ„ظ…ط¹ظ„ظ…</span>
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- MODAL 2: GRADE SUBMISSION (Teacher) -->
-    <div id="grade-modal" class="modal-overlay">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">طھطµط­ظٹط­ ظˆط§ط¬ط¨ ط§ظ„ط·ط§ظ„ط¨</h3>
-                <button class="modal-close" onclick="closeModal('grade-modal')">&times;</button>
-            </div>
-            
-            <div style="margin-bottom: 15px; background: rgba(255,255,255,0.02); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 8px;">
-                <div>
-                    <strong style="color: var(--text-muted); font-size: 12px;">ط§ظ„ط·ط§ظ„ط¨:</strong> 
-                    <span id="grade-modal-student" style="font-weight: 700;">--</span>
-                </div>
-                <div>
-                    <strong style="color: var(--text-muted); font-size: 12px;">ط§ظ„ظˆط§ط¬ط¨:</strong> 
-                    <span id="grade-modal-assignment-title" style="font-weight: 700;">--</span>
-                </div>
-                
-                <!-- MCQ Student and Correct Option info -->
-                <div id="grade-modal-mcq-info" style="display: none; background: rgba(0,0,0,0.15); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); margin-top: 4px; display: flex; flex-direction: column; gap: 6px;">
-                    <div>
-                        <strong style="color: var(--text-muted); font-size: 12px;">ط§ط®طھظٹط§ط± ط§ظ„ط·ط§ظ„ط¨:</strong> 
-                        <span id="grade-modal-student-option" style="font-weight: 700;">--</span> 
-                        <span id="grade-modal-mcq-badge" style="font-size: 11px; padding: 2px 6px; border-radius: 4px; margin-right: 6px; font-weight: bold;"></span>
-                    </div>
-                    <div>
-                        <strong style="color: var(--text-muted); font-size: 12px;">ط§ظ„ط®ظٹط§ط± ط§ظ„طµط­ظٹط­ ط§ظ„ظ…ط¹ظٹظ†:</strong> 
-                        <span id="grade-modal-correct-option" style="font-weight: 700; color: var(--success);">--</span>
-                    </div>
-                </div>
-
-                <div style="border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 8px; margin-top: 4px;">
-                    <strong id="grade-modal-answer-label" style="color: var(--text-orange); font-size: 13px; display: block; margin-bottom: 4px;"><i class="fa-solid fa-comment-dots"></i> ط¥ط¬ط§ط¨ط© ط§ظ„ط·ط§ظ„ط¨:</strong>
-                    <p id="grade-modal-answer" style="white-space: pre-line; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 6px; font-size: 14px; border-right: 3px solid var(--accent-orange);"></p>
-                </div>
-                <div id="grade-modal-link-container" style="display: none;">
-                    <strong style="color: var(--text-muted); font-size: 12px;">ط§ظ„ط±ط§ط¨ط· ط§ظ„ظ…ط±ظپظ‚:</strong> 
-                    <a id="grade-modal-link" href="#" target="_blank" style="color: #60A5FA; text-decoration: underline; font-size: 13px;">طھطµظپط­ ط§ظ„ط±ط§ط¨ط· ط§ظ„ظ…ط±ظپظ‚</a>
-                </div>
-            </div>
-            
-            <form id="grade-assignment-form" onsubmit="handleGradeAssignment(event)">
-                <input type="hidden" id="grade-submission-id">
-                
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                    <div class="form-group">
-                        <label for="grade-value">ط§ظ„ط¯ط±ط¬ط© ط§ظ„ظ…ظ…ظ†ظˆط­ط©:</label>
-                        <select id="grade-value">
-                            <option value="10">10 / 10 (ظ…ظ…طھط§ط² ط¬ط¯ط§ظ‹)</option>
-                            <option value="9">9 / 10 (ط±ط§ط¦ط¹)</option>
-                            <option value="8">8 / 10 (ط¬ظٹط¯ ط¬ط¯ط§ظ‹)</option>
-                            <option value="7">7 / 10 (ط¬ظٹط¯)</option>
-                            <option value="6">6 / 10 (ظ…ظ‚ط¨ظˆظ„)</option>
-                            <option value="5">5 / 10 (ظٹط­طھط§ط¬ ظ…ط±ط§ط¬ط¹ط©)</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="grade-bonus-xp">ظ†ظ‚ط§ط· XP ط¥ط¶ط§ظپظٹط© طھط´ط¬ظٹط¹ظٹط©:</label>
-                        <select id="grade-bonus-xp">
-                            <option value="0">ط¨ط¯ظˆظ† ظ†ظ‚ط§ط· ط¥ط¶ط§ظپظٹط©</option>
-                            <option value="10">+10 XP</option>
-                            <option value="20">+20 XP</option>
-                            <option value="50">+50 XP (ظ…ظ…ظٹط²! ًںŒں)</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="grade-feedback">ظ…ظ„ط§ط­ط¸ط§طھ ط§ظ„ظ…ط¹ظ„ظ… ظˆطھظ‚ظٹظٹظ…ظ‡ ظ„ظ„ط­ظ„:</label>
-                    <textarea id="grade-feedback" rows="4" placeholder="ظ…ط«ط§ظ„: ط£ط­ط³ظ†طھ ظٹط§ ط¨ط·ظ„! ط­ظ„ظƒ ط±ط§ط¦ط¹ ظˆظ…ظ†ط¸ظ…طŒ ط§ط³طھظ…ط± ط¹ظ„ظ‰ ظ‡ط°ط§ ط§ظ„ط£ط¯ط§ط، ط§ظ„ظ…ظ…ظٹط²."></textarea>
-                </div>
-                
-                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
-                    <button type="button" class="btn btn-secondary" onclick="closeModal('grade-modal')">ط¥ظ„ط؛ط§ط،</button>
-                    <button type="submit" class="btn btn-primary" style="background: var(--success);">
-                        <i class="fa-solid fa-clipboard-check"></i>
-                        <span>ط§ط¹طھظ…ط§ط¯ ط§ظ„ط¯ط±ط¬ط© ظˆط§ظ„طھطµط­ظٹط­</span>
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- MODAL 3: ADJUST XP (Teacher) -->
-    <div id="adjust-xp-modal" class="modal-overlay">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title"><i class="fa-solid fa-sliders" style="color: var(--accent-orange); margin-left: 6px;"></i> طھط¹ط¯ظٹظ„ ظ†ظ‚ط§ط· ط§ظ„ط·ط§ظ„ط¨ (XP)</h3>
-                <button class="modal-close" onclick="closeModal('adjust-xp-modal')">&times;</button>
-            </div>
-            
-            <form id="adjust-xp-form" onsubmit="handleAdjustXP(event)">
-                <input type="hidden" id="adjust-xp-student-id">
-                
-                <div style="margin-bottom: 18px; background: rgba(255,255,255,0.02); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
-                    <strong style="color: var(--text-muted); font-size: 13px;">ط§ط³ظ… ط§ظ„ط·ط§ظ„ط¨:</strong> 
-                    <span id="adjust-xp-student-name" style="font-weight: 800; font-size: 15px; color: var(--text-main); margin-right: 6px;">--</span>
-                </div>
-                
-                <div class="form-group">
-                    <label for="adjust-xp-amount">ظ…ظ‚ط¯ط§ط± ط§ظ„طھط¹ط¯ظٹظ„ (ط§ظƒطھط¨ ط±ظ‚ظ…ط§ظ‹ ظ…ظˆط¬ط¨ط§ظ‹ ظ„ظ„ط²ظٹط§ط¯ط©طŒ ط£ظˆ ط³ط§ظ„ط¨ط§ظ‹ ظ„ظ„ط®طµظ…):</label>
-                    <input type="number" id="adjust-xp-amount" required placeholder="ظ…ط«ط§ظ„: 50 ط£ظˆ -30">
-                </div>
-                
-                <div class="form-group">
-                    <label for="adjust-xp-reason">ط§ظ„ط³ط¨ط¨ ط£ظˆ ط§ظ„ظ†ط´ط§ط· ط§ظ„ظ…ظƒط§ظپط¦:</label>
-                    <input type="text" id="adjust-xp-reason" placeholder="ظ…ط«ط§ظ„: طھظ…ظٹط² ظˆظ…ط´ط§ط±ظƒط© ظپظٹ ط§ظ„ط­طµط© / ط³ظ„ظˆظƒ ط±ط§ط¦ط¹">
-                </div>
-                
-                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 25px;">
-                    <button type="button" class="btn btn-secondary" onclick="closeModal('adjust-xp-modal')">ط¥ظ„ط؛ط§ط،</button>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fa-solid fa-save"></i>
-                        <span>طھط¹ط¯ظٹظ„ ظˆط­ظپط¸</span>
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- MODAL 4: CLOUD CONFIG (Supabase Connection Settings) -->
-    <div id="cloud-config-modal" class="modal-overlay">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title"><i class="fa-solid fa-cloud-bolt" style="color: var(--accent-orange); margin-left: 6px;"></i> ط¥ط¹ط¯ط§ط¯ط§طھ ط§ظ„ط±ط¨ط· ط§ظ„ط³ط­ط§ط¨ظٹ (Supabase)</h3>
-                <button class="modal-close" onclick="closeModal('cloud-config-modal')">&times;</button>
-            </div>
-            
-            <p style="font-size: 13.5px; color: var(--text-muted); margin-bottom: 15px; line-height: 1.5;">
-                ط§ط±ط¨ط· ظ…ظ†طµط© "ظ…ط³ط§ط±" ط¨ظ‚ط§ط¹ط¯ط© ط¨ظٹط§ظ†ط§طھ ط³ط­ط§ط¨ظٹط© ظ…ط¬ط§ظ†ظٹط© ظ„طھظ…ظƒظٹظ† ط§ظ„ظ…ط²ط§ظ…ظ†ط© ط§ظ„ظ„ط­ط¸ظٹط© ظ„ظ„ظˆط§ط¬ط¨ط§طھ ظˆط§ظ„طھط³ظ„ظٹظ…ط§طھ ظˆط§ظ„طھط±طھظٹط¨ ط¨ظٹظ† ط¬ظ…ظٹط¹ ط§ظ„ط£ط¬ظ‡ط²ط©.
-            </p>
-            
-            <form id="cloud-config-form" onsubmit="handleSaveCloudConfig(event)">
-                <div class="form-group">
-                    <label for="cloud-url">ط±ط§ط¨ط· ظ…ط´ط±ظˆط¹ ط³ظˆط¨ط§ط¨ظٹط³ (Supabase URL):</label>
-                    <input type="url" id="cloud-url" placeholder="https://your-project.supabase.co" dir="ltr" style="direction: ltr; text-align: left; font-family: monospace;">
-                </div>
-                
-                <div class="form-group">
-                    <label for="cloud-key">ظ…ظپطھط§ط­ ط§ظ„ط§طھطµط§ظ„ ط§ظ„ط¹ط§ظ… (Supabase Anon Key):</label>
-                    <textarea id="cloud-key" rows="4" placeholder="ط£ط¯ط®ظ„ ظ…ظپطھط§ط­ ط§ظ„ط§طھطµط§ظ„ (Anon API Key) ظ‡ظ†ط§..." dir="ltr" style="direction: ltr; text-align: left; font-family: monospace; font-size: 11.5px; line-height: 1.4;"></textarea>
-                </div>
-                
-                <div id="cloud-config-feedback" style="display: none; padding: 10px; border-radius: 8px; font-size: 13px; margin-bottom: 15px; font-weight: 600;"></div>
-                
-                <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
-                    <button type="button" class="btn btn-secondary" onclick="clearCloudConfig()" style="background: rgba(239, 68, 68, 0.1); color: #FFA3A3; border-color: rgba(239, 68, 68, 0.2);">
-                        <i class="fa-solid fa-unlink"></i> ظ‚ط·ط¹ ط§ظ„ط§طھطµط§ظ„ (ط§ظ„ظˆط¶ط¹ ط§ظ„ظ…ط­ظ„ظٹ)
-                    </button>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fa-solid fa-plug"></i> ط­ظپط¸ ظˆط§ط®طھط¨ط§ط± ط§ظ„ط§طھطµط§ظ„
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- MODAL 5: CREATE COURSE (Teacher) -->
-    <div id="create-course-modal" class="modal-overlay">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title"><i class="fa-solid fa-folder-plus" style="color: var(--accent-orange); margin-left: 6px;"></i> ط¥ظ†ط´ط§ط، ط¯ظˆط±ط© طھط¹ظ„ظٹظ…ظٹط© ط¬ط¯ظٹط¯ط©</h3>
-                <button class="modal-close" onclick="closeModal('create-course-modal')">&times;</button>
-            </div>
-            <form id="create-course-form" onsubmit="handleCreateCourse(event)">
-                <div class="form-group">
-                    <label for="course-title">ط¹ظ†ظˆط§ظ† ط§ظ„ط¯ظˆط±ط©:</label>
-                    <input type="text" id="course-title" required placeholder="ظ…ط«ط§ظ„: ط¯ظˆط±ط© ط£ط³ط§ط³ظٹط§طھ ط§ظ„ظ‡ظ†ط¯ط³ط© ظ„ظ„ظ‚ط¯ط±ط§طھ">
-                </div>
-                <div class="form-group">
-                    <label for="course-subject">ط§ظ„ظ…ط§ط¯ط©:</label>
-                    <select id="course-subject">
-                        <option value="math">ط±ظٹط§ط¶ظٹط§طھ</option>
-                        <option value="qudrat">ظ‚ط¯ط±ط§طھ</option>
-                        <option value="tahsili">طھط­طµظٹظ„ظٹ</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="course-desc">ظˆطµظپ ط§ظ„ط¯ظˆط±ط© ظˆظ…ط®ط±ط¬ط§طھظ‡ط§:</label>
-                    <textarea id="course-desc" rows="4" required placeholder="ط§ظƒطھط¨ طھظپط§طµظٹظ„ ط§ظ„ط¯ظˆط±ط© ظˆظ…ط§ ط³ظٹطھط¹ظ„ظ…ظ‡ ط§ظ„ط·ط§ظ„ط¨ ظ‡ظ†ط§..."></textarea>
-                </div>
-                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
-                    <button type="button" class="btn btn-secondary" onclick="closeModal('create-course-modal')">ط¥ظ„ط؛ط§ط،</button>
-                    <button type="submit" class="btn btn-primary">ط­ظپط¸ ظˆط¥ظ†ط´ط§ط، ط§ظ„ط¯ظˆط±ط©</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- MODAL 6: CREATE LESSON (Teacher) -->
-    <div id="create-lesson-modal" class="modal-overlay">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title"><i class="fa-solid fa-video" style="color: var(--accent-orange); margin-left: 6px;"></i> ط¥ط¶ط§ظپط© ط¯ط±ط³ ظپظٹط¯ظٹظˆ ظ„ظ„ط¯ظˆط±ط©</h3>
-                <button class="modal-close" onclick="closeModal('create-lesson-modal')">&times;</button>
-            </div>
-            <form id="create-lesson-form" onsubmit="handleCreateLesson(event)">
-                <input type="hidden" id="lesson-course-id">
-                <div style="margin-bottom: 15px; background: rgba(255,255,255,0.02); padding: 10px; border-radius: 8px; border: 1px solid var(--border-color);">
-                    <strong>ط§ظ„ط¯ظˆط±ط© ط§ظ„ظ…ط³طھظ‡ط¯ظپط©:</strong> <span id="lesson-course-title" style="font-weight: 700;">--</span>
-                </div>
-                <div class="form-group">
-                    <label for="lesson-title">ط¹ظ†ظˆط§ظ† ط§ظ„ط¯ط±ط³:</label>
-                    <input type="text" id="lesson-title" required placeholder="ظ…ط«ط§ظ„: ط§ظ„ط¯ط±ط³ ط§ظ„ط£ظˆظ„: ط´ط±ط­ ظ…ط³ط§ط­ط© ط§ظ„ظ…ط«ظ„ط«">
-                </div>
-                <div class="form-group">
-                    <label for="lesson-video-type">ظ…طµط¯ط± ط§ظ„ظپظٹط¯ظٹظˆ:</label>
-                    <select id="lesson-video-type" onchange="toggleVideoSourceInput(this.value)">
-                        <option value="url">ط±ط§ط¨ط· ط®ط§ط±ط¬ظٹ (YouTube, Drive, Dropbox, MP4 URL)</option>
-                        <option value="local">طھط´ط؛ظٹظ„ ظ…ظ„ظپ ظپظٹط¯ظٹظˆ ظ…ط­ظ„ظٹ (Local MP4 File)</option>
-                    </select>
-                </div>
-                <div class="form-group" id="lesson-video-url-group">
-                    <label for="lesson-video-url">ط±ط§ط¨ط· ط§ظ„ظپظٹط¯ظٹظˆ:</label>
-                    <input type="url" id="lesson-video-url" placeholder="https://www.youtube.com/watch?v=..." dir="ltr" style="direction: ltr; text-align: left;">
-                </div>
-                <div class="form-group" id="lesson-video-file-group" style="display: none;">
-                    <label for="lesson-video-file">ط§ط®طھط± ظ…ظ„ظپ ط§ظ„ظپظٹط¯ظٹظˆ ظ…ظ† ط¬ظ‡ط§ط²ظƒ:</label>
-                    <input type="file" id="lesson-video-file" accept="video/mp4,video/webm">
-                </div>
-                <div class="form-group">
-                    <label for="lesson-duration">ظ…ط¯ط© ط§ظ„ط¯ط±ط³ (ط¯ظ‚ط§ط¦ظ‚):</label>
-                    <input type="text" id="lesson-duration" placeholder="ظ…ط«ط§ظ„: 15:30" style="text-align: center;">
-                </div>
-                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
-                    <button type="button" class="btn btn-secondary" onclick="closeModal('create-lesson-modal')">ط¥ظ„ط؛ط§ط،</button>
-                    <button type="submit" class="btn btn-primary">ط­ظپط¸ ظˆط¥ط¶ط§ظپط© ط§ظ„ط¯ط±ط³</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- MODAL 7: CREATE QUIZ (Teacher) -->
-    <div id="create-quiz-modal" class="modal-overlay">
-        <div class="modal-content" style="max-width: 700px;">
-            <div class="modal-header">
-                <h3 class="modal-title"><i class="fa-solid fa-clipboard-question" style="color: var(--accent-orange); margin-left: 6px;"></i> ط¥ط¶ط§ظپط© ط§ط®طھط¨ط§ط± ط¯ظˆط±ط©</h3>
-                <button class="modal-close" onclick="closeModal('create-quiz-modal')">&times;</button>
-            </div>
-            <form id="create-quiz-form" onsubmit="handleCreateQuiz(event)">
-                <input type="hidden" id="quiz-course-id">
-                
-                <div style="margin-bottom: 15px; background: rgba(255,255,255,0.02); padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); display: flex; justify-content: space-between;">
-                    <div><strong>ط§ظ„ط¯ظˆط±ط© ط§ظ„ظ…ط³طھظ‡ط¯ظپط©:</strong> <span id="quiz-course-title" style="font-weight: 700;">--</span></div>
-                    <div><strong>ظ†ظ‚ط§ط· ط§ظ„ط§ط¬طھظٹط§ط² (XP):</strong> <input type="number" id="quiz-points" value="50" min="10" max="500" style="width: 70px; display: inline-block; padding: 4px;"></div>
-                </div>
-
-                <div class="form-group">
-                    <label for="quiz-title">ط¹ظ†ظˆط§ظ† ط§ظ„ط§ط®طھط¨ط§ط±:</label>
-                    <input type="text" id="quiz-title" required placeholder="ظ…ط«ط§ظ„: ط§ط®طھط¨ط§ط± ظ‚طµظٹط± ط¹ظ„ظ‰ ط¯ط±ط³ ط§ظ„ظ‡ظ†ط¯ط³ط©">
-                </div>
-
-                <div style="border-top: 1px solid var(--border-color); padding-top: 15px; margin-top: 15px;">
-                    <h4 style="margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
-                        <span>ط§ظ„ط£ط³ط¦ظ„ط© ظˆط§ظ„ط®ظٹط§ط±ط§طھ (طھط¯ط¹ظ… ط§ظ„ط±ظ…ظˆط² ط¨ظٹظ† ط¹ظ„ط§ظ…طھظٹ $)</span>
-                        <button type="button" class="btn btn-secondary" style="padding: 4px 10px; font-size: 12px; border-color: var(--accent-orange); color: var(--text-orange);" onclick="addQuizQuestionEditorRow()">
-                            <i class="fa-solid fa-plus"></i> ط£ط¶ظپ ط³ط¤ط§ظ„ط§ظ‹ ط¬ط¯ظٹط¯ط§ظ‹
-                        </button>
+                <!-- Enrolled Courses & Progress Section -->
+                <div style="margin-bottom: 25px;">
+                    <h4 style="font-size: 16px; font-weight: 800; color: var(--text-main); margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
+                        <i class="fa-solid fa-graduation-cap" style="color: var(--warning);"></i>
+                        ط§ظ„ط¯ظˆط±ط§طھ ط§ظ„ظ…ط´طھط±ظƒ ظپظٹظ‡ط§ ظˆظ†ط³ط¨ط© ط§ظ„طھظ‚ط¯ظ…
                     </h4>
-                    
-                    <div id="quiz-questions-editor-container" style="max-height: 300px; overflow-y: auto; padding-left: 5px;">
-                        <!-- Questions rows will be appended here -->
+                    <div id="s-modal-enrolled-courses-list" style="max-height: 380px; overflow-y: auto; padding-left: 5px;">
+                        <!-- Populated dynamically -->
                     </div>
                 </div>
 
-                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 15px;">
-                    <button type="button" class="btn btn-secondary" onclick="closeModal('create-quiz-modal')">ط¥ظ„ط؛ط§ط،</button>
-                    <button type="submit" class="btn btn-primary">ط­ظپط¸ ظˆظ†ط´ط± ط§ظ„ط§ط®طھط¨ط§ط±</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- MODAL 8: STUDENT COURSE VIEWER (Student) -->
-    <div id="student-course-modal" class="modal-overlay">
-        <div class="modal-content" style="max-width: 960px; padding: 20px; height: 85vh; display: flex; flex-direction: column;">
-            <div class="modal-header" style="margin-bottom: 12px; flex-shrink: 0;">
-                <h3 class="modal-title" id="s-course-modal-title">طھظپط§طµظٹظ„ ط§ظ„ط¯ظˆط±ط©</h3>
-                <button class="modal-close" onclick="closeModal('student-course-modal')">&times;</button>
-            </div>
-            
-            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px; flex-grow: 1; overflow: hidden; min-height: 0;">
-                <!-- Right Side: Video Player -->
-                <div style="display: flex; flex-direction: column; justify-content: center; background: rgba(0,0,0,0.4); border-radius: 12px; border: 1px solid var(--border-color); position: relative; overflow: hidden; height: 100%;">
-                    
-                    <div id="s-course-media-placeholder" class="empty-state" style="padding: 20px;">
-                        <i class="fa-solid fa-circle-play" style="font-size: 55px; color: var(--accent-orange); margin-bottom: 15px;"></i>
-                        <p style="font-size: 15px; font-weight: 700;">ط§ط®طھط± ط¯ط±ط³ط§ظ‹ ظ…ظ† ط§ظ„ظ‚ط§ط¦ظ…ط© ط§ظ„ظٹط³ط±ظ‰ ظ„ط¨ط¯ط، ط§ظ„ط´ط±ط­</p>
-                        <p style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">ط£ظˆ ط§ط¨ط¯ط£ ط¨ط­ظ„ ط§ظ„ط§ط®طھط¨ط§ط±ط§طھ ظ„ظ‚ظٹط§ط³ ظ…ط³طھظˆظ‰ ظپظ‡ظ…ظƒ!</p>
-                    </div>
-
-                    <!-- Native Video Player -->
-                    <video id="s-course-video-player" controls style="display: none; width: 100%; height: 100%; object-fit: contain;"></video>
-                    
-                    <!-- Iframe Video Player -->
-                    <iframe id="s-course-iframe-player" style="display: none; width: 100%; height: 100%; border: none;" allowfullscreen></iframe>
-                </div>
-
-                <!-- Left Side: Syllabus -->
-                <div style="display: flex; flex-direction: column; gap: 15px; overflow-y: auto; height: 100%; border-right: 1px solid var(--border-color); padding-right: 15px;">
-                    <div>
-                        <h4 style="font-size: 14px; color: var(--text-orange); margin-bottom: 8px; border-bottom: 1px dashed var(--border-color); padding-bottom: 4px;">
-                            <i class="fa-solid fa-play"></i> ط¯ط±ظˆط³ ط§ظ„ط´ط±ط­ ظˆط§ظ„ظپظٹط¯ظٹظˆ:
-                        </h4>
-                        <div class="list-container" id="s-course-lessons-list" style="gap: 8px;">
-                            <!-- Populated dynamically -->
-                        </div>
-                    </div>
-
-                    <div style="margin-top: 10px;">
-                        <h4 style="font-size: 14px; color: var(--success); margin-bottom: 8px; border-bottom: 1px dashed var(--border-color); padding-bottom: 4px;">
-                            <i class="fa-solid fa-clipboard-question"></i> ط§ظ„ط§ط®طھط¨ط§ط±ط§طھ ط§ظ„طھظپط§ط¹ظ„ظٹط©:
-                        </h4>
-                        <div class="list-container" id="s-course-quizzes-list" style="gap: 8px;">
-                            <!-- Populated dynamically -->
-                        </div>
-                    </div>
+                <div style="display: flex; justify-content: flex-end; gap: 12px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+                    <button type="button" class="btn btn-secondary" onclick="showDashboard()">ط¥ط؛ظ„ط§ظ‚</button>
                 </div>
             </div>
-        </div>
-    </div>
+        </section>
 
-    <!-- MODAL 9: INTERACTIVE QUIZ PLAYER (Student) -->
-    <div id="student-quiz-modal" class="modal-overlay">
-        <div class="modal-content" style="max-width: 580px;">
-            <div class="modal-header">
-                <h3 class="modal-title" id="student-quiz-title">ط­ظ„ ط§ظ„ط§ط®طھط¨ط§ط±</h3>
-                <button class="modal-close" onclick="closeModal('student-quiz-modal')">&times;</button>
-            </div>
-            <div id="quiz-player-body">
-                <!-- Dynamic Quiz Content -->
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL 10: STUDENT SELF-REGISTRATION (Student) [NEW] -->
-    <div id="student-register-modal" class="modal-overlay">
-        <div class="modal-content" style="max-width: 440px;">
-            <div class="modal-header">
-                <h3 class="modal-title"><i class="fa-solid fa-user-plus" style="color: var(--accent-orange); margin-left: 6px;"></i> ط¥ظ†ط´ط§ط، ط­ط³ط§ط¨ ط·ط§ظ„ط¨ ط¬ط¯ظٹط¯</h3>
-                <button class="modal-close" onclick="closeModal('student-register-modal')">&times;</button>
-            </div>
-            
-            <form id="student-register-form" onsubmit="handleStudentRegister(event)">
-                <div class="form-group">
-                    <label for="reg-name">ط§ظ„ط§ط³ظ… ط§ظ„ظƒط§ظ…ظ„ ظ„ظ„ط·ط§ظ„ط¨:</label>
-                    <input type="text" id="reg-name" required placeholder="ظ…ط«ط§ظ„: ظٹظˆط³ظپ ط§ظ„ط­ط±ط¨ظٹ">
-                </div>
-                
-                <div class="form-group">
-                    <label for="reg-username">ط§ط³ظ… ط§ظ„ظ…ط³طھط®ط¯ظ… (ط¨ط§ظ„ط¥ظ†ط¬ظ„ظٹط²ظٹ ظ„ظ„ط¯ط®ظˆظ„):</label>
-                    <input type="text" id="reg-username" required placeholder="ظ…ط«ط§ظ„: yousef" dir="ltr" style="direction: ltr; text-align: left;">
-                    <span style="font-size: 11px; color: var(--text-muted); display: block; margin-top: 3px;">ط³طھط³طھط®ط¯ظ… ظ‡ط°ط§ ط§ظ„ط§ط³ظ… ظ„طھط³ط¬ظٹظ„ ط§ظ„ط¯ط®ظˆظ„ ظ„ط§ط­ظ‚ط§ظ‹.</span>
-                </div>
-                
-                <div class="form-group">
-                    <label for="reg-pwd">ظƒظ„ظ…ط© ط§ظ„ظ…ط±ظˆط±:</label>
-                    <input type="password" id="reg-pwd" required placeholder="ط§ظƒطھط¨ ظƒظ„ظ…ط© ظ…ط±ظˆط± ظ‚ظˆظٹط©">
-                </div>
-                
-                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 15px;">
-                    <i class="fa-solid fa-user-check"></i>
-                    <span>ط¥ظ†ط´ط§ط، ط§ظ„ط­ط³ط§ط¨ ظˆط¯ط®ظˆظ„ ط§ظ„ظ…ظ†طµط©</span>
-                </button>
-            </form>
-        </div>
-    </div>
-
-    <!-- MODAL 11: STUDENT ENROLLMENT MANAGER (Teacher) [NEW] -->
-    <div id="student-enrollment-modal" class="modal-overlay">
-        <div class="modal-content" style="max-width: 480px;">
-            <div class="modal-header">
-                <h3 class="modal-title"><i class="fa-solid fa-graduation-cap" style="color: var(--accent-orange); margin-left: 6px;"></i> ط¥ط¯ط§ط±ط© ط§ط´طھط±ط§ظƒط§طھ ط§ظ„ط·ط§ظ„ط¨ ظپظٹ ط§ظ„ط¯ظˆط±ط§طھ</h3>
-                <button class="modal-close" onclick="closeModal('student-enrollment-modal')">&times;</button>
-            </div>
-            
-            <form id="student-enrollment-form" onsubmit="handleSaveEnrollment(event)">
-                <input type="hidden" id="enrollment-student-id">
-                
-                <div style="margin-bottom: 15px; background: rgba(255,255,255,0.02); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
-                    <strong>ط§ظ„ط·ط§ظ„ط¨:</strong> <span id="enrollment-student-name" style="font-weight: 800; color: var(--text-main);">--</span>
-                </div>
-                
-                <h4 style="font-size: 13.5px; color: var(--text-muted); margin-bottom: 10px;">ط§ط®طھط± ط§ظ„ظ…ظ‚ط±ط±ط§طھ ط§ظ„ظ…ط¯ظپظˆط¹ط© ط§ظ„طھظٹ ط§ط´طھط±ظƒ ظپظٹظ‡ط§ ط§ظ„ط·ط§ظ„ط¨:</h4>
-                
-                <div class="list-container" id="enrollment-courses-list" style="gap: 10px; max-height: 250px; overflow-y: auto; padding: 5px;">
-                    <!-- Populated dynamically by JS (checkbox list of courses) -->
-                </div>
-                
-                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 25px; border-top: 1px solid var(--border-color); padding-top: 15px;">
-                    <button type="button" class="btn btn-secondary" onclick="closeModal('student-enrollment-modal')">ط¥ظ„ط؛ط§ط،</button>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fa-solid fa-save"></i>
-                        <span>ط­ظپط¸ ط§ظ„ط§ط´طھط±ط§ظƒط§طھ</span>
+        <!-- PAGE VIEW 13: EDIT TEACHER NAME (Full Page) -->
+        <section id="edit-teacher-name-page-view" class="fade-in" style="display: none;">
+            <div class="glass-card" style="max-width: 520px; margin: 0 auto; padding: 30px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px;">
+                    <h2 style="font-size: 20px; font-weight: 800; color: var(--text-main);">
+                        <i class="fa-solid fa-user-pen" style="color: var(--accent-orange); margin-left: 8px;"></i>
+                        طھط¹ط¯ظٹظ„ ط§ط³ظ… ط§ظ„ظ…ط¹ظ„ظ… / ط§ظ„ظ…ط´ط±ظپ
+                    </h2>
+                    <button class="btn btn-secondary" onclick="showDashboard()">
+                        <i class="fa-solid fa-arrow-right"></i> ط§ظ„ط¹ظˆط¯ط©
                     </button>
                 </div>
+                <form id="edit-teacher-name-form" onsubmit="handleSaveTeacherName(event)">
+                    <input type="hidden" id="edit-teacher-id">
+                    <div class="form-group" style="margin-top: 15px;">
+                        <label for="edit-teacher-name-input" style="font-weight: 700;">ط§ظ„ط§ط³ظ… ط§ظ„ظƒط§ظ…ظ„ ط§ظ„ظ…ط¹ط¯ظ„:</label>
+                        <input type="text" id="edit-teacher-name-input" required placeholder="ط£ط¯ط®ظ„ ط§ظ„ط§ط³ظ… ط§ظ„ظ…ط¹ط¯ظ„ ظ‡ظ†ط§">
+                    </div>
+                    <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 30px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+                        <button type="button" class="btn btn-secondary" onclick="showDashboard()">ط¥ظ„ط؛ط§ط،</button>
+                        <button type="submit" class="btn btn-primary" style="padding: 12px 28px; font-weight: 800;">
+                            <i class="fa-solid fa-save"></i>
+                            <span>ط­ظپط¸ ط§ظ„طھط¹ط¯ظٹظ„</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- PAGE VIEW 14: BADGE MANAGER (Full Page) -->
+        <section id="badge-manager-page-view" class="fade-in" style="display: none;">
+            <div class="glass-card" style="max-width: 750px; margin: 0 auto; padding: 30px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px;">
+                    <h2 style="font-size: 22px; font-weight: 800; color: var(--text-main);">
+                        <i class="fa-solid fa-award" style="color: var(--accent-orange); margin-left: 8px;"></i>
+                        ط¥ط¯ط§ط±ط© ظˆظ…ظƒطھط¨ط© ط§ظ„ط£ظˆط³ظ…ط© ط§ظ„طھظ‚ط¯ظٹط±ظٹط©
+                    </h2>
+                    <button class="btn btn-secondary" onclick="showDashboard()">
+                        <i class="fa-solid fa-arrow-right"></i> ط§ظ„ط¹ظˆط¯ط©
+                    </button>
+                </div>
+
+                <!-- Create / Edit Badge Form -->
+                <form id="create-badge-form" onsubmit="handleSaveCustomBadge(event)" style="background: rgba(0,0,0,0.15); border: 1px solid var(--border-color); padding: 20px; border-radius: 14px; margin-bottom: 25px;">
+                    <input type="hidden" id="custom-badge-edit-key">
+                    <h4 style="font-size: 16px; font-weight: 800; color: var(--text-main); margin-bottom: 15px;" id="badge-form-title">ط¥ط¶ط§ظپط© ظˆط³ط§ظ… طھظ‚ط¯ظٹط±ظٹ ط¬ط¯ظٹط¯</h4>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div class="form-group">
+                            <label for="badge-new-name" style="font-weight: 700;">ط§ط³ظ… ط§ظ„ظˆط³ط§ظ…:</label>
+                            <input type="text" id="badge-new-name" required placeholder="ظ…ط«ط§ظ„: ط¨ط·ظ„ ط§ظ„طھط¬ظ…ظٹط¹ط§طھ">
+                        </div>
+                        <div class="form-group">
+                            <label for="badge-new-desc" style="font-weight: 700;">ط§ظ„ظˆطµظپ ط§ظ„طھط´ط¬ظٹط¹ظٹ:</label>
+                            <input type="text" id="badge-new-desc" required placeholder="ظ…ط«ط§ظ„: ط§ط¬طھط§ط² ط§ط®طھط¨ط§ط±ط§طھ ط§ظ„ظ…ط­ط§ظƒط§ط© ط¨طھظ…ظٹط²">
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-top: 12px;">
+                        <label style="display: block; margin-bottom: 8px; font-size: 13px; color: var(--text-muted); font-weight: 700;">ط§ط®طھط± ط£ظٹظ‚ظˆظ†ط© ط§ظ„ظˆط³ط§ظ… ظ…ظ† ط§ظ„ظ…ظƒطھط¨ط© ط§ظ„ط´ط§ظ…ظ„ط© (ط§ظ†ظ‚ط± ط¹ظ„ظ‰ ط§ظ„ط£ظٹظ‚ظˆظ†ط©):</label>
+                        <input type="hidden" id="badge-new-icon" value="fa-trophy">
+                        <div id="badge-icon-picker-grid" style="display: grid; grid-template-columns: repeat(8, 1fr); gap: 10px; max-height: 180px; overflow-y: auto; padding: 12px; background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 10px;">
+                            <!-- Icon options rendered by JS -->
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 20px;">
+                        <button type="button" class="btn btn-secondary" onclick="resetBadgeForm()" style="padding: 8px 18px; font-size: 13px;">ط¥ظ„ط؛ط§ط، / ظˆط³ط§ظ… ط¬ط¯ظٹط¯</button>
+                        <button type="submit" class="btn btn-primary" style="padding: 8px 22px; font-size: 13px; font-weight: 800;" id="badge-save-btn">ط­ظپط¸ ط§ظ„ظˆط³ط§ظ…</button>
+                    </div>
+                </form>
+
+                <!-- Current Badges List -->
+                <h4 style="font-size: 15px; color: var(--text-muted); margin-bottom: 12px; font-weight: 800;">ط§ظ„ط£ظˆط³ظ…ط© ط§ظ„ظ…طھط§ط­ط© ط­ط§ظ„ظٹط§ظ‹:</h4>
+                <div class="list-container" id="custom-badges-manage-list" style="gap: 12px;">
+                    <!-- Rendered by JS -->
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- MODAL: ADD TESTIMONIAL / REVIEW -->
+    <div id="add-testimonial-modal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 520px;">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-pen-to-square" style="color: var(--accent-orange); margin-left: 8px;"></i> ظƒظگطھط§ط¨ط© ط±ط£ظٹظƒ ظˆطھط¬ط±ط¨طھظƒ ظ…ط¹ ط§ظ„ظ…ظ†طµط©</h3>
+                <button type="button" class="close-modal-btn" onclick="closeModal('add-testimonial-modal')">&times;</button>
+            </div>
+            <form id="add-testimonial-form" onsubmit="handleCreateTestimonial(event)">
+                <div class="modal-body">
+                    <p style="font-size: 13.5px; color: var(--text-muted); margin-bottom: 18px; line-height: 1.5;">
+                        ط´ط§ط±ظƒظ†ط§ طھط¬ط±ط¨طھظƒ ظˆطھظ‚ظٹظٹظ…ظƒ ظ„ظ„ط¯ظˆط±ط© ط£ظˆ ط§ظ„ظ…ظ†طµط© ظ„ظٹط³طھظپظٹط¯ ظ…ظ†ظ‡ط§ ط¨ظ‚ظٹط© ط§ظ„ط·ظ„ط§ط¨. ط±ط£ظٹظƒ ظٹظ†ط´ط± ظ…ط¨ط§ط´ط±ط© ط£ظˆظ†ظ„ط§ظٹظ†!
+                    </p>
+
+                    <div class="form-group">
+                        <label class="form-label"><i class="fa-solid fa-user"></i> ط§ط³ظ… ط§ظ„ط·ط§ظ„ط¨ / ط§ظ„ط²ط§ط¦ط±:</label>
+                        <input type="text" id="testim-name" class="form-control" placeholder="ط§ظƒطھط¨ ط§ط³ظ…ظƒ ط§ظ„ظƒط±ظٹظ€ظ…..." required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label"><i class="fa-solid fa-tag"></i> ط§ظ„طµظپ ط£ظˆ ظ†ظˆط¹ ط§ظ„ط§ط®طھط¨ط§ط±:</label>
+                        <select id="testim-role" class="form-control">
+                            <option value="ط·ط§ظ„ط¨ ظ‚ط¯ط±ط§طھ ط¹ط§ظ…ط©">ط·ط§ظ„ط¨ ظ‚ط¯ط±ط§طھ ط¹ط§ظ…ط©</option>
+                            <option value="ط·ط§ظ„ط¨ط© ظ‚ط¯ط±ط§طھ ط¹ط§ظ…ط©">ط·ط§ظ„ط¨ط© ظ‚ط¯ط±ط§طھ ط¹ط§ظ…ط©</option>
+                            <option value="ط·ط§ظ„ط¨ طھط­طµظٹظ„ظٹ ط±ظٹط§ط¶ظٹط§طھ">ط·ط§ظ„ط¨ طھط­طµظٹظ„ظٹ ط±ظٹط§ط¶ظٹط§طھ</option>
+                            <option value="ط·ط§ظ„ط¨ط© طھط­طµظٹظ„ظٹ ط±ظٹط§ط¶ظٹط§طھ">ط·ط§ظ„ط¨ط© طھط­طµظٹظ„ظٹ ط±ظٹط§ط¶ظٹط§طھ</option>
+                            <option value="ط·ط§ظ„ط¨ ط±ظٹط§ط¶ظٹط§طھ ظ…ط¯ط±ط³ظٹ">ط·ط§ظ„ط¨ ط±ظٹط§ط¶ظٹط§طھ ظ…ط¯ط±ط³ظٹ</option>
+                            <option value="ط²ط§ط¦ط± ظ„ظ„ظ…ظˆظ‚ط¹">ط²ط§ط¦ط± ظ„ظ„ظ…ظˆظ‚ط¹</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label"><i class="fa-solid fa-star" style="color: gold;"></i> ط§ظ„طھظ‚ظٹظٹظ… ظ…ظ† 5 ظ†ط¬ظˆظ…:</label>
+                        <select id="testim-rating" class="form-control">
+                            <option value="5">â­گâ­گâ­گâ­گâ­گ 5 ظ…ظ† 5 (ظ…ظ…طھط§ط² ط¬ط¯ط§ظ‹)</option>
+                            <option value="4">â­گâ­گâ­گâ­گ 4 ظ…ظ† 5 (ط¬ظٹط¯ ط¬ط¯ط§ظ‹)</option>
+                            <option value="3">â­گâ­گâ­گ 3 ظ…ظ† 5 (ط¬ظٹط¯)</option>
+                            <option value="2">â­گâ­گ 2 ظ…ظ† 5 (ظ…طھظˆط³ط·)</option>
+                            <option value="1">â­گ 1 ظ…ظ† 5 (ط¶ط¹ظٹظپ)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label"><i class="fa-solid fa-comment-dots"></i> ظ†طµ ط±ط£ظٹظƒ ظˆطھط¬ط±ط¨طھظƒ:</label>
+                        <textarea id="testim-comment" class="form-control" rows="4" placeholder="ط§ظƒطھط¨ ط±ط£ظٹظƒ ط¨ط§ظ„طھظپطµظٹظ„ ظ‡ظ†ط§ (ظ…ط«ط§ظ„: ط§ط³طھظپط¯طھ ط¬ط¯ط§ظ‹ ظ…ظ† ط´ط±ط­ ط£ط³طھط§ط° ظ…ط­ظ…ط¯ ظˆط­طµظ„طھ ط¹ظ„ظ‰ ط¯ط±ط¬ط© 95%...)" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('add-testimonial-modal')">ط¥ظ„ط؛ط§ط،</button>
+                    <button type="submit" class="btn btn-primary" style="font-weight: 800;"><i class="fa-solid fa-paper-plane"></i> ظ†ط´ط± ط§ظ„ط±ط£ظٹ ط§ظ„ط¢ظ†</button>
+                </div>
             </form>
         </div>
     </div>
 
-    <!-- MODAL 12: UNPAID COURSE ALERT DIALOG (Student) [NEW] -->
-    <div id="unpaid-course-modal" class="modal-overlay">
-        <div class="modal-content" style="max-width: 440px; text-align: center; padding: 30px 20px;">
-            <div style="font-size: 55px; color: var(--accent-orange); margin-bottom: 15px;">ًں”’</div>
-            <h3 style="font-size: 19px; font-weight: 800; color: var(--text-main); margin-bottom: 10px;">ط¹ط°ط±ط§ظ‹! ظ‡ط°ط§ ط§ظ„ظ…ظ‚ط±ط± ظ…ظ‚ظپظ„</h3>
-            <p style="font-size: 14px; color: var(--text-muted); line-height: 1.6; margin-bottom: 25px;">
-                ظ‡ط°ظ‡ ط§ظ„ط¯ظˆط±ط© ظ…ط¯ظپظˆط¹ط© ظˆظ…ط®طµطµط© ظ„ظ„ط·ظ„ط§ط¨ ط§ظ„ظ…ط´طھط±ظƒظٹظ† ظپظ‚ط·. ظ„طھظپط¹ظٹظ„ ط§ط´طھط±ط§ظƒظƒ ظˆط§ظ„ظˆطµظˆظ„ ظ„ط´ط±ظˆط­ط§طھ ط§ظ„ظپظٹط¯ظٹظˆ ظˆط§ظ„ط§ط®طھط¨ط§ط±ط§طھ ط§ظ„طھظپط§ط¹ظ„ظٹط©طŒ ظٹط±ط¬ظ‰ ط§ظ„طھظˆط§طµظ„ ظ…ط¹ ط§ظ„ظ…ط¹ظ„ظ… ط§ظ„ط®طµظˆطµظٹ ط¹ط¨ط± ط§ظ„ظˆط§طھط³ط§ط¨ ط¹ظ„ظ‰ ط§ظ„ط±ظ‚ظ… **0501976467** ط£ظˆ ط¨ط§ظ„ط¶ط؛ط· ظ…ط¨ط§ط´ط±ط© ط¹ظ„ظ‰ ط§ظ„ط²ط± ط§ظ„ط£ط®ط¶ط± ط£ط¯ظ†ط§ظ‡.
-            </p>
-            
-            <a href="https://wa.me/966501976467?text=ظ…ط±ط­ط¨ط§ظ‹%20ط£ط³طھط§ط°%20ط£ط±ط؛ط¨%20ظپظٹ%20ط§ظ„ط§ط´طھط±ط§ظƒ%20ظˆطھظپط¹ظٹظ„%20ط¯ظˆط±ط©%20ظ…ط³ط§ط±%20ط§ظ„طھط¹ظ„ظٹظ…ظٹط©" 
-               target="_blank" 
-               class="btn" 
-               style="background-color: #25D366; color: white; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 15px; font-weight: 700; text-decoration: none; border: none; padding: 12px 20px; border-radius: 8px; transition: 0.2s;">
-                <i class="fa-brands fa-whatsapp" style="font-size: 20px;"></i>
-                <span>طھظˆط§طµظ„ ط¹ط¨ط± ط§ظ„ظˆط§طھط³ط§ط¨ ظ„ظ„طھظپط¹ظٹظ„</span>
-            </a>
-            
-            <button class="btn btn-secondary" onclick="closeModal('unpaid-course-modal')" style="width: 100%; border-color: rgba(255,255,255,0.1); color: var(--text-muted);">ط¥ط؛ظ„ط§ظ‚</button>
+    <!-- FOOTER -->
+    <footer>
+        ظ…ظ†طµط© <span>ظ…ظژط³ط§ط± (Masar)</span> ظ„ظ„طھط¹ظ„ظٹظ… ط§ظ„ط°ظƒظٹ ظˆط§ط®طھط¨ط§ط±ط§طھ ظ‚ظٹط§ط³ آ© 2026 - طھظ… طھطµظ…ظٹظ…ظ‡ط§ ط¨ظƒظ„ ط´ط؛ظپ ظ„ظ…ط³ط§ط¹ط¯ط© ط§ظ„ظ…ط¹ظ„ظ… ط§ظ„ط®طµظˆطµظٹ ظˆط·ظ„ط§ط¨ظ‡ ظپظٹ ط§ظ„طھط£ط³ظٹط³ ظˆط§ظ„طھط¬ظ…ظٹط¹ط§طھ.
+    </footer>
+
+    <!-- MODAL (Side Drawer Only): HAMBURGER DRAWER MENU -->
+    <div id="hamburger-drawer-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div style="background: linear-gradient(135deg, rgba(255, 125, 63, 0.2), rgba(16, 185, 129, 0.1)); padding: 22px 18px 18px 18px; border-bottom: 1px solid var(--border-color); position: relative;">
+                <button type="button" class="close-modal-btn" onclick="closeModal('hamburger-drawer-modal')" style="position: absolute; left: 15px; top: 15px; background: rgba(255,255,255,0.08); width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--text-main); font-size: 20px; border: 1px solid var(--border-color); cursor: pointer;">&times;</button>
+                <div style="display: flex; align-items: center; gap: 12px; margin-top: 10px;">
+                    <div id="drawer-user-avatar" style="width: 46px; height: 46px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-orange), #FF5500); color: white; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 19px; box-shadow: 0 4px 12px rgba(255,125,63,0.3); flex-shrink: 0;">
+                        <i class="fa-solid fa-compass"></i>
+                    </div>
+                    <div style="flex: 1; min-width: 0;">
+                        <h4 id="drawer-user-name" style="font-size: 16px; font-weight: 800; color: var(--text-main); margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">ظ…ظ†طµط© ظ…ظژط³ط§ط± ط§ظ„طھط¹ظ„ظٹظ…ظٹط©</h4>
+                        <span id="drawer-user-status" style="font-size: 11.5px; color: var(--text-orange); font-weight: 700; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">ط¯ظ„ظٹظ„ ط¯ظˆط±ط§طھ ظˆط§ط®طھط¨ط§ط±ط§طھ ظ‚ظٹط§ط³ ظˆط§ظ„طھط£ط³ظٹط³</span>
+                    </div>
+                </div>
+            </div>
+
+            <div style="padding: 18px 15px; flex: 1; overflow-y: auto;" id="drawer-menu-options">
+                <!-- Populated dynamically based on user state -->
+            </div>
+        </div>
+    </div>
+
+    <!-- PLACEMENT TEST MODAL -->
+    <div class="modal-overlay" id="placement-test-modal" style="display: none; align-items: center; justify-content: center; z-index: 1500;">
+        <div class="modal-content" style="max-width: 500px; width: 90%; background: var(--bg-dark); border-radius: 20px; overflow: hidden; box-shadow: 0 15px 40px rgba(0,0,0,0.5); border: 1px solid rgba(16, 185, 129, 0.3);">
+            <div style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), transparent); padding: 30px 25px 20px 25px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                <div style="width: 70px; height: 70px; border-radius: 50%; background: linear-gradient(135deg, var(--success), #059669); color: white; display: flex; align-items: center; justify-content: center; font-size: 32px; margin: 0 auto 15px auto; box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);">
+                    <i class="fa-solid fa-bullseye"></i>
+                </div>
+                <h3 style="font-size: 22px; font-weight: 900; color: var(--text-main); margin-bottom: 8px;">ط§ط®طھط¨ط§ط± طھط­ط¯ظٹط¯ ط§ظ„ظ…ط³طھظˆظ‰</h3>
+                <p style="font-size: 14px; color: var(--text-muted); line-height: 1.6;" id="placement-modal-desc">
+                    ظ‡ظ„ ط£ظ†طھ ظ…ط³طھط¹ط¯ ظ„ط§ط®طھط¨ط§ط± ظ…ط³طھظˆط§ظƒ ظˆطھط­ط¯ظٹط¯ ظ…ط³ط§ط±ظƒ ط§ظ„طµط­ظٹط­طں
+                </p>
+            </div>
+            <div style="padding: 25px;">
+                <div style="background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 12px; padding: 15px; margin-bottom: 25px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px dashed rgba(255,255,255,0.05); padding-bottom: 10px;">
+                        <span style="font-size: 13.5px; color: var(--text-muted);"><i class="fa-solid fa-layer-group" style="margin-left: 6px;"></i>ط¹ط¯ط¯ ط§ظ„ط£ط³ط¦ظ„ط©:</span>
+                        <strong style="font-size: 15px; color: var(--text-main);" id="placement-modal-qcount">0 ط£ط³ط¦ظ„ط©</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 13.5px; color: var(--text-muted);"><i class="fa-solid fa-stopwatch" style="margin-left: 6px;"></i>ط§ظ„ظ…ط¯ط© ط§ظ„ط²ظ…ظ†ظٹط©:</span>
+                        <strong style="font-size: 15px; color: var(--text-orange);" id="placement-modal-duration">0 ط¯ظ‚ظٹظ‚ط©</strong>
+                    </div>
+                </div>
+                <p style="font-size: 12.5px; color: var(--text-muted); text-align: center; margin-bottom: 25px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                    <i class="fa-solid fa-circle-info" style="color: var(--success);"></i>
+                    <span>ط¨ظ…ط¬ط±ط¯ ط§ظ„ط¶ط؛ط· ط¹ظ„ظ‰ ط²ط± ط§ظ„ط¨ط¯ط،طŒ ط³ظٹط¨ط¯ط£ ط§ظ„ظ…ط¤ظ‚طھ ظˆظ„ط§ ظٹظ…ظƒظ† ط¥ظٹظ‚ط§ظپظ‡.</span>
+                </p>
+                <div style="display: flex; gap: 12px;">
+                    <button class="btn btn-secondary" onclick="closeModal('placement-test-modal')" style="flex: 1; padding: 12px; font-size: 14px;">ط¥ظ„ط؛ط§ط،</button>
+                    <button class="btn btn-primary" id="placement-modal-start-btn" style="flex: 2; padding: 12px; font-size: 15px; background: linear-gradient(135deg, var(--success), #059669); border-color: #059669;">
+                        ط§ط¨ط¯ط£ ط§ظ„ط§ط®طھط¨ط§ط± ط§ظ„ط¢ظ† <i class="fa-solid fa-arrow-left"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Question Review Modal -->
+    <div id="question-review-modal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3 id="review-modal-title"><i class="fa-solid fa-magnifying-glass"></i> ظ…ط±ط§ط¬ط¹ط© ط§ظ„ط³ط¤ط§ظ„</h3>
+                <button type="button" class="close-modal-btn" onclick="closeModal('question-review-modal')">&times;</button>
+            </div>
+            <div class="modal-body" style="text-align: right;">
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 8px; padding: 15px; margin-bottom: 15px;">
+                    <h4 id="review-modal-question" style="font-size: 16px; font-weight: 700; color: var(--text-main); margin-bottom: 10px; line-height: 1.5;"></h4>
+                    <div id="review-modal-image-container" style="text-align: center; margin-bottom: 15px; display: none;">
+                        <img id="review-modal-image" src="" style="max-width: 100%; max-height: 200px; border-radius: 6px; border: 1px solid var(--border-color);">
+                    </div>
+                    <div id="review-modal-options" style="display: flex; flex-direction: column; gap: 8px;">
+                        <!-- Options injected here -->
+                    </div>
+                </div>
+                
+                <div id="review-modal-video-container" style="display: none; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; padding: 15px;">
+                    <h4 style="font-size: 14px; font-weight: 700; color: var(--accent-orange); margin-bottom: 10px;"><i class="fa-brands fa-youtube"></i> ظپظٹط¯ظٹظˆ ط´ط±ط­ ظ„ظ„ط³ط¤ط§ظ„</h4>
+                    <div id="review-modal-youtube-wrapper" style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; background: #000; border-radius: 6px; display: none;">
+                        <iframe id="review-modal-video-iframe" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0;" allowfullscreen></iframe>
+                    </div>
+                    <div id="review-modal-html5-wrapper" style="max-width: 100%; background: #000; border-radius: 6px; display: none;">
+                        <video id="review-modal-html5-video" controls style="width: 100%; border-radius: 6px; max-height: 350px;">
+                            <source src="" type="video/mp4">
+                            ظ…طھطµظپط­ظƒ ظ„ط§ ظٹط¯ط¹ظ… طھط´ط؛ظٹظ„ ط§ظ„ظپظٹط¯ظٹظˆ.
+                        </video>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" style="display: flex; gap: 10px; margin-top: 20px;">
+                <button type="button" class="btn btn-secondary" style="flex: 1;" onclick="closeModal('question-review-modal')">ط¥ط؛ظ„ط§ظ‚</button>
+            </div>
         </div>
     </div>
 
@@ -1116,8 +2210,23 @@
     <div class="toast-container" id="toast-container"></div>
 
     <!-- Main JavaScript Logic -->
-    <script src="app.js"></script>
+    <script src="app.js?v=v1788290426119"></script>
+    <script>
+        // Unregister any legacy cached ServiceWorkers
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                for (let registration of registrations) {
+                    registration.unregister();
+                }
+            });
+        }
+    </script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            // Theme is handled by CSS and the button now
+        });
+    </script>
 </body>
 </html>
-
 
