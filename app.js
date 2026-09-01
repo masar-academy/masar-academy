@@ -376,6 +376,9 @@ async function connectSupabase(url, key, showToasts = true) {
         
         updateCloudStatusUI(true);
         
+        // Ensure database is seeded with initial data if it's empty
+        await checkAndSeedCloudDatabase();
+        
         // Sync cloud tables in parallel
         await syncFromCloud();
         
@@ -764,6 +767,29 @@ async function checkAndSeedCloudDatabase() {
                     points: q.points
                 }));
                 await supabaseClient.from('quizzes').insert(mappedQuizzes);
+            }
+            
+            // Seed students
+            const { count: sCount } = await supabaseClient.from('students').select('*', { count: 'exact', head: true });
+            if (sCount === 0) {
+                await supabaseClient.from('students').insert(INITIAL_STUDENTS);
+            }
+            
+            // Seed assignments
+            const { count: aCount } = await supabaseClient.from('assignments').select('*', { count: 'exact', head: true });
+            if (aCount === 0) {
+                const mappedAssignments = INITIAL_ASSIGNMENTS.map(a => ({
+                    id: a.id,
+                    title: a.title,
+                    description: a.desc,
+                    subject: a.subject,
+                    points: a.points,
+                    due_date: a.dueDate,
+                    target_student: a.targetStudent,
+                    options: a.options || [],
+                    correct_option: a.correctOption !== undefined ? a.correctOption : -1
+                }));
+                await supabaseClient.from('assignments').insert(mappedAssignments);
             }
             
             console.log("Successfully seeded starter data on Supabase!");
