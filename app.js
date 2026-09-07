@@ -2,6 +2,22 @@
 const SUPABASE_URL = "https://dymqdliwwawnfauqzvce.supabase.co"; // رابط مشروعك الجديد
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5bXFkbGl3d2F3bmZhdXF6dmNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg3NzcxNDgsImV4cCI6MjEwNDM1MzE0OH0.U_Y2qrf5C1VbsTe6FhfD6P49ruW8p2xfxaYrhEPopBk"; // مفتاح anon الجديد
 
+// Global Loading Indicator Functions
+function showLoading(text = 'جاري التحميل...') {
+    const overlay = document.getElementById('global-loading-overlay');
+    const textEl = document.getElementById('global-loading-text');
+    if (overlay) {
+        if (textEl) textEl.textContent = text;
+        overlay.classList.add('active');
+    }
+}
+
+function hideLoading() {
+    const overlay = document.getElementById('global-loading-overlay');
+    if (overlay) {
+        overlay.classList.remove('active');
+    }
+}
 // Default Initial Data (Seed)
 const INITIAL_TEACHERS = [
     { id: 'mohammed', username: 'mohammed', name: 'أ.محمد علي', password: '123456' }
@@ -366,6 +382,7 @@ function initDatabase() {
 async function connectSupabase(url, key, showToasts = true) {
     try {
         if (!url || !key) throw new Error("Empty credentials");
+        showLoading('جاري الاتصال بالسحابة ومزامنة البيانات...');
         
         const client = supabase.createClient(url, key);
         supabaseClient = client;
@@ -380,13 +397,15 @@ async function connectSupabase(url, key, showToasts = true) {
         await checkAndSeedCloudDatabase();
         
         // Sync cloud tables in parallel
-        await syncFromCloud();
+        await syncFromCloud(true); // force fetch on initial connect
         
         if (showToasts) {
             showToast("متصل بقاعدة البيانات السحابية بنجاح! ⚡", "success");
         }
+        hideLoading();
         return true;
     } catch (err) {
+        hideLoading();
         console.error("Supabase Connection Error:", err);
         isCloudMode = false;
         supabaseClient = null;
@@ -1015,6 +1034,10 @@ function selectLoginRole(role) {
 // Execute Login
 async function handleLogin(e) {
     e.preventDefault();
+    
+    showLoading('جاري التحقق ومزامنة البيانات...');
+    if (isCloudMode) await syncFromCloud(true);
+    hideLoading();
     
     if (selectedRole === 'teacher') {
         const usernameInput = document.getElementById('teacher-username-input').value.trim().toLowerCase();
@@ -1963,6 +1986,7 @@ async function handleStudentRegister(e) {
     };
     
     try {
+        showLoading('جاري إنشاء حسابك في السحابة...');
         if (isCloudMode && supabaseClient) {
             const { error } = await supabaseClient.from('students').insert({
                 id: newStudent.id,
@@ -1980,6 +2004,7 @@ async function handleStudentRegister(e) {
             localStorage.setItem('masar_students', JSON.stringify(appState.students));
         }
         
+        hideLoading();
         closeModal('student-register-modal');
         document.getElementById('student-register-form').reset();
         showToast(`تهانينا يا ${name}! تم إنشاء حسابك بنجاح.`, "success");
@@ -1993,6 +2018,7 @@ async function handleStudentRegister(e) {
         localStorage.setItem('masar_current_user', JSON.stringify(appState.currentUser));
         showDashboard();
     } catch (err) {
+        hideLoading();
         console.error(err);
         showToast("فشل إنشاء الحساب سحابياً!", "danger");
     }
@@ -2360,6 +2386,7 @@ async function handleSaveEnrollment(e) {
     student.enrolled_courses = enrolledList;
     
     try {
+        showLoading('جاري تحديث اشتراكات الطالب في السحابة...');
         if (isCloudMode && supabaseClient) {
             const { error } = await supabaseClient
                 .from('students')
@@ -2370,10 +2397,12 @@ async function handleSaveEnrollment(e) {
             localStorage.setItem('masar_students', JSON.stringify(appState.students));
         }
         
+        hideLoading();
         closeModal('student-enrollment-modal');
         showToast(`تم تحديث اشتراكات الطالب ${student.name} بنجاح!`, "success");
         await renderTeacherDashboard();
     } catch (err) {
+        hideLoading();
         console.error(err);
         student.enrolled_courses = oldEnrolled; // rollback
         showToast("فشل حفظ الاشتراكات في السحابة!", "danger");
@@ -2635,6 +2664,7 @@ async function handleCreateAssignment(e) {
     };
     
     try {
+        showLoading('جاري نشر الواجب في السحابة...');
         if (isCloudMode && supabaseClient) {
             const { error } = await supabaseClient.from('assignments').insert({
                 id: newAssignment.id,
@@ -2658,12 +2688,14 @@ async function handleCreateAssignment(e) {
             appState.assignments.push(newAssignment);
         }
         
+        hideLoading();
         showToast('تم نشر الواجب الجديد للطلاب بنجاح! 🚀', 'success');
         document.getElementById('create-assignment-form').reset();
         toggleAssignmentOptions('text');
         setupDefaultDates();
         showTeacherSection('t-assignments-tab');
     } catch (err) {
+        hideLoading();
         console.error("Save Assignment Error:", err);
         showToast("فشل نشر الواجب في السحابة! تفقد الاتصال.", "danger");
     }
