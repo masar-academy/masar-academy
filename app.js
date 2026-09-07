@@ -1,6 +1,6 @@
 // === إعدادات الربط السحابي التلقائي (ضع قيمك هنا لتعمل السحابة للجميع تلقائياً) ===
-const SUPABASE_URL = "https://iqobbavjpnrofpvrgptq.supabase.co"; // رابط مشروعك الجديد
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlxb2JiYXZqcG5yb2ZwdnJncHRxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgyNzYyNTUsImV4cCI6MjEwMzg1MjI1NX0.0sZLEP2ak-oHMLuOT2m81vD2XvikkqOlggDaZ0nf0dE"; // مفتاح anon الجديد
+const SUPABASE_URL = "https://dymqdliwwawnfauqzvce.supabase.co"; // رابط مشروعك الجديد
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5bXFkbGl3d2F3bmZhdXF6dmNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg3NzcxNDgsImV4cCI6MjEwNDM1MzE0OH0.U_Y2qrf5C1VbsTe6FhfD6P49ruW8p2xfxaYrhEPopBk"; // مفتاح anon الجديد
 
 // Default Initial Data (Seed)
 const INITIAL_TEACHERS = [
