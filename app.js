@@ -1085,7 +1085,15 @@ function updateHeaderUserBadge() {
     
     if (appState.currentUser) {
         if (headerBadge) headerBadge.style.display = 'inline-flex';
-        if (headerName) headerName.textContent = appState.currentUser.role === 'teacher' ? `المعلم: ${appState.currentUser.name}` : `الطالب: ${appState.currentUser.name}`;
+        
+        let rankStr = '';
+        if (appState.currentUser.role === 'student') {
+            const sorted = [...appState.students].sort((a, b) => b.xp - a.xp);
+            const rIdx = sorted.findIndex(s => s.id === appState.currentUser.id);
+            if (rIdx !== -1) rankStr = ` - ترتيبك: ${rIdx + 1} 🏆`;
+        }
+        
+        if (headerName) headerName.textContent = appState.currentUser.role === 'teacher' ? `المعلم: ${appState.currentUser.name}` : `الطالب: ${appState.currentUser.name}${rankStr}`;
         if (headerBadge) {
             headerBadge.className = appState.currentUser.role === 'teacher' ? 'user-badge teacher' : 'user-badge student';
             const dot = headerBadge.querySelector('.role-dot');
@@ -4622,7 +4630,7 @@ async function renderStudentDashboard() {
     const sLeaderboardList = document.getElementById('s-leaderboard-list');
     sLeaderboardList.innerHTML = '';
     
-    sortedStudents.forEach((stud, index) => {
+    sortedStudents.slice(0, 5).forEach((stud, index) => {
         const studLevelInfo = calculateLevel(stud.xp);
         const isMe = stud.id === sId;
         
