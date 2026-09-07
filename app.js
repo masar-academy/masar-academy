@@ -1906,10 +1906,11 @@ async function handleStudentRegister(e) {
     e.preventDefault();
     const name = document.getElementById('reg-name').value.trim();
     const username = document.getElementById('reg-username').value.trim().toLowerCase();
+    const phone = document.getElementById('reg-phone') ? document.getElementById('reg-phone').value.trim() : '';
     const password = document.getElementById('reg-pwd').value.trim();
     
-    if (!name || !username || !password) {
-        showToast("يرجى ملء جميع الحقول!", "danger");
+    if (!name || !username || !password || !phone) {
+        showToast("يرجى ملء جميع الحقول بما فيها رقم الجوال!", "danger");
         return;
     }
     
@@ -1930,6 +1931,7 @@ async function handleStudentRegister(e) {
         id: username,
         username: username,
         name: name,
+        phone: phone,
         password: password,
         xp: 0,
         badges: [],
@@ -1942,6 +1944,7 @@ async function handleStudentRegister(e) {
                 id: newStudent.id,
                 username: newStudent.username,
                 name: newStudent.name,
+                phone: newStudent.phone,
                 password: newStudent.password,
                 xp: newStudent.xp,
                 badges: newStudent.badges,
