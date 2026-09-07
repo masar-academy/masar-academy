@@ -410,8 +410,16 @@ function safeJsonParse(val, fallback = null) {
 }
 
 // Sync all data from Supabase
-async function syncFromCloud() {
+let lastSyncTime = 0;
+async function syncFromCloud(force = false) {
     if (!isCloudMode || !supabaseClient) return;
+    
+    // Cache data for 60 seconds to prevent slow loading on every navigation
+    const now = Date.now();
+    if (!force && (now - lastSyncTime < 60000)) {
+        return;
+    }
+    
     try {
         const [
             resTeachers,
@@ -705,6 +713,7 @@ async function syncFromCloud() {
         } catch(e) {}
 
         console.log("Synced successfully from Supabase cloud database.");
+        lastSyncTime = Date.now();
 
         // Re-render UI after syncing from cloud
         if (appState.currentUser) {
