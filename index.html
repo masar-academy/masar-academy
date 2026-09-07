@@ -53,9 +53,14 @@
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
     <!-- Main Style Sheet -->
-    <link rel="stylesheet" href="style.css?v=v1788816526061">
+    <link rel="stylesheet" href="style.css?v=v1788818963641">
 </head>
 <body>
+    <!-- Global Loading Overlay -->
+    <div id="global-loading-overlay">
+        <div class="loading-spinner"></div>
+        <div class="loading-text" id="global-loading-text">جاري التحميل...</div>
+    </div>
 
     <!-- Header Navigation (Always visible) -->
     <header id="app-header" class="fade-in" style="display: flex;">
@@ -2215,7 +2220,7 @@
     <div class="toast-container" id="toast-container"></div>
 
     <!-- Main JavaScript Logic -->
-    <script src="app.js?v=v1788816526061"></script>
+    <script src="app.js?v=v1788818963641"></script>
     <script>
         // Unregister any legacy cached ServiceWorkers
         if ('serviceWorker' in navigator) {
