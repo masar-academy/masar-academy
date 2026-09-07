@@ -1914,6 +1914,13 @@ async function handleStudentRegister(e) {
         return;
     }
     
+    // Validate phone number starts with 05 and is 10 digits
+    const phoneRegex = /^05\d{8}$/;
+    if (!phoneRegex.test(phone)) {
+        showToast("يجب أن يبدأ رقم الجوال بـ 05 ويتكون من 10 أرقام!", "danger");
+        return;
+    }
+    
     if (username === 'mohammed') {
         showToast("اسم المستخدم محجوز لحساب المعلم!", "danger");
         return;
