@@ -24,9 +24,9 @@ const INITIAL_TEACHERS = [
 ];
 
 const INITIAL_STUDENTS = [
-    { id: 'stud-1', username: 'student1', name: 'أحمد الغامدي', password: '123', xp: 120, badges: ['first_step'], enrolled_courses: ['course-1'] },
-    { id: 'stud-2', username: 'student2', name: 'سارة خالد', password: '123', xp: 250, badges: ['first_step', 'math_master'], enrolled_courses: ['course-1'] },
-    { id: 'stud-3', username: 'student3', name: 'فيصل الشمري', password: '123', xp: 80, badges: [], enrolled_courses: [] }
+    { id: 'stud-1', username: 'student1', name: 'أحمد علي', password: '123', xp: 120, badges: ['first_step'], enrolled_courses: ['course-1'], quiz_results: {}, total_questions_solved: 0 },
+    { id: 'stud-2', username: 'student2', name: 'خالد يوسف', password: '123', xp: 250, badges: ['first_step', 'math_master'], enrolled_courses: ['course-1'], quiz_results: {}, total_questions_solved: 0 },
+    { id: 'stud-3', username: 'student3', name: 'عمر خالد', password: '123', xp: 80, badges: [], enrolled_courses: [], quiz_results: {}, total_questions_solved: 0 }
 ];
 
 const INITIAL_COURSES = [
@@ -4658,70 +4658,64 @@ async function renderStudentDashboard() {
     const myRankIndex = sortedStudents.findIndex(s => s.id === sId);
     const myRank = myRankIndex !== -1 ? (myRankIndex + 1) : '--';
     
-    const completedHomeworks = appState.submissions.filter(s => s.studentId === sId && s.status === 'graded');
-    
-    document.getElementById('s-stat-rank').innerHTML = `<i class="fa-solid fa-trophy" style="color: gold; margin-left: 6px;"></i> ${myRank} / ${appState.students.length}`;
-    document.getElementById('s-stat-xp').textContent = `${student.xp} XP`;
-    document.getElementById('s-stat-completed').textContent = completedHomeworks.length;
-
-    // Update Profile sidebar card
+    // Setup general info inside profile
     const studentLevelInfo = calculateLevel(student.xp);
-    document.getElementById('s-profile-name').textContent = student.name;
-    document.getElementById('s-profile-avatar').textContent = student.name.charAt(0);
-    document.getElementById('s-profile-level').textContent = `${studentLevelInfo.title} (مستوى ${studentLevelInfo.level})`;
     
-    const nextLevelXpGoal = studentLevelInfo.level * 200;
-    const currentLevelBaseXp = (studentLevelInfo.level - 1) * 200;
-    const currentXpGainedInLevel = student.xp - currentLevelBaseXp;
-    
-    document.getElementById('s-profile-xp-text').textContent = `${currentXpGainedInLevel} / 200 XP`;
-    document.getElementById('s-profile-xp-fill').style.width = `${studentLevelInfo.progressPercent}%`;
-
-    // Render Badges
+    // Render Badges (now in Progress tab)
     const sBadgesContainer = document.getElementById('s-profile-badges');
-    sBadgesContainer.innerHTML = '';
-    
-    Object.keys(BADGE_DETAILS).forEach(badgeKey => {
-        const badge = BADGE_DETAILS[badgeKey];
-        const isEarned = student.badges.includes(badgeKey);
-        
-        const badgeEl = document.createElement('span');
-        badgeEl.className = `badge-item ${isEarned ? 'active' : ''}`;
-        badgeEl.title = badge.desc;
-        badgeEl.innerHTML = `<i class="fa-solid ${badge.icon}"></i> ${badge.name}`;
-        sBadgesContainer.appendChild(badgeEl);
-    });
+    if (sBadgesContainer) {
+        sBadgesContainer.innerHTML = '';
+        Object.keys(BADGE_DETAILS).forEach(badgeKey => {
+            const badge = BADGE_DETAILS[badgeKey];
+            const isEarned = student.badges.includes(badgeKey);
+            const badgeEl = document.createElement('span');
+            badgeEl.className = `badge-item ${isEarned ? 'active' : ''}`;
+            badgeEl.title = badge.desc;
+            badgeEl.innerHTML = `<i class="fa-solid ${badge.icon}"></i> ${badge.name}`;
+            sBadgesContainer.appendChild(badgeEl);
+        });
+    }
 
-    // Render Leaderboard
+    // Render Leaderboard (now in Progress tab)
     const sLeaderboardList = document.getElementById('s-leaderboard-list');
-    sLeaderboardList.innerHTML = '';
-    
-    sortedStudents.slice(0, 5).forEach((stud, index) => {
-        const studLevelInfo = calculateLevel(stud.xp);
-        const isMe = stud.id === sId;
+    if (sLeaderboardList) {
+        sLeaderboardList.innerHTML = '';
+        sortedStudents.slice(0, 5).forEach((stud, index) => {
+            const studLevelInfo = calculateLevel(stud.xp);
+            const isMe = stud.id === sId;
+            let medalHtml = '';
+            if (index === 0) medalHtml = '🥇';
+            else if (index === 1) medalHtml = '🥈';
+            else if (index === 2) medalHtml = '🥉';
+            else medalHtml = `#${index + 1}`;
+            
+            const div = document.createElement('div');
+            div.className = `leaderboard-item ${isMe ? 'active' : ''}`;
+            div.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-weight: 700; font-size: 13px; color: var(--text-orange); width: 25px;">${medalHtml}</span>
+                    <div class="student-avatar" style="width: 28px; height: 28px; font-size: 12px;">${stud.name.charAt(0)}</div>
+                    <strong>${stud.name}</strong>
+                </div>
+                <div style="text-align: left;">
+                    <div style="font-weight: 800; font-size: 13px; color: var(--text-main);">${stud.xp} XP</div>
+                    <div style="font-size: 10px; color: var(--text-muted);">مستوى ${studLevelInfo.level}</div>
+                </div>
+            `;
+            sLeaderboardList.appendChild(div);
+        });
         
-        let medalHtml = '';
-        if (index === 0) medalHtml = '🥇';
-        else if (index === 1) medalHtml = '🥈';
-        else if (index === 2) medalHtml = '🥉';
-        else medalHtml = `#${index + 1}`;
-        
-        const div = document.createElement('div');
-        div.className = `leaderboard-item ${isMe ? 'active' : ''}`;
-        div.innerHTML = `
-            <div style="display: flex; align-items: center; gap: 8px;">
-                <span style="font-weight: 700; font-size: 13px; color: var(--text-orange); width: 25px;">${medalHtml}</span>
-                <div class="student-avatar" style="width: 28px; height: 28px; font-size: 12px;">${stud.name.charAt(0)}</div>
-                <strong>${stud.name}</strong>
-            </div>
-            <div style="text-align: left;">
-                <div style="font-weight: 800; font-size: 13px; color: var(--text-main);">${stud.xp} XP</div>
-                <div style="font-size: 10px; color: var(--text-muted);">مستوى ${studLevelInfo.level}</div>
-            </div>
-        `;
-        sLeaderboardList.appendChild(div);
-    });
+        const rankEl = document.getElementById('s-progress-rank');
+        if(rankEl) rankEl.textContent = myRank;
+    }
 
+    // Render new Dashboard Overview
+    renderStudentDashboardOverview(student);
+    
+    // Render Profile Tab
+    renderStudentProfileTab(student, studentLevelInfo);
+
+    // Existing renderers
     renderStudentActiveHomeworks(sId);
     renderStudentHomeworkHistory(sId);
     renderStudentMyCourses();
@@ -4747,6 +4741,136 @@ async function renderStudentDashboard() {
     }
 
     renderMath('student-view');
+}
+
+function renderStudentDashboardOverview(student) {
+    const sId = student.id;
+    const firstname = student.name.split(' ')[0];
+    document.getElementById('s-dash-welcome').textContent = `مرحباً يا ${firstname}، جاهز نكمل مسارك اليوم؟`;
+    
+    // Calculate Stats
+    let totalLessons = 0;
+    let watchedLessons = 0;
+    if (student.enrolled_courses) {
+        student.enrolled_courses.forEach(cid => {
+            const course = appState.courses.find(c => c.id === cid);
+            if (course) {
+                totalLessons += appState.lessons.filter(l => l.courseId === cid).length;
+                if (student.watched_lessons && student.watched_lessons[cid]) {
+                    watchedLessons += student.watched_lessons[cid].length;
+                }
+            }
+        });
+    }
+    const progressPercent = totalLessons > 0 ? Math.round((watchedLessons / totalLessons) * 100) : 0;
+    
+    const completedHomeworks = appState.submissions.filter(s => s.studentId === sId && s.status === 'graded').length;
+    const completedSimulators = student.simulator_results ? Object.keys(student.simulator_results).length : 0;
+    
+    document.getElementById('s-dash-stat-progress').textContent = `${progressPercent}%`;
+    document.getElementById('s-dash-stat-tests').textContent = completedHomeworks + completedSimulators;
+    document.getElementById('s-dash-stat-qs').textContent = student.total_questions_solved || 0;
+    document.getElementById('s-dash-stat-xp').textContent = student.xp;
+    
+    // Resume Course
+    const resumeContainer = document.getElementById('s-dash-resume-container');
+    let lastCourse = null;
+    if (student.enrolled_courses && student.enrolled_courses.length > 0) {
+        lastCourse = appState.courses.find(c => c.id === student.enrolled_courses[0]);
+    }
+    
+    if (lastCourse) {
+        const cLessons = appState.lessons.filter(l => l.courseId === lastCourse.id);
+        const wLessons = (student.watched_lessons && student.watched_lessons[lastCourse.id]) ? student.watched_lessons[lastCourse.id].length : 0;
+        const cProgress = cLessons.length > 0 ? Math.round((wLessons / cLessons.length) * 100) : 0;
+        
+        resumeContainer.innerHTML = `
+            <div style="display: flex; gap: 15px; align-items: center; margin-bottom: 10px;">
+                <div style="width: 50px; height: 50px; border-radius: 8px; background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; font-size: 24px;">
+                    ${lastCourse.thumbnail ? `<img src="${lastCourse.thumbnail}" style="width:100%;height:100%;object-fit:cover;border-radius:8px;">` : '📚'}
+                </div>
+                <div style="flex-grow: 1;">
+                    <h4 style="font-size: 14px; margin-bottom: 5px; color: var(--text-main);">${lastCourse.title}</h4>
+                    <div class="progress-track" style="height: 6px;">
+                        <div class="progress-fill" style="width: ${cProgress}%; background: var(--success);"></div>
+                    </div>
+                </div>
+            </div>
+            <button class="btn btn-primary" onclick="openStudentCourseModal('${lastCourse.id}')" style="width: 100%; padding: 6px; font-size: 12.5px;">متابعة الدورة</button>
+        `;
+    } else {
+        resumeContainer.innerHTML = `<div class="empty-state" style="padding: 15px;"><span style="font-size: 13px;">لا توجد دورات نشطة حالياً. اشترك في دورة للبدء!</span></div>`;
+    }
+    
+    // Pending Homeworks
+    const pendingList = document.getElementById('s-dash-pending-list');
+    const myAssignments = appState.assignments.filter(a => {
+        if (!a.targetStudent) return true; // targeted to all
+        if (Array.isArray(a.targetStudent)) return a.targetStudent.includes(sId);
+        return a.targetStudent === sId || a.targetStudent === 'all';
+    });
+    const activeHomeworks = myAssignments.filter(a => !appState.submissions.some(sub => String(sub.assignmentId) === String(a.id) && String(sub.studentId) === String(sId)));
+    
+    if (activeHomeworks.length > 0) {
+        pendingList.innerHTML = activeHomeworks.slice(0, 3).map(a => `
+            <div style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; border-right: 3px solid var(--danger); display: flex; justify-content: space-between; align-items: center;">
+                <div style="font-size: 13px; font-weight: 700;">${a.title}</div>
+                <button class="btn btn-primary" style="padding: 4px 10px; font-size: 11px;" onclick="document.querySelector('.tab-btn:nth-child(2)').click(); openSubmitAssignmentModal('${a.id}')">ابدأ الحل</button>
+            </div>
+        `).join('');
+    } else {
+        pendingList.innerHTML = `<div class="empty-state" style="padding: 15px;"><span style="font-size: 13px; color: var(--success);"><i class="fa-solid fa-check-circle"></i> رائع! لا توجد واجبات متأخرة.</span></div>`;
+    }
+}
+
+function renderStudentProfileTab(student, studentLevelInfo) {
+    document.getElementById('s-profile-name').textContent = student.name;
+    document.getElementById('s-profile-avatar').textContent = student.name.charAt(0);
+    document.getElementById('s-profile-level').textContent = `${studentLevelInfo.title} (مستوى ${studentLevelInfo.level})`;
+    
+    const nextLevelXpGoal = studentLevelInfo.level * 200;
+    const currentLevelBaseXp = (studentLevelInfo.level - 1) * 200;
+    const currentXpGainedInLevel = student.xp - currentLevelBaseXp;
+    
+    document.getElementById('s-profile-xp-text').textContent = `${currentXpGainedInLevel} / 200 XP`;
+    document.getElementById('s-profile-xp-fill').style.width = `${studentLevelInfo.progressPercent}%`;
+}
+
+async function handleStudentPasswordChange(e) {
+    e.preventDefault();
+    const currentPwd = document.getElementById('s-pwd-current').value;
+    const newPwd = document.getElementById('s-pwd-new').value;
+    
+    if (currentPwd !== appState.currentUser.password) {
+        showToast('كلمة المرور الحالية غير صحيحة.', 'danger');
+        return;
+    }
+    
+    if (newPwd.length < 3) {
+        showToast('كلمة المرور الجديدة يجب أن تكون 3 أحرف على الأقل.', 'danger');
+        return;
+    }
+    
+    try {
+        const studentIndex = appState.students.findIndex(s => s.id === appState.currentUser.id);
+        if (studentIndex !== -1) {
+            appState.students[studentIndex].password = newPwd;
+            appState.currentUser.password = newPwd;
+            
+            localStorage.setItem('masar_students', JSON.stringify(appState.students));
+            localStorage.setItem('masar_currentUser', JSON.stringify(appState.currentUser));
+            
+            if (isCloudMode && supabaseClient) {
+                await supabaseClient.from('students').update({ password: newPwd }).eq('id', appState.currentUser.id);
+            }
+            
+            showToast('تم تغيير كلمة المرور بنجاح!', 'success');
+            document.getElementById('s-change-password-form').reset();
+        }
+    } catch (err) {
+        console.error(err);
+        showToast('حدث خطأ أثناء تغيير كلمة المرور.', 'danger');
+    }
 }
 
 function renderStudentActiveHomeworks(sId) {
@@ -5595,26 +5719,47 @@ async function renderQuizResults() {
     const student = appState.students.find(s => s.id === sId);
     const oldXp = student ? student.xp : 0;
     
-    if (passed && student) {
-        student.xp += gainedXp;
-        const oldLevelInfo = calculateLevel(oldXp);
-        const newLevelInfo = calculateLevel(student.xp);
-        if (newLevelInfo.level > oldLevelInfo.level) {
-            showToast(`ترقيت للمستوى ${newLevelInfo.level}! 🏆`, "success");
-            if (newLevelInfo.level >= 2 && !student.badges.includes('xp_hunter')) {
-                student.badges.push('xp_hunter');
+    if (student) {
+        if (passed) {
+            student.xp += gainedXp;
+            const oldLevelInfo = calculateLevel(oldXp);
+            const newLevelInfo = calculateLevel(student.xp);
+            if (newLevelInfo.level > oldLevelInfo.level) {
+                showToast(`ترقيت للمستوى ${newLevelInfo.level}! 🏆`, "success");
+                if (newLevelInfo.level >= 2 && !student.badges.includes('xp_hunter')) {
+                    student.badges.push('xp_hunter');
+                }
             }
         }
-    }
 
-    try {
-        if (passed && student && isCloudMode && supabaseClient) {
-            await supabaseClient.from('students').update({ xp: student.xp, badges: student.badges }).eq('id', sId);
-        } else if (passed && student) {
-            localStorage.setItem('masar_students', JSON.stringify(appState.students));
+        if (!student.quiz_results) student.quiz_results = {};
+        if (typeof student.total_questions_solved !== 'number') student.total_questions_solved = 0;
+        
+        student.total_questions_solved += questions.length;
+        
+        const existing = student.quiz_results[quiz.id];
+        if (!existing || percent > existing.score) {
+            student.quiz_results[quiz.id] = {
+                score: percent,
+                correctCount: score,
+                maxScore: questions.length,
+                date: new Date().toISOString()
+            };
         }
-    } catch (err) {
-        console.error(err);
+
+        try {
+            if (isCloudMode && supabaseClient) {
+                await supabaseClient.from('students').update({ 
+                    xp: student.xp, 
+                    badges: student.badges,
+                    quiz_results: student.quiz_results,
+                    total_questions_solved: student.total_questions_solved
+                }).eq('id', sId);
+            }
+            localStorage.setItem('masar_students', JSON.stringify(appState.students));
+        } catch (err) {
+            console.error(err);
+        }
     }
 
     container.innerHTML = `
@@ -6312,6 +6457,10 @@ async function renderSimulatorResults() {
 
     if (student) {
         if (!student.simulator_results) student.simulator_results = {};
+        if (typeof student.total_questions_solved !== 'number') student.total_questions_solved = 0;
+        
+        student.total_questions_solved += totalQuestions;
+
         const now = new Date().toISOString();
         const existing = student.simulator_results[quiz.id];
         
@@ -6327,9 +6476,6 @@ async function renderSimulatorResults() {
 
     try {
         if (student) {
-            if (!student.simulator_results) student.simulator_results = {};
-            // (Simulator results are already computed above and placed in student.simulator_results)
-
             student.badges = student.badges.filter(b => typeof b !== 'string' || !b.startsWith('sim_res:'));
             student.badges.push('sim_res:' + JSON.stringify(student.simulator_results));
 
@@ -6342,7 +6488,8 @@ async function renderSimulatorResults() {
             if (isCloudMode && supabaseClient) {
                 await supabaseClient.from('students').update({ 
                     xp: student.xp, 
-                    badges: student.badges
+                    badges: student.badges,
+                    total_questions_solved: student.total_questions_solved
                 }).eq('id', sId);
             }
         }
