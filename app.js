@@ -35,6 +35,12 @@ const INITIAL_COURSES = [
         title: 'دورة تأسيس الجبر والهندسة',
         description: 'دورة تأسيسية متكاملة لشرح موضوعات الجبر، الهندسة الفراغية، والتناسب لطلاب القدرات والتحصيلي.',
         subject: 'qudrat',
+        instructor: 'أ.محمد علي',
+        thumbnail: '',
+        sections: [
+            { id: 'sec-1', title: 'الوحدة الأولى: الجبر والمعادلات' },
+            { id: 'sec-2', title: 'الوحدة الثانية: الهندسة الفراغية' }
+        ],
         createdAt: '2026-07-12'
     }
 ];
@@ -43,9 +49,11 @@ const INITIAL_LESSONS = [
     {
         id: 'lesson-1',
         courseId: 'course-1',
+        sectionId: 'sec-1',
         title: 'الدرس الأول: قوانين حساب مساحة المثلث والمربع',
         videoUrl: 'https://www.youtube.com/embed/V9_51dZ3D00',
-        duration: '12:45'
+        duration: '12:45',
+        pdfUrl: ''
     }
 ];
 
@@ -5159,6 +5167,49 @@ function openStudentCourseModal(courseId) {
         subjectBadge.textContent = SUBJECT_NAMES[course.subject] || course.subject || 'عام';
     }
 
+    // Thumbnail
+    const thumbImg = document.getElementById('s-course-thumbnail-img');
+    const thumbPlaceholder = document.getElementById('s-course-thumbnail-placeholder');
+    if (thumbImg && thumbPlaceholder) {
+        if (course.thumbnail) {
+            thumbImg.src = course.thumbnail;
+            thumbImg.style.display = 'block';
+            thumbPlaceholder.style.display = 'none';
+        } else {
+            thumbImg.style.display = 'none';
+            thumbPlaceholder.style.display = 'block';
+        }
+    }
+
+    // Instructor
+    const instructorNameEl = document.getElementById('s-course-instructor-name');
+    const instructorAvatarEl = document.getElementById('s-course-instructor-avatar');
+    const instructorStatEl = document.getElementById('s-course-stat-instructor');
+    const instructorLabel = course.instructor || 'أ.محمد علي';
+    if (instructorNameEl) instructorNameEl.textContent = instructorLabel;
+    if (instructorStatEl) instructorStatEl.textContent = instructorLabel;
+    if (instructorAvatarEl) {
+        const letter = instructorLabel.replace(/^أ\./, '').trim().charAt(0) || 'م';
+        instructorAvatarEl.textContent = letter;
+    }
+
+    // Course Sections
+    const sectionsWrapper = document.getElementById('s-course-sections-wrapper');
+    const sectionsList = document.getElementById('s-course-sections-list');
+    if (sectionsWrapper && sectionsList) {
+        const sections = course.sections || [];
+        if (sections.length > 0) {
+            sectionsWrapper.style.display = 'block';
+            sectionsList.innerHTML = sections.map(sec => `
+                <span style="background: rgba(255,125,63,0.1); border: 1px solid rgba(255,125,63,0.25); color: var(--text-orange); padding: 7px 16px; border-radius: 20px; font-size: 13px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px;">
+                    <i class="fa-solid fa-folder"></i> ${escapeHtml(sec.title)}
+                </span>
+            `).join('');
+        } else {
+            sectionsWrapper.style.display = 'none';
+        }
+    }
+
     // Check enrollment first to use in pricing UI
     const sId = appState.currentUser ? appState.currentUser.id : null;
     const student = sId ? appState.students.find(s => s.id === sId) : null;
@@ -5305,6 +5356,32 @@ function openStudentCourseModal(courseId) {
                     }
                 };
                 quizzesList.appendChild(div);
+            });
+        }
+    }
+
+    // Render PDF Resources
+    const pdfList = document.getElementById('s-course-pdf-list');
+    if (pdfList) {
+        const lessonsWithPdf = courseLessons.filter(l => l.pdfUrl && l.pdfUrl.trim() !== '');
+        if (lessonsWithPdf.length === 0) {
+            pdfList.innerHTML = '<span style="font-size: 12px; color: var(--text-muted); font-style: italic;">لا توجد ملفات PDF مضافة بعد</span>';
+        } else {
+            pdfList.innerHTML = '';
+            lessonsWithPdf.forEach(lesson => {
+                const div = document.createElement('div');
+                div.className = 'lesson-item';
+                div.style.cursor = 'default';
+                div.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <i class="fa-solid fa-file-pdf" style="color: var(--danger);"></i>
+                        <span style="font-size: 13px; font-weight: 600;">${escapeHtml(lesson.title)}</span>
+                    </div>
+                    <a href="${lesson.pdfUrl}" target="_blank" class="btn btn-secondary" style="padding: 4px 12px; font-size: 12px; text-decoration: none;">
+                        <i class="fa-solid fa-download"></i> تنزيل
+                    </a>
+                `;
+                pdfList.appendChild(div);
             });
         }
     }
