@@ -1249,3 +1249,37 @@ footer span {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
+
+/* Drawer Menu Items */
+.drawer-option-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    background: var(--bg-card, #fff);
+    border: 1px solid var(--border-color, #eee);
+    border-radius: 12px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: 0.3s ease;
+    font-weight: 700;
+    color: var(--text-main, #333);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+}
+
+[data-theme='dark'] .drawer-option-item {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.drawer-option-item:hover {
+    transform: translateY(-2px);
+    border-color: var(--primary, #007bff);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.05);
+}
+
+.drawer-option-item i {
+    font-size: 20px;
+    width: 25px;
+    text-align: center;
+}
