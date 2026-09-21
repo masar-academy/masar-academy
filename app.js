@@ -7152,9 +7152,25 @@ function openQuestionReviewModal(sIdx, qIdx) {
 
 function toggleTheme() {
     const root = document.documentElement;
-    const currentTheme = root.getAttribute('data-theme');
+    const currentTheme = root.getAttribute('data-theme') || 'dark';
     const newTheme = currentTheme === 'light' ? 'dark' : 'light';
     
     root.setAttribute('data-theme', newTheme);
     localStorage.setItem('masar_theme', newTheme);
+    
+    // Update icon
+    const icon = document.getElementById('theme-toggle-icon');
+    if (icon) {
+        icon.className = newTheme === 'light' ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+    }
 }
+
+// Apply saved theme on page load
+(function initTheme() {
+    const saved = localStorage.getItem('masar_theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', saved);
+    const icon = document.getElementById('theme-toggle-icon');
+    if (icon) {
+        icon.className = saved === 'light' ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+    }
+})();
