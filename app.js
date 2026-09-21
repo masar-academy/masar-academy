@@ -1152,7 +1152,24 @@ function handleHeroPrimaryAction() {
 
 function openDrawerMenu() {
     renderDrawerMenu();
-    openModal('hamburger-drawer-modal');
+    const overlay = document.getElementById('hamburger-drawer-overlay');
+    const panel = document.getElementById('hamburger-drawer-panel');
+    if (!overlay || !panel) return;
+    // Show overlay + slide panel in from left
+    overlay.style.visibility = 'visible';
+    overlay.style.opacity = '1';
+    panel.style.transform = 'translateX(0)';
+    document.body.style.overflow = 'hidden'; // prevent scroll behind drawer
+}
+
+function closeDrawerMenu() {
+    const overlay = document.getElementById('hamburger-drawer-overlay');
+    const panel = document.getElementById('hamburger-drawer-panel');
+    if (!overlay || !panel) return;
+    overlay.style.opacity = '0';
+    overlay.style.visibility = 'hidden';
+    panel.style.transform = 'translateX(-100%)';
+    document.body.style.overflow = '';
 }
 
 function renderDrawerMenu() {
@@ -1175,28 +1192,28 @@ function renderDrawerMenu() {
         if (statusEl) statusEl.textContent = `طالب مسجل - ⭐ ${studentXp} XP (${levelInfo.title})`;
         
         optionsContainer.innerHTML = `
-            <div class="drawer-option-item" onclick="closeModal('hamburger-drawer-modal'); openStudentDashboardModal();">
+            <div class="drawer-option-item" onclick="closeDrawerMenu(); openStudentDashboardModal();">
                 <i class="fa-solid fa-chart-line" style="color: var(--accent-orange);"></i>
                 <span>لوحة تحكم الطالب والتقدم الدراسـي</span>
             </div>
-            <div class="drawer-option-item" onclick="closeModal('hamburger-drawer-modal'); showStudentSection('s-simulators-tab');">
+            <div class="drawer-option-item" onclick="closeDrawerMenu(); showStudentSection('s-simulators-tab');">
                 <i class="fa-solid fa-bolt" style="color: var(--success);"></i>
                 <span>اختبارات المحاكاة (قياس)</span>
             </div>
-            <div class="drawer-option-item" onclick="closeModal('hamburger-drawer-modal'); showStudentSection('s-courses-tab');">
+            <div class="drawer-option-item" onclick="closeDrawerMenu(); showStudentSection('s-courses-tab');">
                 <i class="fa-solid fa-graduation-cap" style="color: var(--warning);"></i>
                 <span>الدورات ومقررات قياس والتأسيس</span>
             </div>
-            <div class="drawer-option-item" onclick="closeModal('hamburger-drawer-modal'); showStudentSection('s-active-tab');">
+            <div class="drawer-option-item" onclick="closeDrawerMenu(); showStudentSection('s-active-tab');">
                 <i class="fa-solid fa-list-check" style="color: #60A5FA;"></i>
                 <span>الواجبات والتمارين المطلوبة</span>
             </div>
-            <div class="drawer-option-item" onclick="closeModal('hamburger-drawer-modal'); showTestimonialsView();">
+            <div class="drawer-option-item" onclick="closeDrawerMenu(); showTestimonialsView();">
                 <i class="fa-solid fa-comments" style="color: #F472B6;"></i>
                 <span>آراء وتجارب الطلاب</span>
             </div>
             <div style="border-top: 1px solid var(--border-color); margin: 10px 0; padding-top: 10px;">
-                <div class="drawer-option-item" style="color: var(--danger); border-color: rgba(239,68,68,0.2);" onclick="closeModal('hamburger-drawer-modal'); logout();">
+                <div class="drawer-option-item" style="color: var(--danger); border-color: rgba(239,68,68,0.2);" onclick="closeDrawerMenu(); logout();">
                     <i class="fa-solid fa-right-from-bracket"></i>
                     <span>تسجيل الخروج</span>
                 </div>
@@ -1210,28 +1227,28 @@ function renderDrawerMenu() {
         
         if (isSupervisor) {
             optionsContainer.innerHTML = `
-                <div class="drawer-option-item" onclick="closeModal('hamburger-drawer-modal'); showTeacherSection('t-assignments-tab');">
+                <div class="drawer-option-item" onclick="closeDrawerMenu(); showTeacherSection('t-assignments-tab');">
                     <i class="fa-solid fa-desktop" style="color: var(--accent-orange);"></i>
                     <span>لوحة الواجبات المضافة والتصحيح</span>
                 </div>
-                <div class="drawer-option-item" onclick="closeModal('hamburger-drawer-modal'); showTeacherSection('t-students-tab');">
+                <div class="drawer-option-item" onclick="closeDrawerMenu(); showTeacherSection('t-students-tab');">
                     <i class="fa-solid fa-users-gear" style="color: #60A5FA;"></i>
                     <span>إدارة الطلاب والاشتراكات</span>
                 </div>
-                <div class="drawer-option-item" onclick="closeModal('hamburger-drawer-modal'); showTeacherSection('t-chat-tab');">
+                <div class="drawer-option-item" onclick="closeDrawerMenu(); showTeacherSection('t-chat-tab');">
                     <i class="fa-solid fa-comments" style="color: #F472B6;"></i>
                     <span>دردشة الطلاب والتواصل</span>
                 </div>
-                <div class="drawer-option-item" onclick="closeModal('hamburger-drawer-modal'); showTestimonialsView();">
+                <div class="drawer-option-item" onclick="closeDrawerMenu(); showTestimonialsView();">
                     <i class="fa-solid fa-star" style="color: #FBBF24;"></i>
                     <span>إدارة آراء وتجارب الطلاب</span>
                 </div>
-                <div class="drawer-option-item" onclick="closeModal('hamburger-drawer-modal'); showTeacherSection('t-account-tab');">
+                <div class="drawer-option-item" onclick="closeDrawerMenu(); showTeacherSection('t-account-tab');">
                     <i class="fa-solid fa-key" style="color: var(--warning);"></i>
                     <span>تغيير كلمة المرور والاسم</span>
                 </div>
                 <div style="border-top: 1px solid var(--border-color); margin: 10px 0; padding-top: 10px;">
-                    <div class="drawer-option-item" style="color: var(--danger); border-color: rgba(239,68,68,0.2);" onclick="closeModal('hamburger-drawer-modal'); logout();">
+                    <div class="drawer-option-item" style="color: var(--danger); border-color: rgba(239,68,68,0.2);" onclick="closeDrawerMenu(); logout();">
                         <i class="fa-solid fa-right-from-bracket"></i>
                         <span>تسجيل الخروج</span>
                     </div>
@@ -1239,36 +1256,36 @@ function renderDrawerMenu() {
             `;
         } else {
             optionsContainer.innerHTML = `
-                <div class="drawer-option-item" onclick="closeModal('hamburger-drawer-modal'); showTeacherSection('t-assignments-tab');">
+                <div class="drawer-option-item" onclick="closeDrawerMenu(); showTeacherSection('t-assignments-tab');">
                     <i class="fa-solid fa-desktop" style="color: var(--accent-orange);"></i>
                     <span>لوحة تحكم المعلم والواجبات</span>
                 </div>
-                <div class="drawer-option-item" onclick="closeModal('hamburger-drawer-modal'); showTeacherSection('t-courses-tab');">
+                <div class="drawer-option-item" onclick="closeDrawerMenu(); showTeacherSection('t-courses-tab');">
                     <i class="fa-solid fa-photo-film" style="color: var(--warning);"></i>
                     <span>إدارة المقررات ودورات قياس</span>
                 </div>
-                <div class="drawer-option-item" onclick="closeModal('hamburger-drawer-modal'); showTeacherSection('t-simulators-tab');">
+                <div class="drawer-option-item" onclick="closeDrawerMenu(); showTeacherSection('t-simulators-tab');">
                     <i class="fa-solid fa-bolt" style="color: var(--success);"></i>
                     <span>إدارة اختبارات المحاكاة</span>
                 </div>
-                <div class="drawer-option-item" onclick="closeModal('hamburger-drawer-modal'); showTeacherSection('t-simulators-results-tab');">
+                <div class="drawer-option-item" onclick="closeDrawerMenu(); showTeacherSection('t-simulators-results-tab');">
                     <i class="fa-solid fa-chart-bar" style="color: #10B981;"></i>
                     <span>نتائج اختبارات المحاكاة</span>
                 </div>
-                <div class="drawer-option-item" onclick="closeModal('hamburger-drawer-modal'); showTeacherSection('t-students-tab');">
+                <div class="drawer-option-item" onclick="closeDrawerMenu(); showTeacherSection('t-students-tab');">
                     <i class="fa-solid fa-users-gear" style="color: #60A5FA;"></i>
                     <span>تقارير الطلاب والاشتراكات</span>
                 </div>
-                <div class="drawer-option-item" onclick="closeModal('hamburger-drawer-modal'); showTeacherSection('t-chat-tab');">
+                <div class="drawer-option-item" onclick="closeDrawerMenu(); showTeacherSection('t-chat-tab');">
                     <i class="fa-solid fa-comments" style="color: #F472B6;"></i>
                     <span>دردشة الطلاب</span>
                 </div>
-                <div class="drawer-option-item" onclick="closeModal('hamburger-drawer-modal'); showTestimonialsView();">
+                <div class="drawer-option-item" onclick="closeDrawerMenu(); showTestimonialsView();">
                     <i class="fa-solid fa-star" style="color: #FBBF24;"></i>
                     <span>إدارة آراء وتجارب الطلاب</span>
                 </div>
                 <div style="border-top: 1px solid var(--border-color); margin: 10px 0; padding-top: 10px;">
-                    <div class="drawer-option-item" style="color: var(--danger); border-color: rgba(239,68,68,0.2);" onclick="closeModal('hamburger-drawer-modal'); logout();">
+                    <div class="drawer-option-item" style="color: var(--danger); border-color: rgba(239,68,68,0.2);" onclick="closeDrawerMenu(); logout();">
                         <i class="fa-solid fa-right-from-bracket"></i>
                         <span>تسجيل الخروج</span>
                     </div>
@@ -1281,19 +1298,19 @@ function renderDrawerMenu() {
         if (statusEl) statusEl.textContent = "منصة التأسيس واختبارات قياس";
         
         optionsContainer.innerHTML = `
-            <div class="drawer-option-item" onclick="closeModal('hamburger-drawer-modal'); showLogin();">
+            <div class="drawer-option-item" onclick="closeDrawerMenu(); showLogin();">
                 <i class="fa-solid fa-right-to-bracket" style="color: var(--accent-orange);"></i>
                 <span>تسجيل الدخول</span>
             </div>
-            <div class="drawer-option-item" onclick="closeModal('hamburger-drawer-modal'); openModal('student-register-modal');">
+            <div class="drawer-option-item" onclick="closeDrawerMenu(); openModal('student-register-modal');">
                 <i class="fa-solid fa-user-plus" style="color: var(--success);"></i>
                 <span>إنشاء حساب طالب جديد</span>
             </div>
-            <div class="drawer-option-item" onclick="closeModal('hamburger-drawer-modal'); showLandingPage();">
+            <div class="drawer-option-item" onclick="closeDrawerMenu(); showLandingPage();">
                 <i class="fa-solid fa-graduation-cap" style="color: var(--warning);"></i>
                 <span>استعرض الدورات ومحاكي قياس</span>
             </div>
-            <div class="drawer-option-item" onclick="closeModal('hamburger-drawer-modal'); showTestimonialsView();">
+            <div class="drawer-option-item" onclick="closeDrawerMenu(); showTestimonialsView();">
                 <i class="fa-solid fa-star" style="color: #FBBF24;"></i>
                 <span>آراء وتجارب الطلاب</span>
             </div>
