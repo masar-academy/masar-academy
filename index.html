@@ -53,7 +53,7 @@
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
     <!-- Main Style Sheet -->
-    <link rel="stylesheet" href="style.css?v=v1790031082301">
+    <link rel="stylesheet" href="style.css?v=v1790031249785">
 </head>
 <body>
     <!-- Global Loading Overlay -->
@@ -2120,25 +2120,42 @@
         منصة <span>مَسار (Masar)</span> للتعليم الذكي واختبارات قياس © 2026 - تم تصميمها بكل شغف لمساعدة المعلم الخصوصي وطلابه في التأسيس والتجميعات.
     </footer>
 
-    <!-- MODAL (Side Drawer Only): HAMBURGER DRAWER MENU -->
-    <div id="hamburger-drawer-modal" class="modal-overlay">
-        <div class="modal-content">
-            <div style="background: linear-gradient(135deg, rgba(255, 125, 63, 0.2), rgba(16, 185, 129, 0.1)); padding: 22px 18px 18px 18px; border-bottom: 1px solid var(--border-color); position: relative;">
-                <button type="button" class="close-modal-btn" onclick="closeModal('hamburger-drawer-modal')" style="position: absolute; left: 15px; top: 15px; background: rgba(255,255,255,0.08); width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--text-main); font-size: 20px; border: 1px solid var(--border-color); cursor: pointer;">&times;</button>
-                <div style="display: flex; align-items: center; gap: 12px; margin-top: 10px;">
-                    <div id="drawer-user-avatar" style="width: 46px; height: 46px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-orange), #FF5500); color: white; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 19px; box-shadow: 0 4px 12px rgba(255,125,63,0.3); flex-shrink: 0;">
-                        <i class="fa-solid fa-compass"></i>
-                    </div>
-                    <div style="flex: 1; min-width: 0;">
-                        <h4 id="drawer-user-name" style="font-size: 16px; font-weight: 800; color: var(--text-main); margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">منصة مَسار التعليمية</h4>
-                        <span id="drawer-user-status" style="font-size: 11.5px; color: var(--text-orange); font-weight: 700; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">دليل دورات واختبارات قياس والتأسيس</span>
-                    </div>
+    <!-- SIDE DRAWER MENU (slides from left) -->
+    <div id="hamburger-drawer-overlay" onclick="closeDrawerMenu()" style="position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9998;opacity:0;visibility:hidden;transition:opacity 0.35s ease,visibility 0.35s ease;"></div>
+
+    <div id="hamburger-drawer-panel" style="
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        width: 300px;
+        max-width: 85vw;
+        background: var(--bg-dark);
+        border-right: 1px solid var(--border-color);
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        transform: translateX(-100%);
+        transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 4px 0 30px rgba(0,0,0,0.4);
+    ">
+        <!-- Drawer Header -->
+        <div style="background: linear-gradient(135deg, rgba(255, 125, 63, 0.2), rgba(16, 185, 129, 0.1)); padding: 22px 18px 18px 18px; border-bottom: 1px solid var(--border-color); position: relative; flex-shrink: 0;">
+            <button type="button" onclick="closeDrawerMenu()" style="position: absolute; top: 15px; left: 15px; background: rgba(255,255,255,0.08); width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--text-main); font-size: 20px; border: 1px solid var(--border-color); cursor: pointer;">&times;</button>
+            <div style="display: flex; align-items: center; gap: 12px; margin-top: 10px;">
+                <div id="drawer-user-avatar" style="width: 46px; height: 46px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-orange), #FF5500); color: white; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 19px; box-shadow: 0 4px 12px rgba(255,125,63,0.3); flex-shrink: 0;">
+                    <i class="fa-solid fa-compass"></i>
+                </div>
+                <div style="flex: 1; min-width: 0;">
+                    <h4 id="drawer-user-name" style="font-size: 16px; font-weight: 800; color: var(--text-main); margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">منصة مَسار التعليمية</h4>
+                    <span id="drawer-user-status" style="font-size: 11.5px; color: var(--text-orange); font-weight: 700; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">دليل دورات واختبارات قياس والتأسيس</span>
                 </div>
             </div>
+        </div>
 
-            <div style="padding: 18px 15px; flex: 1; overflow-y: auto;" id="drawer-menu-options">
-                <!-- Populated dynamically based on user state -->
-            </div>
+        <!-- Drawer Items -->
+        <div style="padding: 18px 15px; flex: 1; overflow-y: auto;" id="drawer-menu-options">
+            <!-- Populated dynamically -->
         </div>
     </div>
 
@@ -2220,7 +2237,7 @@
     <div class="toast-container" id="toast-container"></div>
 
     <!-- Main JavaScript Logic -->
-    <script src="app.js?v=v1790031082301"></script>
+    <script src="app.js?v=v1790031249785"></script>
     <script>
         // Unregister any legacy cached ServiceWorkers
         if ('serviceWorker' in navigator) {
