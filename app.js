@@ -268,17 +268,8 @@ function setupFormListeners() {
         regForm.addEventListener('submit', handleStudentRegister);
     }
 
-    // Wire student chat send form
-    const studentChatForm = document.getElementById('s-chat-send-form');
-    if (studentChatForm) {
-        studentChatForm.addEventListener('submit', handleSendStudentMessage);
-    }
-    
-    // Wire teacher chat send form
-    const teacherChatForm = document.getElementById('t-chat-send-form');
-    if (teacherChatForm) {
-        teacherChatForm.addEventListener('submit', handleSendTeacherMessage);
-    }
+    // Wire student chat send form (Handled via inline onsubmit in HTML)
+    // Wire teacher chat send form (Handled via inline onsubmit in HTML)
 }
 
 // Automatic Image Compression Utility (Optimizes images for speed and clarity)
